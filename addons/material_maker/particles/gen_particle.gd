@@ -12,6 +12,9 @@ static func value_type(type: String) -> String:
 		mm_io_types.types[key] = {"name": key, "label": type, "type": type, "particle_type": type,
 			"paramdefs": "vec2 uv", "params": "uv", "slot_type": 100 + mm_io_types.types.size(),
 			"color": port_color(type)}
+		var function_type: String = {"float": "f", "vec3": "rgb", "vec4": "rgba"}.get(type, "")
+		if not function_type.is_empty():
+			mm_io_types.types[key]["convert"] = [{"type": function_type, "expr": "$(value)"}] + mm_io_types.types[function_type].get("convert", []).duplicate(true)
 		mm_io_types.type_names.append(key)
 	return key
 

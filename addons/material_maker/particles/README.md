@@ -18,6 +18,7 @@
 기존 Grayscale/Color 노드의 포트는 좌표에서 값을 계산하는 함수입니다. 파티클의 숫자·벡터 포트와 구별합니다.
 
 - **Evaluate Function**: Function에 기존 노드나 서브그래프를, Coordinates에 파티클 값으로 만든 좌표를 연결합니다. Grayscale은 float, Color는 vec3, RGBA는 vec4 값을 반환합니다. 좌표는 반드시 명시합니다. SDF와 3D 함수는 해당 차원의 좌표를 사용합니다.
+- 파티클 `float`, `vec3`, `vec4` 출력은 기존 Grayscale/Color/RGBA 입력에 직접 연결할 수 있습니다. 예를 들어 **Random → Vec3 Math**를 연결합니다. 색상·그레이스케일 간 변환은 Material Maker의 기존 규칙을 따릅니다. Math 결과를 파티클 출력으로 가져올 때는 **Evaluate Function**과 좌표 입력을 사용합니다. 순수 숫자 계산에는 `(0, 0)` 좌표를 사용할 수 있습니다.
 - **Value to Function**: 파티클 값을 기존 노드의 함수 입력으로 전달합니다. 예를 들어 시간으로 만든 float 값을 Colorize에 전달하고 그 결과를 Evaluate하여 COLOR에 연결할 수 있습니다.
 - **Custom Shader**: 기존 노드 편집기에서 입력·출력·코드·함수를 편집합니다. `particle_float`, `particle_vec3` 등의 타입을 사용하면 기존 수학 노드와 함께 파티클 값을 처리할 수 있습니다. 상태는 Read 노드에서 입력으로 전달합니다.
 - 일반 이미지와 정적 Buffer/Fast Blur 결과는 텍스처 리소스로 내보냅니다. 베이크 후에도 파티클마다 다른 좌표에서 샘플링할 수 있습니다. 버퍼의 해상도와 픽셀 형식, 알파를 보존합니다.

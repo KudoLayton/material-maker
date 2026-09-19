@@ -411,7 +411,7 @@ func check_input_connects(node) -> void:
 				continue
 			var input_type = node.get_input_defs()[c.to_port].type
 			var output_type = get_node(NodePath(c.from)).get_output_defs()[c.from_port].type
-			if mm_io_types.types[input_type].slot_type != mm_io_types.types[output_type].slot_type and mm_io_types.types[output_type].slot_type != 42:
+			if mm_io_types.types[input_type].slot_type != mm_io_types.types[output_type].slot_type and mm_io_types.types[output_type].slot_type != 42 and not mm_io_types.is_particle_function_connection(mm_io_types.types[output_type].slot_type, mm_io_types.types[input_type].slot_type):
 				removed_connections.push_back(c.duplicate(true))
 				continue
 		new_connections.push_back(c)

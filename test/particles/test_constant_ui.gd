@@ -55,6 +55,15 @@ func run() -> void:
 	created = await editor.create_nodes(item.item, Vector2(0, 0))
 	node = created[0]
 	assert(node.generator.model_data().data_type == "vec3")
+	assert(editor.is_valid_connection_type(mm_io_types.types.particle_vec3.slot_type, mm_io_types.types.rgb.slot_type))
+	assert(not editor.is_valid_connection_type(mm_io_types.types.rgb.slot_type, mm_io_types.types.particle_vec3.slot_type))
+	var popup = editor.node_popup
+	popup.qc_slot_type = mm_io_types.types.particle_vec3.slot_type
+	popup.qc_is_output = false
+	assert(popup.check_quick_connect({"type": "math_v3"}))
+	popup.qc_slot_type = mm_io_types.types.rgb.slot_type
+	popup.qc_is_output = true
+	assert(popup.check_quick_connect({"type": "shader", "shader_model": {"outputs": [{"type": "particle_vec3"}]}}))
 	var random_inputs = node.generator.get_input_defs()
 	assert(random_inputs[2].name == "seed" and random_inputs[2].label == "Seed Offset")
 	assert(random_inputs[1].label == "System Seed (RANDOM_SEED)")
