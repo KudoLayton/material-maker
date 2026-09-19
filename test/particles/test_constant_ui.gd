@@ -1,0 +1,56 @@
+extends Node
+
+func _ready() -> void:
+	run.call_deferred()
+
+func run() -> void:
+	var window = load("res://material_maker/main_window.tscn").instantiate()
+	get_tree().root.add_child(window)
+	for frame in 30: await get_tree().process_frame
+	var editor = await window.new_particle_shader()
+	var item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Constant")
+	var created = await editor.create_nodes(item.item, Vector2(0, 0))
+	var node = created[0]
+	var option: OptionButton = node.controls.data_type
+	var index: int = MMGenParticle.Interface.TYPES.find("bvec3")
+	print("PARTICLE_CONSTANT_UI: selecting bvec3 through popup")
+	option.select(index)
+	option.item_selected.emit(index)
+	if not is_instance_valid(option):
+		push_error("Particle type selection destroyed its active OptionButton")
+		get_tree().quit(1)
+		return
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().data_type == "bvec3")
+	for key in ["v0", "v1", "v2"]:
+		assert(node.controls[key] is CheckBox)
+	node.controls.v0.button_pressed = true
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().value == [true, false, false])
+	editor.undoredo.undo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().value == [false, false, false])
+	editor.undoredo.redo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().value == [true, false, false])
+	editor.undoredo.undo()
+	editor.undoredo.undo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().data_type == "float")
+	editor.undoredo.redo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().data_type == "bvec3")
+	assert(node.controls.v0 is CheckBox)
+	editor.undoredo.redo()
+	for frame in 3: await get_tree().process_frame
+	var generator_name: String = node.generator.name
+	assert(await editor.save_file("res://app_constant_bvec3.ptex"))
+	assert(await window.do_load_project("res://app_constant_bvec3.ptex"))
+	for frame in 5: await get_tree().process_frame
+	var reopened = window.get_current_graph_edit().top_generator.get_node(generator_name)
+	assert(reopened.model_data().data_type == "bvec3")
+	assert(reopened.model_data().value == [true, false, false])
+	print("PARTICLE_CONSTANT_UI: passed")
+	mm_globals.set_config("confirm_quit", false)
+	mm_globals.set_config("confirm_close_project", false)
+	window.quit()

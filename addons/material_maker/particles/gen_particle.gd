@@ -137,7 +137,7 @@ func set_parameter(key: String, value) -> void:
 	super.set_parameter(key, value)
 	if is_inside_tree(): all_sources_changed.call_deferred()
 	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "uniform_name", "sampler_type"]:
-		parameter_changed.emit("__update_all__", null)
+		parameter_changed.emit.call_deferred("__update_all__", null)
 
 func _get_shader_code(uv: String, output_index: int, context: MMGenContext) -> ShaderCode:
 	if context.particle_compiler != null:
