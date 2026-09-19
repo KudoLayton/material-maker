@@ -1,192 +1,354 @@
 {
-  "type": "particle_graph",
-  "version": 1,
-  "target": "Godot 4.7",
-  "uniforms": [],
-  "render_modes": [],
-  "target_project": "",
-  "active_stage": "start",
-  "stages": {
-    "start": {
-      "nodes": [
-        {
-          "id": "entry",
-          "kind": "entry",
-          "position": [
-            40,
-            40
-          ],
-          "inputs": {}
-        },
-        {
-          "id": "output",
-          "kind": "output",
-          "position": [
-            1000,
-            40
-          ],
-          "inputs": {
-            "exec": {
-              "node": "emit_child",
-              "port": "next"
-            },
-            "TRANSFORM": {
-              "node": "transform",
-              "port": "value"
-            },
-            "COLOR": {
-              "node": "emission_status",
-              "port": "value"
-            }
-          }
-        },
-        {
-          "id": "transform",
-          "kind": "input",
-          "position": [
-            40,
-            200
-          ],
-          "inputs": {},
-          "builtin": "EMISSION_TRANSFORM"
-        },
-        {
-          "id": "position_flag",
-          "kind": "input",
-          "position": [
-            340,
-            200
-          ],
-          "inputs": {},
-          "builtin": "FLAG_EMIT_POSITION"
-        },
-        {
-          "id": "rotation_scale_flag",
-          "kind": "input",
-          "position": [
-            640,
-            200
-          ],
-          "inputs": {},
-          "builtin": "FLAG_EMIT_ROT_SCALE"
-        },
-        {
-          "id": "flags",
-          "kind": "operator",
-          "position": [
-            40,
-            370
-          ],
-          "inputs": {
-            "a": {
-              "node": "position_flag",
-              "port": "value"
-            },
-            "b": {
-              "node": "rotation_scale_flag",
-              "port": "value"
-            }
-          },
-          "operation": "bit_or",
-          "data_type": "uint"
-        },
-        {
-          "id": "emit_child",
-          "kind": "emit",
-          "position": [
-            340,
-            370
-          ],
-          "inputs": {
-            "exec": {
-              "node": "entry",
-              "port": "next"
-            },
-            "transform": {
-              "node": "transform",
-              "port": "value"
-            },
-            "flags": {
-              "node": "flags",
-              "port": "value"
-            }
-          }
-        },
-        {
-          "id": "emission_status",
-          "kind": "select",
-          "position": [
-            640,
-            370
-          ],
-          "inputs": {
-            "condition": {
-              "node": "emit_child",
-              "port": "success"
-            },
-            "true": {
-              "value": [
-                0,
-                1,
-                0,
-                1
-              ]
-            },
-            "false": {
-              "value": [
-                1,
-                0,
-                0,
-                1
-              ]
-            }
-          },
-          "data_type": "vec4"
-        }
-      ],
-      "view": {
-        "scroll": [
-          0,
-          0
-        ],
-        "zoom": 0.8,
-        "selection": []
-      }
+  "connections": [
+    {
+      "from": "start_emit_child",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 0
     },
-    "process": {
-      "nodes": [
-        {
-          "id": "entry",
-          "kind": "entry",
-          "position": [
-            40,
-            40
-          ],
-          "inputs": {}
-        },
-        {
-          "id": "output",
-          "kind": "output",
-          "position": [
-            1000,
-            40
-          ],
-          "inputs": {
-            "exec": {
-              "node": "entry",
-              "port": "next"
-            }
-          }
-        }
-      ],
-      "view": {
-        "scroll": [
-          0,
-          0
-        ],
-        "zoom": 0.8,
-        "selection": []
-      }
+    {
+      "from": "start_emission_status",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 1
+    },
+    {
+      "from": "start_transform",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 12
+    },
+    {
+      "from": "start_position_flag",
+      "from_port": 0,
+      "to": "start_flags",
+      "to_port": 0
+    },
+    {
+      "from": "start_rotation_scale_flag",
+      "from_port": 0,
+      "to": "start_flags",
+      "to_port": 1
+    },
+    {
+      "from": "start_entry",
+      "from_port": 0,
+      "to": "start_emit_child",
+      "to_port": 0
+    },
+    {
+      "from": "start_transform",
+      "from_port": 0,
+      "to": "start_emit_child",
+      "to_port": 2
+    },
+    {
+      "from": "start_flags",
+      "from_port": 0,
+      "to": "start_emit_child",
+      "to_port": 6
+    },
+    {
+      "from": "start_emit_child",
+      "from_port": 1,
+      "to": "start_emission_status",
+      "to_port": 0
+    },
+    {
+      "from": "start_emission_status_true",
+      "from_port": 0,
+      "to": "start_emission_status",
+      "to_port": 1
+    },
+    {
+      "from": "start_emission_status_false",
+      "from_port": 0,
+      "to": "start_emission_status",
+      "to_port": 2
+    },
+    {
+      "from": "process_entry",
+      "from_port": 0,
+      "to": "process_output",
+      "to_port": 0
     }
-  }
+  ],
+  "label": "Graph",
+  "longdesc": "",
+  "name": "@Node@5",
+  "node_position": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "nodes": [
+    {
+      "name": "start_entry",
+      "node_position": {
+        "x": 0,
+        "y": 0
+      },
+      "parameters": {},
+      "seed": 56560.0,
+      "settings": {
+        "id": "entry",
+        "inputs": {},
+        "kind": "entry",
+        "position": [
+          40.0,
+          40.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "export": {
+        "last_target": "",
+        "paths": {}
+      },
+      "export_paths": {},
+      "name": "Material",
+      "node_position": {
+        "x": 1680,
+        "y": 0
+      },
+      "parameters": {
+        "collision_use_scale": false,
+        "disable_force": false,
+        "disable_velocity": false,
+        "keep_data": false,
+        "target_project": ""
+      },
+      "particle_defaults": {},
+      "seed": 37168.0,
+      "type": "particle_export"
+    },
+    {
+      "name": "start_transform",
+      "node_position": {
+        "x": 0,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 56336.0,
+      "settings": {
+        "builtin": "EMISSION_TRANSFORM",
+        "id": "transform",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          40.0,
+          200.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_position_flag",
+      "node_position": {
+        "x": 0,
+        "y": 960
+      },
+      "parameters": {},
+      "seed": 21988.0,
+      "settings": {
+        "builtin": "FLAG_EMIT_POSITION",
+        "id": "position_flag",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          340.0,
+          200.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_rotation_scale_flag",
+      "node_position": {
+        "x": 0,
+        "y": 1440
+      },
+      "parameters": {},
+      "seed": 52552.0,
+      "settings": {
+        "builtin": "FLAG_EMIT_ROT_SCALE",
+        "id": "rotation_scale_flag",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          640.0,
+          200.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_flags",
+      "node_position": {
+        "x": 420,
+        "y": 0
+      },
+      "parameters": {
+        "data_type": 2,
+        "operation": 28
+      },
+      "seed": 56746.0,
+      "settings": {
+        "data_type": "uint",
+        "id": "flags",
+        "inputs": {},
+        "kind": "operator",
+        "operation": "bit_or",
+        "position": [
+          40.0,
+          370.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_emit_child",
+      "node_position": {
+        "x": 840,
+        "y": 0
+      },
+      "parameters": {},
+      "seed": 21598.0,
+      "settings": {
+        "id": "emit_child",
+        "inputs": {},
+        "kind": "emit",
+        "position": [
+          340.0,
+          370.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_emission_status",
+      "node_position": {
+        "x": 1260,
+        "y": 0
+      },
+      "parameters": {
+        "data_type": 15
+      },
+      "seed": 52466.0,
+      "settings": {
+        "data_type": "vec4",
+        "id": "emission_status",
+        "inputs": {},
+        "kind": "select",
+        "position": [
+          640.0,
+          370.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_emission_status_true",
+      "node_position": {
+        "x": 0,
+        "y": 1920
+      },
+      "parameters": {
+        "data_type": 15,
+        "v0": 0.0,
+        "v1": 1.0,
+        "v2": 0.0,
+        "v3": 1.0
+      },
+      "seed": -42390.0,
+      "settings": {
+        "data_type": "vec4",
+        "kind": "constant",
+        "value": [
+          0.0,
+          1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_emission_status_false",
+      "node_position": {
+        "x": 0,
+        "y": 2400
+      },
+      "parameters": {
+        "data_type": 15,
+        "v0": 1.0,
+        "v1": 0.0,
+        "v2": 0.0,
+        "v3": 1.0
+      },
+      "seed": -42700.0,
+      "settings": {
+        "data_type": "vec4",
+        "kind": "constant",
+        "value": [
+          1.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_entry",
+      "node_position": {
+        "x": 0,
+        "y": 2880
+      },
+      "parameters": {},
+      "seed": 57250.0,
+      "settings": {
+        "id": "entry",
+        "inputs": {},
+        "kind": "entry",
+        "position": [
+          40.0,
+          40.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_output",
+      "node_position": {
+        "x": 420,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 37474.0,
+      "settings": {
+        "id": "output",
+        "inputs": {},
+        "kind": "output",
+        "position": [
+          1000.0,
+          40.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    }
+  ],
+  "parameters": {},
+  "seed_int": 0,
+  "shortdesc": "",
+  "type": "graph"
 }

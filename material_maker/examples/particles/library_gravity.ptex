@@ -7,12 +7,6 @@
       "to_port": 0
     },
     {
-      "from": "start_output_COLOR",
-      "from_port": 0,
-      "to": "Material",
-      "to_port": 1
-    },
-    {
       "from": "start_launch",
       "from_port": 0,
       "to": "Material",
@@ -43,7 +37,7 @@
       "to_port": 0
     },
     {
-      "from": "process_choose_velocity",
+      "from": "process_integrate",
       "from_port": 0,
       "to": "process_output",
       "to_port": 2
@@ -67,39 +61,33 @@
       "to_port": 2
     },
     {
-      "from": "process_integrate",
+      "from": "ParticleIndex",
       "from_port": 0,
-      "to": "process_bounce",
+      "to": "ColorCoordinates",
       "to_port": 0
     },
     {
-      "from": "process_normal",
+      "from": "ColorCoordinates",
       "from_port": 0,
-      "to": "process_bounce",
-      "to_port": 1
-    },
-    {
-      "from": "process_collided",
-      "from_port": 0,
-      "to": "process_choose_velocity",
+      "to": "ColorModule",
       "to_port": 0
     },
     {
-      "from": "process_bounce",
+      "from": "ColorModule",
       "from_port": 0,
-      "to": "process_choose_velocity",
+      "to": "Material",
       "to_port": 1
     },
     {
-      "from": "process_integrate",
+      "from": "ColorModule",
       "from_port": 0,
-      "to": "process_choose_velocity",
-      "to_port": 2
+      "to": "process_output",
+      "to_port": 1
     }
   ],
   "label": "Graph",
   "longdesc": "",
-  "name": "@Node@4",
+  "name": "@Node@3",
   "node_position": {
     "x": 0.0,
     "y": 0.0
@@ -133,11 +121,11 @@
       "export_paths": {},
       "name": "Material",
       "node_position": {
-        "x": 840,
+        "x": 1260,
         "y": 0
       },
       "parameters": {
-        "collision_use_scale": true,
+        "collision_use_scale": false,
         "disable_force": false,
         "disable_velocity": false,
         "keep_data": false,
@@ -255,36 +243,10 @@
       "type": "shader"
     },
     {
-      "name": "start_output_COLOR",
-      "node_position": {
-        "x": 0,
-        "y": 1920
-      },
-      "parameters": {
-        "data_type": 15,
-        "v0": 0.2,
-        "v1": 0.7,
-        "v2": 1.0,
-        "v3": 1.0
-      },
-      "seed": -41158.0,
-      "settings": {
-        "data_type": "vec4",
-        "kind": "constant",
-        "value": [
-          0.2,
-          0.7,
-          1.0,
-          1.0
-        ]
-      },
-      "type": "particle_node"
-    },
-    {
       "name": "process_entry",
       "node_position": {
         "x": 0,
-        "y": 2400
+        "y": 1920
       },
       "parameters": {},
       "seed": 57250.0,
@@ -303,8 +265,8 @@
     {
       "name": "process_output",
       "node_position": {
-        "x": 1680,
-        "y": 0
+        "x": 1260,
+        "y": 480
       },
       "parameters": {},
       "seed": 37474.0,
@@ -324,7 +286,7 @@
       "name": "process_velocity",
       "node_position": {
         "x": 0,
-        "y": 2880
+        "y": 2400
       },
       "parameters": {},
       "seed": 55490.0,
@@ -345,7 +307,7 @@
       "name": "process_delta",
       "node_position": {
         "x": 0,
-        "y": 3360
+        "y": 2880
       },
       "parameters": {},
       "seed": 20790.0,
@@ -366,7 +328,7 @@
       "name": "process_gravity",
       "node_position": {
         "x": 0,
-        "y": 3840
+        "y": 3360
       },
       "parameters": {
         "array_size": 0,
@@ -434,104 +396,292 @@
       "type": "shader"
     },
     {
-      "name": "process_collided",
-      "node_position": {
-        "x": 0,
-        "y": 4320
-      },
-      "parameters": {},
-      "seed": 20968.0,
-      "settings": {
-        "builtin": "COLLIDED",
-        "id": "collided",
-        "inputs": {},
-        "kind": "input",
-        "position": [
-          340.0,
-          370.0
-        ],
-        "stage": "process"
-      },
-      "type": "particle_node"
-    },
-    {
-      "name": "process_normal",
-      "node_position": {
-        "x": 0,
-        "y": 4800
-      },
-      "parameters": {},
-      "seed": 51524.0,
-      "settings": {
-        "builtin": "COLLISION_NORMAL",
-        "id": "normal",
-        "inputs": {},
-        "kind": "input",
-        "position": [
-          640.0,
-          370.0
-        ],
-        "stage": "process"
-      },
-      "type": "particle_node"
-    },
-    {
-      "name": "process_bounce",
+      "connections": [
+        {
+          "from": "graph",
+          "from_port": 0,
+          "to": "Evaluate",
+          "to_port": 0
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "Evaluate",
+          "to_port": 1
+        },
+        {
+          "from": "Evaluate",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        },
+        {
+          "from": "Evaluate",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        }
+      ],
+      "label": "Noise Color Module",
+      "longdesc": "",
+      "name": "ColorModule",
       "node_position": {
         "x": 840,
-        "y": 480
-      },
-      "parameters": {},
-      "seed": 55734.0,
-      "shader_model": {
-        "inputs": [
-          {
-            "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
-            "label": "velocity",
-            "name": "velocity",
-            "type": "particle_vec3"
-          },
-          {
-            "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
-            "label": "normal",
-            "name": "normal",
-            "type": "particle_vec3"
-          }
-        ],
-        "instance": "vec3 $(name)_evaluate(vec3 velocity, vec3 normal) {\nreturn reflect(velocity, normal) * 0.8;\n}",
-        "name": "Bounce",
-        "outputs": [
-          {
-            "particle_vec3": "$(name)_evaluate($velocity($uv), $normal($uv))",
-            "type": "particle_vec3"
-          }
-        ],
-        "parameters": []
-      },
-      "type": "shader"
-    },
-    {
-      "name": "process_choose_velocity",
-      "node_position": {
-        "x": 1260,
         "y": 0
       },
-      "parameters": {
-        "data_type": 14
-      },
-      "seed": 20546.0,
+      "nodes": [
+        {
+          "connections": [
+            {
+              "from": "Noise",
+              "from_port": 0,
+              "to": "Transform",
+              "to_port": 0
+            },
+            {
+              "from": "Transform",
+              "from_port": 0,
+              "to": "Colorize",
+              "to_port": 0
+            },
+            {
+              "from": "Colorize",
+              "from_port": 0,
+              "to": "gen_outputs",
+              "to_port": 0
+            }
+          ],
+          "label": "Particle Color Module",
+          "longdesc": "",
+          "name": "graph",
+          "node_position": {
+            "x": 0,
+            "y": 0
+          },
+          "nodes": [
+            {
+              "name": "Noise",
+              "node_position": {
+                "x": 0,
+                "y": 0
+              },
+              "parameters": {
+                "density": 0.3,
+                "size": 4.0
+              },
+              "seed_int": 0,
+              "type": "noise"
+            },
+            {
+              "name": "Transform",
+              "node_position": {
+                "x": 420,
+                "y": 0
+              },
+              "parameters": {
+                "repeat": false,
+                "rotate": 0.0,
+                "scale_x": 1.0,
+                "scale_y": 1.0,
+                "translate_x": 0.0,
+                "translate_y": 0.0
+              },
+              "seed_int": 0,
+              "type": "transform"
+            },
+            {
+              "name": "Colorize",
+              "node_position": {
+                "x": 840,
+                "y": 0
+              },
+              "parameters": {
+                "gradient": {
+                  "interpolation": 1,
+                  "points": [
+                    {
+                      "a": 1.0,
+                      "b": 0.0,
+                      "g": 0.0,
+                      "pos": 0.0,
+                      "r": 0.0
+                    },
+                    {
+                      "a": 1.0,
+                      "b": 1.0,
+                      "g": 1.0,
+                      "pos": 1.0,
+                      "r": 1.0
+                    }
+                  ],
+                  "type": "Gradient"
+                }
+              },
+              "seed_int": 0,
+              "type": "colorize"
+            },
+            {
+              "name": "gen_inputs",
+              "node_position": {
+                "x": 0,
+                "y": 480
+              },
+              "parameters": {},
+              "ports": [],
+              "seed_int": 0,
+              "type": "ios"
+            },
+            {
+              "name": "gen_outputs",
+              "node_position": {
+                "x": 1260,
+                "y": 0
+              },
+              "parameters": {},
+              "ports": [
+                {
+                  "name": "port0",
+                  "type": "rgba"
+                }
+              ],
+              "seed_int": 0,
+              "type": "ios"
+            },
+            {
+              "name": "gen_parameters",
+              "node_position": {
+                "x": 0,
+                "y": 960
+              },
+              "parameters": {
+                "density": 0.3
+              },
+              "seed_int": 0,
+              "type": "remote",
+              "widgets": [
+                {
+                  "label": "Density",
+                  "linked_widgets": [
+                    {
+                      "node": "Noise",
+                      "widget": "density"
+                    }
+                  ],
+                  "name": "density",
+                  "type": "linked_control"
+                }
+              ]
+            }
+          ],
+          "parameters": {
+            "density": 0.3
+          },
+          "seed_int": 0,
+          "shortdesc": "",
+          "type": "graph"
+        },
+        {
+          "name": "Evaluate",
+          "node_position": {
+            "x": 420,
+            "y": 0
+          },
+          "parameters": {
+            "function_type": 2
+          },
+          "seed_int": 0,
+          "settings": {
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "gen_inputs",
+          "node_position": {
+            "x": 0,
+            "y": 480
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "particle_vec2"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_outputs",
+          "node_position": {
+            "x": 840,
+            "y": 0
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "particle_vec4"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_parameters",
+          "node_position": {
+            "x": 0,
+            "y": 960
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "remote",
+          "widgets": []
+        }
+      ],
+      "parameters": {},
+      "seed_int": 0,
+      "shortdesc": "",
+      "type": "graph"
+    },
+    {
+      "name": "ParticleIndex",
+      "type": "particle_node",
       "settings": {
-        "data_type": "vec3",
-        "id": "choose_velocity",
-        "inputs": {},
-        "kind": "select",
-        "position": [
-          340.0,
-          540.0
-        ],
-        "stage": "process"
+        "kind": "input",
+        "builtin": "NUMBER"
       },
-      "type": "particle_node"
+      "node_position": {
+        "x": 0,
+        "y": 3840
+      }
+    },
+    {
+      "name": "ColorCoordinates",
+      "type": "shader",
+      "shader_model": {
+        "name": "Particle Color Coordinates",
+        "parameters": [],
+        "inputs": [
+          {
+            "name": "index",
+            "label": "Index",
+            "type": "particle_uint",
+            "default": "0u"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "particle_vec2",
+            "particle_vec2": "vec2(float($index($uv)) * 0.037, 0.5)"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 420,
+        "y": 960
+      }
     }
   ],
   "parameters": {},

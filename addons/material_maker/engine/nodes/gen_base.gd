@@ -134,6 +134,7 @@ class GlobalDefs:
 
 class ShaderCode:
 	extends RefCounted
+	var error: String = ""
 	var globals : Array[GlobalDefs] = []
 	var uniforms : Array[ShaderUniform] = []
 	var defs : String = ""

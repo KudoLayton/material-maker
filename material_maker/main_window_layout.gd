@@ -29,12 +29,9 @@ var default_material_layout := {
 
 var default_paint_layout : Dictionary = { main={ children=[ { children=[ { children=[], current=0, h=766.0, tabs=["Brushes"], type="FlexTab", w=279.0 }, { children=[], h=766.0, type="FlexMain", w=844.0 }, { children=[ { children=[], current=0, h=370.0, tabs=["Parameters"], type="FlexTab", w=240.0 }, { children=[], current=0, h=386.0, tabs=["Layers"], type="FlexTab", w=240.0 }], dir="v", h=766.0, type="FlexSplit", w=240.0 }], dir="h", h=766.0, type="FlexSplit", w=1383.0 }], h=766.0, type="FlexTop", w=1383.0 }, windows=[] }
 
-var default_particle_layout: Dictionary = {"main": {"type": "FlexTop", "w": 1400.0, "h": 900.0, "children": [{"type": "FlexMain", "w": 1400.0, "h": 900.0, "children": []}]}, "windows": []}
-
 const HIDE_PANELS : Dictionary[String, Array] = {
 	"material": [ "Brushes", "Layers", "Parameters" ],
-	"paint": [ "Preview3D", "Histogram", "Hierarchy" ],
-	"particle": ["Library", "Preview2D", "Preview3D", "Preview2D (2)", "Histogram", "Hierarchy", "Brushes", "Layers", "Parameters"]
+	"paint": [ "Preview3D", "Histogram", "Hierarchy" ]
 }
 
 
@@ -72,15 +69,13 @@ func load_panels() -> void:
 		panels[panel.name] = node
 		$FlexibleLayout.add(panel.name, node)
 
-	for mode in [ "material", "paint", "particle" ]:
+	for mode in [ "material", "paint" ]:
 		if mm_globals.config.has_section_key("layout", mode):
 			layout[mode] = JSON.parse_string(mm_globals.config.get_value("layout", mode))
 		elif mode == "material":
 			layout[mode] = default_material_layout
 		elif mode == "paint":
 			layout[mode] = default_paint_layout
-		elif mode == "particle":
-			layout[mode] = default_particle_layout
 	$FlexibleLayout.init(layout[current_mode] if layout.has(current_mode) else null)
 
 	# Restore layout presets
@@ -98,7 +93,7 @@ func save_config() -> void:
 	layout[current_mode] = $FlexibleLayout.serialize()
 	if not previous_layout.is_empty():
 		layout[current_mode] = previous_layout
-	for mode in [ "material", "paint", "particle" ]:
+	for mode in [ "material", "paint" ]:
 		if layout.has(mode):
 			mm_globals.config.set_value("layout", mode, JSON.stringify(layout[mode]))
 
@@ -135,14 +130,6 @@ func change_mode(m : String) -> void:
 	current_mode = m
 	if layout.has(current_mode):
 		$FlexibleLayout.init(layout[current_mode])
-	if m == "particle":
-		_retain_hidden_particle_panels()
-
-func _retain_hidden_particle_panels() -> void:
-	for panel in panels.values():
-		if panel.get_parent() == null:
-			panel.hide()
-			$FlexibleLayout.add_child(panel)
 
 func _on_tab_changed(_tab):
 	pass
@@ -152,7 +139,4 @@ func reset_panels() -> void:
 		$FlexibleLayout.init(default_material_layout)
 	elif current_mode == "paint":
 		$FlexibleLayout.init(default_paint_layout)
-	elif current_mode == "particle":
-		$FlexibleLayout.init(default_particle_layout)
-		_retain_hidden_particle_panels()
 	owner.view_center()

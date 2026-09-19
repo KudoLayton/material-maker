@@ -24,5 +24,6 @@ func _ready():
 				if file != null:
 					t.preview = file.get_as_text()
 				types[t.name] = t
+			MMGenParticle.register_types()
 			return
 	print("Failed to load io types")

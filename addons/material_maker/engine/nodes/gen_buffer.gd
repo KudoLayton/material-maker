@@ -102,6 +102,8 @@ func do_update_shader() -> void:
 	if not is_node_ready():
 		await ready
 	updating_shader = false
+	if preload("res://addons/material_maker/particles/dependencies.gd").requires_context(self) and not preload("res://addons/material_maker/particles/dependencies.gd").runtime_source(self).is_empty():
+		return
 	var context : MMGenContext = MMGenContext.new()
 	var source : ShaderCode
 	var source_output : OutputPort = get_source(0)
@@ -109,6 +111,8 @@ func do_update_shader() -> void:
 		source = source_output.generator.get_shader_code("uv", source_output.output_index, context)
 	else:
 		source = get_default_generated_shader()
+	if not source.error.is_empty():
+		return
 	var f32 = false
 	if version == VERSION_COMPLEX:
 		f32 = get_parameter("f32")

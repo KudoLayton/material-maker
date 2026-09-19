@@ -1,0 +1,634 @@
+{
+  "name": "Particles",
+  "lib": [
+    {
+      "name": "Read_TIME",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/TIME",
+      "settings": {
+        "kind": "input",
+        "builtin": "TIME"
+      }
+    },
+    {
+      "name": "Read_PI",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/PI",
+      "settings": {
+        "kind": "input",
+        "builtin": "PI"
+      }
+    },
+    {
+      "name": "Read_TAU",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/TAU",
+      "settings": {
+        "kind": "input",
+        "builtin": "TAU"
+      }
+    },
+    {
+      "name": "Read_E",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/E",
+      "settings": {
+        "kind": "input",
+        "builtin": "E"
+      }
+    },
+    {
+      "name": "Read_COLOR",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/COLOR",
+      "settings": {
+        "kind": "input",
+        "builtin": "COLOR"
+      }
+    },
+    {
+      "name": "Write_COLOR",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/COLOR",
+      "settings": {
+        "kind": "set",
+        "builtin": "COLOR"
+      }
+    },
+    {
+      "name": "Read_VELOCITY",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/VELOCITY",
+      "settings": {
+        "kind": "input",
+        "builtin": "VELOCITY"
+      }
+    },
+    {
+      "name": "Write_VELOCITY",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/VELOCITY",
+      "settings": {
+        "kind": "set",
+        "builtin": "VELOCITY"
+      }
+    },
+    {
+      "name": "Read_MASS",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/MASS",
+      "settings": {
+        "kind": "input",
+        "builtin": "MASS"
+      }
+    },
+    {
+      "name": "Write_MASS",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/MASS",
+      "settings": {
+        "kind": "set",
+        "builtin": "MASS"
+      }
+    },
+    {
+      "name": "Read_ACTIVE",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/ACTIVE",
+      "settings": {
+        "kind": "input",
+        "builtin": "ACTIVE"
+      }
+    },
+    {
+      "name": "Write_ACTIVE",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/ACTIVE",
+      "settings": {
+        "kind": "set",
+        "builtin": "ACTIVE"
+      }
+    },
+    {
+      "name": "Read_CUSTOM",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/CUSTOM",
+      "settings": {
+        "kind": "input",
+        "builtin": "CUSTOM"
+      }
+    },
+    {
+      "name": "Write_CUSTOM",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/CUSTOM",
+      "settings": {
+        "kind": "set",
+        "builtin": "CUSTOM"
+      }
+    },
+    {
+      "name": "Read_USERDATA1",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/USERDATA1",
+      "settings": {
+        "kind": "input",
+        "builtin": "USERDATA1"
+      }
+    },
+    {
+      "name": "Write_USERDATA1",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/USERDATA1",
+      "settings": {
+        "kind": "set",
+        "builtin": "USERDATA1"
+      }
+    },
+    {
+      "name": "Read_USERDATA2",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/USERDATA2",
+      "settings": {
+        "kind": "input",
+        "builtin": "USERDATA2"
+      }
+    },
+    {
+      "name": "Write_USERDATA2",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/USERDATA2",
+      "settings": {
+        "kind": "set",
+        "builtin": "USERDATA2"
+      }
+    },
+    {
+      "name": "Read_USERDATA3",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/USERDATA3",
+      "settings": {
+        "kind": "input",
+        "builtin": "USERDATA3"
+      }
+    },
+    {
+      "name": "Write_USERDATA3",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/USERDATA3",
+      "settings": {
+        "kind": "set",
+        "builtin": "USERDATA3"
+      }
+    },
+    {
+      "name": "Read_USERDATA4",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/USERDATA4",
+      "settings": {
+        "kind": "input",
+        "builtin": "USERDATA4"
+      }
+    },
+    {
+      "name": "Write_USERDATA4",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/USERDATA4",
+      "settings": {
+        "kind": "set",
+        "builtin": "USERDATA4"
+      }
+    },
+    {
+      "name": "Read_USERDATA5",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/USERDATA5",
+      "settings": {
+        "kind": "input",
+        "builtin": "USERDATA5"
+      }
+    },
+    {
+      "name": "Write_USERDATA5",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/USERDATA5",
+      "settings": {
+        "kind": "set",
+        "builtin": "USERDATA5"
+      }
+    },
+    {
+      "name": "Read_USERDATA6",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/USERDATA6",
+      "settings": {
+        "kind": "input",
+        "builtin": "USERDATA6"
+      }
+    },
+    {
+      "name": "Write_USERDATA6",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/USERDATA6",
+      "settings": {
+        "kind": "set",
+        "builtin": "USERDATA6"
+      }
+    },
+    {
+      "name": "Read_TRANSFORM",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/TRANSFORM",
+      "settings": {
+        "kind": "input",
+        "builtin": "TRANSFORM"
+      }
+    },
+    {
+      "name": "Write_TRANSFORM",
+      "type": "particle_node",
+      "tree_item": "Particles/Write/TRANSFORM",
+      "settings": {
+        "kind": "set",
+        "builtin": "TRANSFORM"
+      }
+    },
+    {
+      "name": "Read_LIFETIME",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/LIFETIME",
+      "settings": {
+        "kind": "input",
+        "builtin": "LIFETIME"
+      }
+    },
+    {
+      "name": "Read_DELTA",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/DELTA",
+      "settings": {
+        "kind": "input",
+        "builtin": "DELTA"
+      }
+    },
+    {
+      "name": "Read_NUMBER",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/NUMBER",
+      "settings": {
+        "kind": "input",
+        "builtin": "NUMBER"
+      }
+    },
+    {
+      "name": "Read_INDEX",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/INDEX",
+      "settings": {
+        "kind": "input",
+        "builtin": "INDEX"
+      }
+    },
+    {
+      "name": "Read_EMISSION_TRANSFORM",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/EMISSION_TRANSFORM",
+      "settings": {
+        "kind": "input",
+        "builtin": "EMISSION_TRANSFORM"
+      }
+    },
+    {
+      "name": "Read_EMITTER_VELOCITY",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/EMITTER_VELOCITY",
+      "settings": {
+        "kind": "input",
+        "builtin": "EMITTER_VELOCITY"
+      }
+    },
+    {
+      "name": "Read_INTERPOLATE_TO_END",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/INTERPOLATE_TO_END",
+      "settings": {
+        "kind": "input",
+        "builtin": "INTERPOLATE_TO_END"
+      }
+    },
+    {
+      "name": "Read_RANDOM_SEED",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RANDOM_SEED",
+      "settings": {
+        "kind": "input",
+        "builtin": "RANDOM_SEED"
+      }
+    },
+    {
+      "name": "Read_FLAG_EMIT_POSITION",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/FLAG_EMIT_POSITION",
+      "settings": {
+        "kind": "input",
+        "builtin": "FLAG_EMIT_POSITION"
+      }
+    },
+    {
+      "name": "Read_FLAG_EMIT_ROT_SCALE",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/FLAG_EMIT_ROT_SCALE",
+      "settings": {
+        "kind": "input",
+        "builtin": "FLAG_EMIT_ROT_SCALE"
+      }
+    },
+    {
+      "name": "Read_FLAG_EMIT_VELOCITY",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/FLAG_EMIT_VELOCITY",
+      "settings": {
+        "kind": "input",
+        "builtin": "FLAG_EMIT_VELOCITY"
+      }
+    },
+    {
+      "name": "Read_FLAG_EMIT_COLOR",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/FLAG_EMIT_COLOR",
+      "settings": {
+        "kind": "input",
+        "builtin": "FLAG_EMIT_COLOR"
+      }
+    },
+    {
+      "name": "Read_FLAG_EMIT_CUSTOM",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/FLAG_EMIT_CUSTOM",
+      "settings": {
+        "kind": "input",
+        "builtin": "FLAG_EMIT_CUSTOM"
+      }
+    },
+    {
+      "name": "Read_RESTART_POSITION",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RESTART_POSITION",
+      "settings": {
+        "kind": "input",
+        "builtin": "RESTART_POSITION"
+      }
+    },
+    {
+      "name": "Read_RESTART_ROT_SCALE",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RESTART_ROT_SCALE",
+      "settings": {
+        "kind": "input",
+        "builtin": "RESTART_ROT_SCALE"
+      }
+    },
+    {
+      "name": "Read_RESTART_VELOCITY",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RESTART_VELOCITY",
+      "settings": {
+        "kind": "input",
+        "builtin": "RESTART_VELOCITY"
+      }
+    },
+    {
+      "name": "Read_RESTART_COLOR",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RESTART_COLOR",
+      "settings": {
+        "kind": "input",
+        "builtin": "RESTART_COLOR"
+      }
+    },
+    {
+      "name": "Read_RESTART_CUSTOM",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RESTART_CUSTOM",
+      "settings": {
+        "kind": "input",
+        "builtin": "RESTART_CUSTOM"
+      }
+    },
+    {
+      "name": "Read_AMOUNT_RATIO",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/AMOUNT_RATIO",
+      "settings": {
+        "kind": "input",
+        "builtin": "AMOUNT_RATIO"
+      }
+    },
+    {
+      "name": "Read_RESTART",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/RESTART",
+      "settings": {
+        "kind": "input",
+        "builtin": "RESTART"
+      }
+    },
+    {
+      "name": "Read_COLLIDED",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/COLLIDED",
+      "settings": {
+        "kind": "input",
+        "builtin": "COLLIDED"
+      }
+    },
+    {
+      "name": "Read_COLLISION_NORMAL",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/COLLISION_NORMAL",
+      "settings": {
+        "kind": "input",
+        "builtin": "COLLISION_NORMAL"
+      }
+    },
+    {
+      "name": "Read_COLLISION_DEPTH",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/COLLISION_DEPTH",
+      "settings": {
+        "kind": "input",
+        "builtin": "COLLISION_DEPTH"
+      }
+    },
+    {
+      "name": "Read_ATTRACTOR_FORCE",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/ATTRACTOR_FORCE",
+      "settings": {
+        "kind": "input",
+        "builtin": "ATTRACTOR_FORCE"
+      }
+    },
+    {
+      "name": "Execution_Start_Entry",
+      "type": "particle_node",
+      "tree_item": "Particles/Execution/Start Entry",
+      "settings": {
+        "kind": "entry",
+        "stage": "start"
+      }
+    },
+    {
+      "name": "Execution_Process_Entry",
+      "type": "particle_node",
+      "tree_item": "Particles/Execution/Process Entry",
+      "settings": {
+        "kind": "entry",
+        "stage": "process"
+      }
+    },
+    {
+      "name": "Library_Evaluate_Function",
+      "type": "particle_node",
+      "tree_item": "Particles/Library/Evaluate Function",
+      "settings": {
+        "kind": "evaluate",
+        "function_type": "rgba"
+      }
+    },
+    {
+      "name": "Library_Value_to_Function",
+      "type": "particle_node",
+      "tree_item": "Particles/Library/Value to Function",
+      "settings": {
+        "kind": "bridge",
+        "function_type": "rgba"
+      }
+    },
+    {
+      "name": "Tools_Constant",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Constant",
+      "settings": {
+        "kind": "constant",
+        "data_type": "float"
+      }
+    },
+    {
+      "name": "Tools_Operator",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Operator",
+      "settings": {
+        "kind": "operator",
+        "data_type": "float"
+      }
+    },
+    {
+      "name": "Tools_Convert",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Convert",
+      "settings": {
+        "kind": "convert",
+        "data_type": "vec3"
+      }
+    },
+    {
+      "name": "Tools_Compose",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Compose",
+      "settings": {
+        "kind": "compose",
+        "data_type": "vec3"
+      }
+    },
+    {
+      "name": "Tools_Split",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Split",
+      "settings": {
+        "kind": "split",
+        "data_type": "vec3"
+      }
+    },
+    {
+      "name": "Tools_Transform",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Transform",
+      "settings": {
+        "kind": "transform",
+        "data_type": "vec4"
+      }
+    },
+    {
+      "name": "Tools_Select",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Select",
+      "settings": {
+        "kind": "select",
+        "data_type": "float"
+      }
+    },
+    {
+      "name": "Tools_Uniform",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Uniform",
+      "settings": {
+        "kind": "uniform",
+        "data_type": "float"
+      }
+    },
+    {
+      "name": "Tools_Array_Get",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Array Get",
+      "settings": {
+        "kind": "array_get",
+        "data_type": "float"
+      }
+    },
+    {
+      "name": "Tools_Sample",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Sample",
+      "settings": {
+        "kind": "sample",
+        "data_type": "vec4"
+      }
+    },
+    {
+      "name": "Tools_Emit",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Emit",
+      "settings": {
+        "kind": "emit",
+        "data_type": "bool"
+      }
+    },
+    {
+      "name": "particle_custom",
+      "type": "shader",
+      "tree_item": "Particles/Tools/Custom Shader",
+      "shader_model": {
+        "name": "Particle Custom Shader",
+        "parameters": [],
+        "inputs": [
+          {
+            "name": "value",
+            "type": "particle_float",
+            "default": "0.0",
+            "label": "Value"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "particle_float",
+            "particle_float": "$value($uv)"
+          }
+        ],
+        "code": "",
+        "instance": "",
+        "global": ""
+      }
+    }
+  ]
+}

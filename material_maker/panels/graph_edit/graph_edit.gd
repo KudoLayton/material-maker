@@ -922,7 +922,7 @@ func export_material(export_prefix, profile) -> void:
 	var stack : Array[MMGenBase] = [top_generator]
 	while stack.size():
 		var node : MMGenBase = stack.pop_back()
-		if node.has_method("export_material"):
+		if node != material_node and node.has_method("export_material"):
 			exports.append(node)
 		stack.append_array(node.get_children())
 
@@ -1181,6 +1181,8 @@ func _on_GraphEdit_node_selected(node : GraphElement) -> void:
 	else:
 		highlight_connections()
 		await get_tree().process_frame
+		if not is_instance_valid(node) or node.get_parent() != self or not node.selected:
+			return
 		if current_preview[0] != null:
 			for n in get_selected_nodes():
 				if n.generator == current_preview[0].generator:
@@ -1210,6 +1212,9 @@ func get_current_preview(slot : int = 0) -> Preview:
 
 
 func set_current_preview(slot : int, node : GraphNode, output_index : int = 0, locked : bool = false, force_unlock := false) -> void:
+	if is_instance_valid(node) and preload("res://addons/material_maker/particles/dependencies.gd").requires_context(node.generator):
+		mm_globals.set_tip_text("Particle-dependent values have no image preview.", 3, 0)
+		node = null
 	var preview = null
 	var old_preview = null
 	var old_locked_preview = null

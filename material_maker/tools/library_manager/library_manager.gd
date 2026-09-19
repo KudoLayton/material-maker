@@ -77,6 +77,11 @@ func init_libraries() -> void:
 		disabled_libraries = mm_globals.config.get_value(config_section, "disabled_libraries")
 	if mm_globals.config.has_section_key(config_section, "disabled_sections"):
 		disabled_sections = mm_globals.config.get_value(config_section, "disabled_sections")
+	if name == "NodeLibraryManager":
+		var particles = LIBRARY.new()
+		if particles.load_library("res://addons/material_maker/particles/library.json", true):
+			add_child(particles)
+			particles.generate_node_sections(node_sections)
 	emit_signal("libraries_changed")
 	print("Libraries updated ("+name+")")
 

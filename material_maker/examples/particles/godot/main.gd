@@ -16,7 +16,7 @@ func _ready() -> void:
 	mesh.material = draw
 	var emitters: Array[GPUParticles3D] = []
 	for index in 3:
-		var example: String = ["gravity", "collision", "subparticle"][index]
+		var example: String = ["library_gravity", "collision", "subparticle"][index]
 		var particles := GPUParticles3D.new()
 		particles.amount = 128
 		particles.lifetime = 2

@@ -109,7 +109,7 @@ func compile_stage(graph: Dictionary) -> Array:
 		fail("", "Each stage requires exactly one Entry and Output")
 		return body
 	for n in nodes.values():
-		var ports: Dictionary = Interface.ports(n, stage, document.get("uniforms", []))
+		var ports: Dictionary = get_ports(n)
 		for input_name in n.get("inputs", {}):
 			var target_type: String = port_type(ports.inputs, input_name)
 			if target_type.is_empty():
@@ -121,8 +121,8 @@ func compile_stage(graph: Dictionary) -> Array:
 				continue
 			if binding.has("node"):
 				var source: Dictionary = nodes.get(str(binding.node), {})
-				var source_type: String = port_type(Interface.ports(source, stage, document.get("uniforms", [])).outputs, binding.get("port", "value"))
-				if source_type != target_type:
+				var source_type: String = port_type(get_ports(source).outputs, binding.get("port", "value"))
+				if not types_compatible(source_type, target_type):
 					fail(n.id, "Type mismatch on %s: expected %s, got %s" % [input_name, target_type, source_type])
 	var successors := {}
 	for n in nodes.values():
@@ -151,7 +151,7 @@ func compile_stage(graph: Dictionary) -> Array:
 			"emit":
 				var arguments: Array[String] = []
 				var enabled: String = argument(n, "enabled", "bool", true)
-				for p in Interface.ports(n, stage).inputs:
+				for p in get_ports(n).inputs:
 					if p.name not in ["exec", "enabled"]:
 						arguments.append(argument(n, p.name, p.type, [1, 1, 1, 1] if p.name == "color" else null))
 				var result: String = "emit_" + current
@@ -160,7 +160,7 @@ func compile_stage(graph: Dictionary) -> Array:
 				emitted[current] = result
 			"output":
 				var assignments: Array[String] = []
-				for p in Interface.ports(n, stage).inputs:
+				for p in get_ports(n).inputs:
 					if p.name == "exec" or not n.get("inputs", {}).has(p.name):
 						continue
 					var value: String = argument(n, p.name, p.type)
@@ -191,7 +191,7 @@ func validate_node(n: Dictionary) -> void:
 		fail(n.id, "Unknown operator")
 	if kind in ["compose", "split"] and not ("vec" in n.get("data_type", "") or n.get("data_type", "").begins_with("mat")):
 		fail(n.id, "Compose/Split requires a vector or matrix")
-	if kind == "uniform" and Interface.ports(n, stage, document.get("uniforms", [])).outputs.is_empty():
+	if kind == "uniform" and get_ports(n).outputs.is_empty():
 		fail(n.id, "Uniform is not declared")
 	if kind == "custom":
 		var names := {}
@@ -223,7 +223,7 @@ func expression(id: String, output: String) -> String:
 		return "0.0"
 	visiting[key] = true
 	var n: Dictionary = nodes[id]
-	var ports: Dictionary = Interface.ports(n, stage, document.get("uniforms", []))
+	var ports: Dictionary = get_ports(n)
 	var type: String = port_type(ports.outputs, output)
 	var value: String = "0.0"
 	var args: Array[String] = []
@@ -318,3 +318,9 @@ func literal(type: String, value, node: String) -> String:
 	for component in value:
 		elements.append(literal("vec" + str(count) if type.begins_with("mat") else Interface.scalar_type(type), component, node))
 	return type + "(" + ", ".join(elements) + ")"
+
+func get_ports(n: Dictionary) -> Dictionary:
+	return Interface.ports(n, stage, document.get("uniforms", []))
+
+func types_compatible(source: String, target: String) -> bool:
+	return source == target

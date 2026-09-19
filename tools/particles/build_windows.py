@@ -1,4 +1,4 @@
-"""Build the particle editor without importing assets into the source checkout."""
+"""Build Material Maker with integrated particle nodes in a separate directory."""
 import argparse
 import shutil
 import subprocess
@@ -29,6 +29,12 @@ def copy_source(source, destination):
 
 def prepare(project):
     project.mkdir(parents=True, exist_ok=True)
+    if not project.resolve().is_relative_to((ROOT / 'build').resolve()):
+        raise ValueError('Validation copies must remain under build/')
+    for obsolete in ['material_maker/panels/particles/particle_editor.gd', 'test/particles/test_editor.gd']:
+        target = project / obsolete
+        if target.exists():
+            target.unlink()
     for name in ['addons', 'demo', 'material_maker', 'splash_screen', 'test']:
         shutil.copytree(ROOT / name, project / name, dirs_exist_ok=True, copy_function=copy_source)
     for path in ROOT.iterdir():
@@ -54,12 +60,12 @@ def main():
     output, stock = args.output.resolve(), args.stock.resolve()
     if output == stock:
         raise ValueError('The particle build must use a separate directory')
-    project = ROOT / 'build/particle-native/app'
+    project = ROOT / 'build/particle-integration/release'
     prepare(project)
     config_path = project / 'project.godot'
     release_config = config_path.read_text(encoding='utf-8')
-    config_path.write_text(release_config.replace('custom_user_dir_name="material_maker_particles"',
-                                                'custom_user_dir_name="material_maker_particles_validation"'), encoding='utf-8')
+    config_path.write_text(release_config.replace('custom_user_dir_name="material_maker_2"',
+                                                'custom_user_dir_name="material_maker_integration_validation"'), encoding='utf-8')
     run(engine, project, 'app-import.log', ['--headless', '--editor', '--import'])
     text = run(engine, project, 'app-test.log', ['test/particles/test_app.tscn', '--position', '-32000,-32000', '--max-fps', '60'], 120)
     if 'PARTICLE_APP_TESTS: passed' not in text:
@@ -70,16 +76,17 @@ def main():
     text = presets.read_text(encoding='utf-8')
     text = text.replace('custom_template/release=""', f'custom_template/release="{template.as_posix()}"')
     text = text.replace('application/modify_resources=true', 'application/modify_resources=false')
-    text = text.replace('exclude_filter="*.ptex,*.mmn,*.mmg"', 'exclude_filter="*.ptex,*.mmn,*.mmg,test/*,extensions/*,tools/*,validation_outputs/*"')
+    text = text.replace('include_filter="*.tmpl"', 'include_filter="*.tmpl,addons/material_maker/particles/*.json"')
+    text = text.replace('exclude_filter="*.ptex,*.mmn,*.mmg"', 'exclude_filter="*.ptex,*.mmn,*.mmg,test/*,extensions/*,tools/*,exported/*,array_exports/*,app_*,ordinary_*,app.png"')
     presets.write_text(text, encoding='utf-8')
     output.mkdir(parents=True, exist_ok=True)
     run(engine, project, 'windows-export.log', ['--headless', '--export-release', 'Windows', str(output / 'material_maker.exe')])
     for name in ['doc', 'environments', 'examples', 'export', 'library', 'meshes', 'nodes']:
         shutil.copytree(stock / name, output / name, dirs_exist_ok=True)
-    shutil.copytree(ROOT / 'material_maker/examples/particles', output / 'examples/native_particles', dirs_exist_ok=True)
-    for name in ['gravity', 'collision', 'subparticle']:
+    shutil.copytree(ROOT / 'material_maker/examples/particles', output / 'examples/particles', dirs_exist_ok=True)
+    for name in ['gravity', 'collision', 'subparticle', 'library_gravity']:
         for suffix in ['.gdshader', '.tres']:
-            shutil.copy2(ROOT / 'build/particle-native/unit/exported' / (name + suffix), output / 'examples/native_particles/godot' / (name + suffix))
+            shutil.copy2(ROOT / 'build/particle-integration/app/exported' / (name + suffix), output / 'examples/particles/godot' / (name + suffix))
     shutil.copy2(ROOT / 'addons/material_maker/particles/README.md', output / 'PARTICLE_EDITOR_README.md')
     print(f'BUILT: {output / "material_maker.exe"}')
 

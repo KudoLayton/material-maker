@@ -187,6 +187,8 @@ func add_item(item_name : String, image : Image, data : Dictionary) -> void:
 		var texture : ImageTexture = ImageTexture.new()
 		texture.set_image(image)
 		library_icons[item_name] = texture
+	elif not library_icons.has(item_name):
+		library_icons[item_name] = null
 	save_library()
 
 func remove_item(item_name : String) -> void:

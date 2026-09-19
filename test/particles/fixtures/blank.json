@@ -1,0 +1,81 @@
+{
+  "type": "particle_graph",
+  "version": 1,
+  "target": "Godot 4.7",
+  "uniforms": [],
+  "render_modes": [],
+  "target_project": "",
+  "active_stage": "start",
+  "stages": {
+    "start": {
+      "nodes": [
+        {
+          "id": "entry",
+          "kind": "entry",
+          "position": [
+            40,
+            40
+          ],
+          "inputs": {}
+        },
+        {
+          "id": "output",
+          "kind": "output",
+          "position": [
+            1000,
+            40
+          ],
+          "inputs": {
+            "exec": {
+              "node": "entry",
+              "port": "next"
+            }
+          }
+        }
+      ],
+      "view": {
+        "scroll": [
+          0,
+          0
+        ],
+        "zoom": 0.8,
+        "selection": []
+      }
+    },
+    "process": {
+      "nodes": [
+        {
+          "id": "entry",
+          "kind": "entry",
+          "position": [
+            40,
+            40
+          ],
+          "inputs": {}
+        },
+        {
+          "id": "output",
+          "kind": "output",
+          "position": [
+            1000,
+            40
+          ],
+          "inputs": {
+            "exec": {
+              "node": "entry",
+              "port": "next"
+            }
+          }
+        }
+      ],
+      "view": {
+        "scroll": [
+          0,
+          0
+        ],
+        "zoom": 0.8,
+        "selection": []
+      }
+    }
+  }
+}

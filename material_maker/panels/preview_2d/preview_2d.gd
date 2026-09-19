@@ -48,6 +48,9 @@ func get_shader_custom_functions():
 	return ""
 
 func set_generator(g : MMGenBase, o : int = 0, force : bool = false) -> void:
+	if is_instance_valid(g) and preload("res://addons/material_maker/particles/dependencies.gd").requires_context(g):
+		g = null
+		tooltip_text = "Particle-dependent values have no image preview."
 	if !is_visible_in_tree():
 		generator = g
 		output = o

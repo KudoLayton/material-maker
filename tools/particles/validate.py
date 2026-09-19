@@ -14,7 +14,7 @@ def main():
     engine = Path(args.godot).resolve()
     if engine.name.endswith('_console.exe'):
         engine = engine.with_name(engine.name.replace('_console.exe', '.exe'))
-    project = ROOT / 'build/particle-native/unit'
+    project = ROOT / 'build/particle-integration/unit'
     project.mkdir(parents=True, exist_ok=True)
     (project / 'project.godot').write_text('''config_version=5
 [application]
@@ -25,11 +25,11 @@ window/size/viewport_height=900
 [rendering]
 renderer/rendering_method="mobile"
 ''', encoding='utf-8')
-    for path in ['addons/material_maker/particles', 'material_maker/panels/particles', 'test/particles', 'material_maker/examples/particles']:
+    for path in ['addons/material_maker/particles', 'test/particles', 'material_maker/examples/particles']:
         shutil.copytree(ROOT / path, project / path, dirs_exist_ok=True)
     flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
     failed = False
-    for name in ['compiler', 'gpu', 'editor', 'runtime']:
+    for name in ['compiler']:
         log_path = project.parent / (name + '.log')
         with log_path.open('w', encoding='utf-8') as log:
             command = [str(engine), '--path', str(project), '--script', 'test/particles/test_' + name + '.gd']
@@ -44,7 +44,10 @@ renderer/rendering_method="mobile"
             if 'PARTICLE_' in line or 'SCRIPT ERROR:' in line:
                 print(line)
         failed |= 'SCRIPT ERROR:' in text or 'PARTICLE_' not in text
-    raise SystemExit(1 if failed else 0)
+    if failed:
+        raise SystemExit(1)
+    subprocess.run([__import__('sys').executable, str(ROOT / 'tools/particles/validate_integration.py'), '--godot', str(engine)], check=True)
+
 
 
 if __name__ == '__main__':

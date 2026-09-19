@@ -490,6 +490,9 @@ func generate_input_function(index : int, input: Dictionary, rv : ShaderCode, co
 		return
 	var local_context = MMGenContext.new(context)
 	var source_rv : ShaderCode = source.generator.get_shader_code(mm_io_types.types[input.type].params, source.output_index, local_context)
+	if not source_rv.error.is_empty():
+		rv.error = source_rv.error
+		return
 	rv.add_uniforms(source_rv.uniforms)
 	rv.defs += source_rv.defs
 	rv.add_globals(source_rv.globals)
@@ -622,6 +625,9 @@ func replace_input(input_name : String, suffix : String, parameters : String, va
 		else:
 			return function_name+"("+parameters+", _seed_variation_, _controlled_variation_)"
 	var source_rv : ShaderCode = source.generator.get_shader_code(parameters, source.output_index, context)
+	if not source_rv.error.is_empty():
+		rv.error = source_rv.error
+		return "0.0"
 	rv.add_uniforms(source_rv.uniforms)
 	rv.defs += source_rv.defs
 	rv.add_globals(source_rv.globals)
@@ -734,6 +740,8 @@ func _get_shader_code(uv : String, output_index : int, context : MMGenContext) -
 	if output.is_empty():
 		return rv
 	var variables : Dictionary = get_common_replace_variables(uv, rv)
+	if context.particle_compiler != null:
+		variables.time = "_mm_state.TIME"
 	process_parameters(rv, variables, generate_declarations)
 	process_inputs(rv, variables, context, generate_declarations)
 	# Add includes, globals and instance code

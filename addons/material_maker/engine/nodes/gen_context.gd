@@ -3,11 +3,14 @@ extends RefCounted
 class_name MMGenContext
 
 
+var particle_compiler = null
 var variants : Dictionary = {}
 var parent_context : MMGenContext = null
 
 func _init(p = null) -> void:
 	parent_context = p
+	if p != null:
+		particle_compiler = p.particle_compiler
 
 func has_variant(generator) -> bool:
 	return variants.has(generator) or parent_context != null and parent_context.has_variant(generator)

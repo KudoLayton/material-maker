@@ -1,244 +1,411 @@
 {
-  "type": "particle_graph",
-  "version": 1,
-  "target": "Godot 4.7",
-  "uniforms": [
+  "connections": [
     {
-      "name": "gravity",
-      "type": "vec3",
-      "value": [
-        0,
-        -9.8,
-        0
-      ]
+      "from": "start_entry",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 0
     },
     {
-      "name": "launch_speed",
-      "type": "float",
-      "value": 5
+      "from": "start_output_COLOR",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 1
+    },
+    {
+      "from": "start_launch",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 2
+    },
+    {
+      "from": "start_emitter_transform",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 12
+    },
+    {
+      "from": "start_speed",
+      "from_port": 0,
+      "to": "start_launch",
+      "to_port": 0
+    },
+    {
+      "from": "start_number",
+      "from_port": 0,
+      "to": "start_launch",
+      "to_port": 1
+    },
+    {
+      "from": "process_entry",
+      "from_port": 0,
+      "to": "process_output",
+      "to_port": 0
+    },
+    {
+      "from": "process_integrate",
+      "from_port": 0,
+      "to": "process_output",
+      "to_port": 2
+    },
+    {
+      "from": "process_velocity",
+      "from_port": 0,
+      "to": "process_integrate",
+      "to_port": 0
+    },
+    {
+      "from": "process_gravity",
+      "from_port": 0,
+      "to": "process_integrate",
+      "to_port": 1
+    },
+    {
+      "from": "process_delta",
+      "from_port": 0,
+      "to": "process_integrate",
+      "to_port": 2
     }
   ],
-  "render_modes": [],
-  "target_project": "",
-  "active_stage": "start",
-  "stages": {
-    "start": {
-      "nodes": [
-        {
-          "id": "entry",
-          "kind": "entry",
-          "position": [
-            40,
-            40
-          ],
-          "inputs": {}
-        },
-        {
-          "id": "output",
-          "kind": "output",
-          "position": [
-            1000,
-            40
-          ],
-          "inputs": {
-            "exec": {
-              "node": "entry",
-              "port": "next"
-            },
-            "TRANSFORM": {
-              "node": "emitter_transform",
-              "port": "value"
-            },
-            "VELOCITY": {
-              "node": "launch",
-              "port": "value"
-            },
-            "COLOR": {
-              "value": [
-                0.2,
-                0.7,
-                1,
-                1
-              ]
-            }
-          }
-        },
-        {
-          "id": "emitter_transform",
-          "kind": "input",
-          "position": [
-            40,
-            200
-          ],
-          "inputs": {},
-          "builtin": "EMISSION_TRANSFORM"
-        },
-        {
-          "id": "speed",
-          "kind": "uniform",
-          "position": [
-            340,
-            200
-          ],
-          "inputs": {},
-          "uniform": "launch_speed"
-        },
-        {
-          "id": "number",
-          "kind": "input",
-          "position": [
-            640,
-            200
-          ],
-          "inputs": {},
-          "builtin": "NUMBER"
-        },
-        {
-          "id": "launch",
-          "kind": "custom",
-          "position": [
-            40,
-            370
-          ],
-          "inputs": {
-            "speed": {
-              "node": "speed",
-              "port": "value"
-            },
-            "number": {
-              "node": "number",
-              "port": "value"
-            }
-          },
-          "data_type": "vec3",
-          "input_ports": [
-            {
-              "name": "speed",
-              "type": "float"
-            },
-            {
-              "name": "number",
-              "type": "uint"
-            }
-          ],
-          "code": "float angle = float(number % 128u) * 2.399963;\nreturn vec3(cos(angle) * 1.5, speed, sin(angle) * 1.5);"
-        }
-      ],
-      "view": {
-        "scroll": [
-          0,
-          0
+  "label": "Graph",
+  "longdesc": "",
+  "name": "@Node@3",
+  "node_position": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "nodes": [
+    {
+      "name": "start_entry",
+      "node_position": {
+        "x": 0,
+        "y": 0
+      },
+      "parameters": {},
+      "seed": 56560.0,
+      "settings": {
+        "id": "entry",
+        "inputs": {},
+        "kind": "entry",
+        "position": [
+          40.0,
+          40.0
         ],
-        "zoom": 0.8,
-        "selection": []
-      }
+        "stage": "start"
+      },
+      "type": "particle_node"
     },
-    "process": {
-      "nodes": [
-        {
-          "id": "entry",
-          "kind": "entry",
-          "position": [
-            40,
-            40
-          ],
-          "inputs": {}
-        },
-        {
-          "id": "output",
-          "kind": "output",
-          "position": [
-            1000,
-            40
-          ],
-          "inputs": {
-            "exec": {
-              "node": "entry",
-              "port": "next"
-            },
-            "VELOCITY": {
-              "node": "integrate",
-              "port": "value"
-            }
-          }
-        },
-        {
-          "id": "velocity",
-          "kind": "input",
-          "position": [
-            40,
-            200
-          ],
-          "inputs": {},
-          "builtin": "VELOCITY"
-        },
-        {
-          "id": "delta",
-          "kind": "input",
-          "position": [
-            340,
-            200
-          ],
-          "inputs": {},
-          "builtin": "DELTA"
-        },
-        {
-          "id": "gravity",
-          "kind": "uniform",
-          "position": [
-            640,
-            200
-          ],
-          "inputs": {},
-          "uniform": "gravity"
-        },
-        {
-          "id": "integrate",
-          "kind": "custom",
-          "position": [
-            40,
-            370
-          ],
-          "inputs": {
-            "velocity": {
-              "node": "velocity",
-              "port": "value"
-            },
-            "acceleration": {
-              "node": "gravity",
-              "port": "value"
-            },
-            "delta": {
-              "node": "delta",
-              "port": "value"
-            }
-          },
-          "data_type": "vec3",
-          "input_ports": [
-            {
-              "name": "velocity",
-              "type": "vec3"
-            },
-            {
-              "name": "acceleration",
-              "type": "vec3"
-            },
-            {
-              "name": "delta",
-              "type": "float"
-            }
-          ],
-          "code": "return velocity + acceleration * delta;"
-        }
-      ],
-      "view": {
-        "scroll": [
-          0,
-          0
+    {
+      "export": {
+        "last_target": "",
+        "paths": {}
+      },
+      "export_paths": {},
+      "name": "Material",
+      "node_position": {
+        "x": 840,
+        "y": 0
+      },
+      "parameters": {
+        "collision_use_scale": false,
+        "disable_force": false,
+        "disable_velocity": false,
+        "keep_data": false,
+        "target_project": ""
+      },
+      "particle_defaults": {},
+      "seed": 37168.0,
+      "type": "particle_export"
+    },
+    {
+      "name": "start_emitter_transform",
+      "node_position": {
+        "x": 0,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 56336.0,
+      "settings": {
+        "builtin": "EMISSION_TRANSFORM",
+        "id": "emitter_transform",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          40.0,
+          200.0
         ],
-        "zoom": 0.8,
-        "selection": []
-      }
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_speed",
+      "node_position": {
+        "x": 0,
+        "y": 960
+      },
+      "parameters": {
+        "array_size": 0,
+        "data_type": 3,
+        "default_json": "5.0",
+        "hint": "",
+        "resource": "",
+        "resources": "[]",
+        "uniform_name": "launch_speed"
+      },
+      "seed": 21988.0,
+      "settings": {
+        "data_type": "float",
+        "id": "speed",
+        "inputs": {},
+        "kind": "uniform",
+        "position": [
+          340.0,
+          200.0
+        ],
+        "stage": "start",
+        "uniform": "launch_speed"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_number",
+      "node_position": {
+        "x": 0,
+        "y": 1440
+      },
+      "parameters": {},
+      "seed": 52552.0,
+      "settings": {
+        "builtin": "NUMBER",
+        "id": "number",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          640.0,
+          200.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "start_launch",
+      "node_position": {
+        "x": 420,
+        "y": 0
+      },
+      "parameters": {},
+      "seed": 56746.0,
+      "shader_model": {
+        "inputs": [
+          {
+            "default": "0.000000000",
+            "label": "speed",
+            "name": "speed",
+            "type": "particle_float"
+          },
+          {
+            "default": "0u",
+            "label": "number",
+            "name": "number",
+            "type": "particle_uint"
+          }
+        ],
+        "instance": "vec3 $(name)_evaluate(float speed, uint number) {\nfloat angle = float(number % 128u) * 2.399963;\nreturn vec3(cos(angle) * 1.5, speed, sin(angle) * 1.5);\n}",
+        "name": "Launch",
+        "outputs": [
+          {
+            "particle_vec3": "$(name)_evaluate($speed($uv), $number($uv))",
+            "type": "particle_vec3"
+          }
+        ],
+        "parameters": []
+      },
+      "type": "shader"
+    },
+    {
+      "name": "start_output_COLOR",
+      "node_position": {
+        "x": 0,
+        "y": 1920
+      },
+      "parameters": {
+        "data_type": 15,
+        "v0": 0.2,
+        "v1": 0.7,
+        "v2": 1.0,
+        "v3": 1.0
+      },
+      "seed": -41158.0,
+      "settings": {
+        "data_type": "vec4",
+        "kind": "constant",
+        "value": [
+          0.2,
+          0.7,
+          1.0,
+          1.0
+        ]
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_entry",
+      "node_position": {
+        "x": 0,
+        "y": 2400
+      },
+      "parameters": {},
+      "seed": 57250.0,
+      "settings": {
+        "id": "entry",
+        "inputs": {},
+        "kind": "entry",
+        "position": [
+          40.0,
+          40.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_output",
+      "node_position": {
+        "x": 840,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 37474.0,
+      "settings": {
+        "id": "output",
+        "inputs": {},
+        "kind": "output",
+        "position": [
+          1000.0,
+          40.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_velocity",
+      "node_position": {
+        "x": 0,
+        "y": 2880
+      },
+      "parameters": {},
+      "seed": 55490.0,
+      "settings": {
+        "builtin": "VELOCITY",
+        "id": "velocity",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          40.0,
+          200.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_delta",
+      "node_position": {
+        "x": 0,
+        "y": 3360
+      },
+      "parameters": {},
+      "seed": 20790.0,
+      "settings": {
+        "builtin": "DELTA",
+        "id": "delta",
+        "inputs": {},
+        "kind": "input",
+        "position": [
+          340.0,
+          200.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_gravity",
+      "node_position": {
+        "x": 0,
+        "y": 3840
+      },
+      "parameters": {
+        "array_size": 0,
+        "data_type": 14,
+        "default_json": "[0.0,-9.8,0.0]",
+        "hint": "",
+        "resource": "",
+        "resources": "[]",
+        "uniform_name": "gravity"
+      },
+      "seed": 51610.0,
+      "settings": {
+        "data_type": "vec3",
+        "id": "gravity",
+        "inputs": {},
+        "kind": "uniform",
+        "position": [
+          640.0,
+          200.0
+        ],
+        "stage": "process",
+        "uniform": "gravity"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_integrate",
+      "node_position": {
+        "x": 420,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 55324.0,
+      "shader_model": {
+        "inputs": [
+          {
+            "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
+            "label": "velocity",
+            "name": "velocity",
+            "type": "particle_vec3"
+          },
+          {
+            "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
+            "label": "acceleration",
+            "name": "acceleration",
+            "type": "particle_vec3"
+          },
+          {
+            "default": "0.000000000",
+            "label": "delta",
+            "name": "delta",
+            "type": "particle_float"
+          }
+        ],
+        "instance": "vec3 $(name)_evaluate(vec3 velocity, vec3 acceleration, float delta) {\nreturn velocity + acceleration * delta;\n}",
+        "name": "Integrate",
+        "outputs": [
+          {
+            "particle_vec3": "$(name)_evaluate($velocity($uv), $acceleration($uv), $delta($uv))",
+            "type": "particle_vec3"
+          }
+        ],
+        "parameters": []
+      },
+      "type": "shader"
     }
-  }
+  ],
+  "parameters": {},
+  "seed_int": 0,
+  "shortdesc": "",
+  "type": "graph"
 }

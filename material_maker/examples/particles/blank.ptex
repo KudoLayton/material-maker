@@ -1,81 +1,111 @@
 {
-  "type": "particle_graph",
-  "version": 1,
-  "target": "Godot 4.7",
-  "uniforms": [],
-  "render_modes": [],
-  "target_project": "",
-  "active_stage": "start",
-  "stages": {
-    "start": {
-      "nodes": [
-        {
-          "id": "entry",
-          "kind": "entry",
-          "position": [
-            40,
-            40
-          ],
-          "inputs": {}
-        },
-        {
-          "id": "output",
-          "kind": "output",
-          "position": [
-            1000,
-            40
-          ],
-          "inputs": {
-            "exec": {
-              "node": "entry",
-              "port": "next"
-            }
-          }
-        }
-      ],
-      "view": {
-        "scroll": [
-          0,
-          0
-        ],
-        "zoom": 0.8,
-        "selection": []
-      }
+  "connections": [
+    {
+      "from": "start_entry",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 0
     },
-    "process": {
-      "nodes": [
-        {
-          "id": "entry",
-          "kind": "entry",
-          "position": [
-            40,
-            40
-          ],
-          "inputs": {}
-        },
-        {
-          "id": "output",
-          "kind": "output",
-          "position": [
-            1000,
-            40
-          ],
-          "inputs": {
-            "exec": {
-              "node": "entry",
-              "port": "next"
-            }
-          }
-        }
-      ],
-      "view": {
-        "scroll": [
-          0,
-          0
-        ],
-        "zoom": 0.8,
-        "selection": []
-      }
+    {
+      "from": "process_entry",
+      "from_port": 0,
+      "to": "process_output",
+      "to_port": 0
     }
-  }
+  ],
+  "label": "Graph",
+  "longdesc": "",
+  "name": "@Node@2",
+  "node_position": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "nodes": [
+    {
+      "name": "start_entry",
+      "node_position": {
+        "x": 0,
+        "y": 0
+      },
+      "parameters": {},
+      "seed": 56560.0,
+      "settings": {
+        "id": "entry",
+        "inputs": {},
+        "kind": "entry",
+        "position": [
+          40.0,
+          40.0
+        ],
+        "stage": "start"
+      },
+      "type": "particle_node"
+    },
+    {
+      "export": {
+        "last_target": "",
+        "paths": {}
+      },
+      "export_paths": {},
+      "name": "Material",
+      "node_position": {
+        "x": 420,
+        "y": 0
+      },
+      "parameters": {
+        "collision_use_scale": false,
+        "disable_force": false,
+        "disable_velocity": false,
+        "keep_data": false,
+        "target_project": ""
+      },
+      "particle_defaults": {},
+      "seed": 37168.0,
+      "type": "particle_export"
+    },
+    {
+      "name": "process_entry",
+      "node_position": {
+        "x": 0,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 57250.0,
+      "settings": {
+        "id": "entry",
+        "inputs": {},
+        "kind": "entry",
+        "position": [
+          40.0,
+          40.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "process_output",
+      "node_position": {
+        "x": 420,
+        "y": 480
+      },
+      "parameters": {},
+      "seed": 37474.0,
+      "settings": {
+        "id": "output",
+        "inputs": {},
+        "kind": "output",
+        "position": [
+          1000.0,
+          40.0
+        ],
+        "stage": "process"
+      },
+      "type": "particle_node"
+    }
+  ],
+  "parameters": {},
+  "seed_int": 0,
+  "shortdesc": "",
+  "type": "graph"
 }

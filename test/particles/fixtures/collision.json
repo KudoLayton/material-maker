@@ -1,0 +1,319 @@
+{
+  "type": "particle_graph",
+  "version": 1,
+  "target": "Godot 4.7",
+  "uniforms": [
+    {
+      "name": "gravity",
+      "type": "vec3",
+      "value": [
+        0,
+        -9.8,
+        0
+      ]
+    },
+    {
+      "name": "launch_speed",
+      "type": "float",
+      "value": 5
+    }
+  ],
+  "render_modes": [
+    "collision_use_scale"
+  ],
+  "target_project": "",
+  "active_stage": "start",
+  "stages": {
+    "start": {
+      "nodes": [
+        {
+          "id": "entry",
+          "kind": "entry",
+          "position": [
+            40,
+            40
+          ],
+          "inputs": {}
+        },
+        {
+          "id": "output",
+          "kind": "output",
+          "position": [
+            1000,
+            40
+          ],
+          "inputs": {
+            "exec": {
+              "node": "entry",
+              "port": "next"
+            },
+            "TRANSFORM": {
+              "node": "emitter_transform",
+              "port": "value"
+            },
+            "VELOCITY": {
+              "node": "launch",
+              "port": "value"
+            },
+            "COLOR": {
+              "value": [
+                0.2,
+                0.7,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        {
+          "id": "emitter_transform",
+          "kind": "input",
+          "position": [
+            40,
+            200
+          ],
+          "inputs": {},
+          "builtin": "EMISSION_TRANSFORM"
+        },
+        {
+          "id": "speed",
+          "kind": "uniform",
+          "position": [
+            340,
+            200
+          ],
+          "inputs": {},
+          "uniform": "launch_speed"
+        },
+        {
+          "id": "number",
+          "kind": "input",
+          "position": [
+            640,
+            200
+          ],
+          "inputs": {},
+          "builtin": "NUMBER"
+        },
+        {
+          "id": "launch",
+          "kind": "custom",
+          "position": [
+            40,
+            370
+          ],
+          "inputs": {
+            "speed": {
+              "node": "speed",
+              "port": "value"
+            },
+            "number": {
+              "node": "number",
+              "port": "value"
+            }
+          },
+          "data_type": "vec3",
+          "input_ports": [
+            {
+              "name": "speed",
+              "type": "float"
+            },
+            {
+              "name": "number",
+              "type": "uint"
+            }
+          ],
+          "code": "float angle = float(number % 128u) * 2.399963;\nreturn vec3(cos(angle) * 1.5, speed, sin(angle) * 1.5);"
+        }
+      ],
+      "view": {
+        "scroll": [
+          0,
+          0
+        ],
+        "zoom": 0.8,
+        "selection": []
+      }
+    },
+    "process": {
+      "nodes": [
+        {
+          "id": "entry",
+          "kind": "entry",
+          "position": [
+            40,
+            40
+          ],
+          "inputs": {}
+        },
+        {
+          "id": "output",
+          "kind": "output",
+          "position": [
+            1000,
+            40
+          ],
+          "inputs": {
+            "exec": {
+              "node": "entry",
+              "port": "next"
+            },
+            "VELOCITY": {
+              "node": "choose_velocity",
+              "port": "value"
+            }
+          }
+        },
+        {
+          "id": "velocity",
+          "kind": "input",
+          "position": [
+            40,
+            200
+          ],
+          "inputs": {},
+          "builtin": "VELOCITY"
+        },
+        {
+          "id": "delta",
+          "kind": "input",
+          "position": [
+            340,
+            200
+          ],
+          "inputs": {},
+          "builtin": "DELTA"
+        },
+        {
+          "id": "gravity",
+          "kind": "uniform",
+          "position": [
+            640,
+            200
+          ],
+          "inputs": {},
+          "uniform": "gravity"
+        },
+        {
+          "id": "integrate",
+          "kind": "custom",
+          "position": [
+            40,
+            370
+          ],
+          "inputs": {
+            "velocity": {
+              "node": "velocity",
+              "port": "value"
+            },
+            "acceleration": {
+              "node": "gravity",
+              "port": "value"
+            },
+            "delta": {
+              "node": "delta",
+              "port": "value"
+            }
+          },
+          "data_type": "vec3",
+          "input_ports": [
+            {
+              "name": "velocity",
+              "type": "vec3"
+            },
+            {
+              "name": "acceleration",
+              "type": "vec3"
+            },
+            {
+              "name": "delta",
+              "type": "float"
+            }
+          ],
+          "code": "return velocity + acceleration * delta;"
+        },
+        {
+          "id": "collided",
+          "kind": "input",
+          "position": [
+            340,
+            370
+          ],
+          "inputs": {},
+          "builtin": "COLLIDED"
+        },
+        {
+          "id": "normal",
+          "kind": "input",
+          "position": [
+            640,
+            370
+          ],
+          "inputs": {},
+          "builtin": "COLLISION_NORMAL"
+        },
+        {
+          "id": "bounce",
+          "kind": "custom",
+          "position": [
+            40,
+            540
+          ],
+          "inputs": {
+            "velocity": {
+              "node": "integrate",
+              "port": "value"
+            },
+            "normal": {
+              "node": "normal",
+              "port": "value"
+            }
+          },
+          "data_type": "vec3",
+          "input_ports": [
+            {
+              "name": "velocity",
+              "type": "vec3"
+            },
+            {
+              "name": "normal",
+              "type": "vec3"
+            }
+          ],
+          "code": "return reflect(velocity, normal) * 0.8;"
+        },
+        {
+          "id": "choose_velocity",
+          "kind": "select",
+          "position": [
+            340,
+            540
+          ],
+          "inputs": {
+            "condition": {
+              "node": "collided",
+              "port": "value"
+            },
+            "true": {
+              "node": "bounce",
+              "port": "value"
+            },
+            "false": {
+              "node": "integrate",
+              "port": "value"
+            }
+          },
+          "data_type": "vec3"
+        }
+      ],
+      "view": {
+        "scroll": [
+          0,
+          0
+        ],
+        "zoom": 0.8,
+        "selection": []
+      }
+    }
+  }
+}

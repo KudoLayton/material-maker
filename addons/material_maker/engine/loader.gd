@@ -280,7 +280,11 @@ func create_gen(data : Dictionary, fix : bool = true) -> MMGenBase:
 		portal = MMGenPortal,
 	}
 	var generator = null
-	for g in guess:
+	if data.get("type") == "particle_node":
+		generator = load("res://addons/material_maker/particles/gen_particle.gd").new()
+	elif data.get("type") == "particle_export":
+		generator = load("res://addons/material_maker/particles/gen_particle_material.gd").new()
+	for g in ([] if generator != null else guess):
 		var guessed = true
 		var d = data
 		for k in g.keyword.split("/"):

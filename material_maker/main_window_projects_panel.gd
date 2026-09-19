@@ -68,9 +68,8 @@ func _on_projects_no_more_tabs():
 
 func _on_projects_tab_changed(tab : int):
 	mm_globals.main_window._on_Projects_tab_changed(tab)
-	%MenuBar.visible = mm_globals.main_window.current_mode != "particle"
 
-	if mm_globals.main_window.current_mode in ["paint", "particle"]:
+	if mm_globals.main_window.current_mode == "paint":
 		%PreviewsMenu.hide()
 		preview_2d_background.hide()
 		preview_3d_background.hide()

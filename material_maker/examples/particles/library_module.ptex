@@ -1,0 +1,589 @@
+{
+  "connections": [
+    {
+      "from": "Coordinates",
+      "from_port": 0,
+      "to": "graph_2",
+      "to_port": 0
+    },
+    {
+      "from": "graph_2",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 1
+    },
+    {
+      "from": "Coordinates",
+      "from_port": 0,
+      "to": "graph_3",
+      "to_port": 0
+    },
+    {
+      "from": "graph_3",
+      "from_port": 0,
+      "to": "Process",
+      "to_port": 1
+    }
+  ],
+  "label": "Graph",
+  "longdesc": "",
+  "name": "@Node@2",
+  "node_position": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "nodes": [
+    {
+      "export": {
+        "last_target": "",
+        "paths": {}
+      },
+      "export_paths": {},
+      "name": "Material",
+      "node_position": {
+        "x": 840,
+        "y": 0
+      },
+      "parameters": {
+        "collision_use_scale": false,
+        "disable_force": false,
+        "disable_velocity": false,
+        "keep_data": false,
+        "target_project": ""
+      },
+      "particle_defaults": {},
+      "seed_int": 0,
+      "type": "particle_export"
+    },
+    {
+      "name": "Process",
+      "node_position": {
+        "x": 840,
+        "y": 480
+      },
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "output",
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "Coordinates",
+      "node_position": {
+        "x": 0,
+        "y": 0
+      },
+      "parameters": {
+        "data_type": 13,
+        "v0": 0.25,
+        "v1": 0.75
+      },
+      "seed_int": 0,
+      "settings": {
+        "data_type": "vec2",
+        "kind": "constant"
+      },
+      "type": "particle_node"
+    },
+    {
+      "connections": [
+        {
+          "from": "graph",
+          "from_port": 0,
+          "to": "Evaluate",
+          "to_port": 0
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "Evaluate",
+          "to_port": 1
+        },
+        {
+          "from": "Evaluate",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        },
+        {
+          "from": "Evaluate",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        }
+      ],
+      "label": "Graph",
+      "longdesc": "",
+      "name": "graph_2",
+      "node_position": {
+        "x": 420,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "connections": [
+            {
+              "from": "Noise",
+              "from_port": 0,
+              "to": "Transform",
+              "to_port": 0
+            },
+            {
+              "from": "Transform",
+              "from_port": 0,
+              "to": "Colorize",
+              "to_port": 0
+            },
+            {
+              "from": "Colorize",
+              "from_port": 0,
+              "to": "gen_outputs",
+              "to_port": 0
+            }
+          ],
+          "label": "Particle Color Module",
+          "longdesc": "",
+          "name": "graph",
+          "node_position": {
+            "x": 0,
+            "y": 0
+          },
+          "nodes": [
+            {
+              "name": "Noise",
+              "node_position": {
+                "x": 0,
+                "y": 0
+              },
+              "parameters": {
+                "density": 0.3,
+                "size": 4.0
+              },
+              "seed_int": 0,
+              "type": "noise"
+            },
+            {
+              "name": "Transform",
+              "node_position": {
+                "x": 420,
+                "y": 0
+              },
+              "parameters": {
+                "repeat": false,
+                "rotate": 0.0,
+                "scale_x": 1.0,
+                "scale_y": 1.0,
+                "translate_x": 0.0,
+                "translate_y": 0.0
+              },
+              "seed_int": 0,
+              "type": "transform"
+            },
+            {
+              "name": "Colorize",
+              "node_position": {
+                "x": 840,
+                "y": 0
+              },
+              "parameters": {
+                "gradient": {
+                  "interpolation": 1,
+                  "points": [
+                    {
+                      "a": 1.0,
+                      "b": 0.0,
+                      "g": 0.0,
+                      "pos": 0.0,
+                      "r": 0.0
+                    },
+                    {
+                      "a": 1.0,
+                      "b": 1.0,
+                      "g": 1.0,
+                      "pos": 1.0,
+                      "r": 1.0
+                    }
+                  ],
+                  "type": "Gradient"
+                }
+              },
+              "seed_int": 0,
+              "type": "colorize"
+            },
+            {
+              "name": "gen_inputs",
+              "node_position": {
+                "x": 0,
+                "y": 480
+              },
+              "parameters": {},
+              "ports": [],
+              "seed_int": 0,
+              "type": "ios"
+            },
+            {
+              "name": "gen_outputs",
+              "node_position": {
+                "x": 1260,
+                "y": 0
+              },
+              "parameters": {},
+              "ports": [
+                {
+                  "name": "port0",
+                  "type": "rgba"
+                }
+              ],
+              "seed_int": 0,
+              "type": "ios"
+            },
+            {
+              "name": "gen_parameters",
+              "node_position": {
+                "x": 0,
+                "y": 960
+              },
+              "parameters": {
+                "density": 0.3
+              },
+              "seed_int": 0,
+              "type": "remote",
+              "widgets": [
+                {
+                  "label": "Density",
+                  "linked_widgets": [
+                    {
+                      "node": "Noise",
+                      "widget": "density"
+                    }
+                  ],
+                  "name": "density",
+                  "type": "linked_control"
+                }
+              ]
+            }
+          ],
+          "parameters": {
+            "density": 0.3
+          },
+          "seed_int": 0,
+          "shortdesc": "",
+          "type": "graph"
+        },
+        {
+          "name": "Evaluate",
+          "node_position": {
+            "x": 420,
+            "y": 0
+          },
+          "parameters": {
+            "function_type": 2
+          },
+          "seed_int": 0,
+          "settings": {
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "gen_inputs",
+          "node_position": {
+            "x": 0,
+            "y": 480
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "particle_vec2"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_outputs",
+          "node_position": {
+            "x": 840,
+            "y": 0
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "particle_vec4"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_parameters",
+          "node_position": {
+            "x": 0,
+            "y": 960
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "remote",
+          "widgets": []
+        }
+      ],
+      "parameters": {},
+      "seed_int": 0,
+      "shortdesc": "",
+      "type": "graph"
+    },
+    {
+      "connections": [
+        {
+          "from": "graph",
+          "from_port": 0,
+          "to": "Evaluate",
+          "to_port": 0
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "Evaluate",
+          "to_port": 1
+        },
+        {
+          "from": "Evaluate",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        }
+      ],
+      "label": "Graph",
+      "longdesc": "",
+      "name": "graph_3",
+      "node_position": {
+        "x": 420,
+        "y": 480
+      },
+      "nodes": [
+        {
+          "connections": [
+            {
+              "from": "Noise",
+              "from_port": 0,
+              "to": "Transform",
+              "to_port": 0
+            },
+            {
+              "from": "Transform",
+              "from_port": 0,
+              "to": "Colorize",
+              "to_port": 0
+            },
+            {
+              "from": "Colorize",
+              "from_port": 0,
+              "to": "gen_outputs",
+              "to_port": 0
+            }
+          ],
+          "label": "Particle Color Module",
+          "longdesc": "",
+          "name": "graph",
+          "node_position": {
+            "x": 0,
+            "y": 0
+          },
+          "nodes": [
+            {
+              "name": "Noise",
+              "node_position": {
+                "x": 0,
+                "y": 0
+              },
+              "parameters": {
+                "density": 0.3,
+                "size": 4.0
+              },
+              "seed_int": 0,
+              "type": "noise"
+            },
+            {
+              "name": "Transform",
+              "node_position": {
+                "x": 420,
+                "y": 0
+              },
+              "parameters": {
+                "repeat": false,
+                "rotate": 0.0,
+                "scale_x": 1.0,
+                "scale_y": 1.0,
+                "translate_x": 0.0,
+                "translate_y": 0.0
+              },
+              "seed_int": 0,
+              "type": "transform"
+            },
+            {
+              "name": "Colorize",
+              "node_position": {
+                "x": 840,
+                "y": 0
+              },
+              "parameters": {
+                "gradient": {
+                  "interpolation": 1,
+                  "points": [
+                    {
+                      "a": 1.0,
+                      "b": 0.0,
+                      "g": 0.0,
+                      "pos": 0.0,
+                      "r": 0.0
+                    },
+                    {
+                      "a": 1.0,
+                      "b": 1.0,
+                      "g": 1.0,
+                      "pos": 1.0,
+                      "r": 1.0
+                    }
+                  ],
+                  "type": "Gradient"
+                }
+              },
+              "seed_int": 0,
+              "type": "colorize"
+            },
+            {
+              "name": "gen_inputs",
+              "node_position": {
+                "x": 0,
+                "y": 480
+              },
+              "parameters": {},
+              "ports": [],
+              "seed_int": 0,
+              "type": "ios"
+            },
+            {
+              "name": "gen_outputs",
+              "node_position": {
+                "x": 1260,
+                "y": 0
+              },
+              "parameters": {},
+              "ports": [
+                {
+                  "name": "port0",
+                  "type": "rgba"
+                }
+              ],
+              "seed_int": 0,
+              "type": "ios"
+            },
+            {
+              "name": "gen_parameters",
+              "node_position": {
+                "x": 0,
+                "y": 960
+              },
+              "parameters": {
+                "density": 0.3
+              },
+              "seed_int": 0,
+              "type": "remote",
+              "widgets": [
+                {
+                  "label": "Density",
+                  "linked_widgets": [
+                    {
+                      "node": "Noise",
+                      "widget": "density"
+                    }
+                  ],
+                  "name": "density",
+                  "type": "linked_control"
+                }
+              ]
+            }
+          ],
+          "parameters": {
+            "density": 0.3
+          },
+          "seed_int": 0,
+          "shortdesc": "",
+          "type": "graph"
+        },
+        {
+          "name": "Evaluate",
+          "node_position": {
+            "x": 420,
+            "y": 0
+          },
+          "parameters": {
+            "function_type": 2.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "gen_inputs",
+          "node_position": {
+            "x": 0,
+            "y": 480
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "particle_vec2"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_outputs",
+          "node_position": {
+            "x": 840,
+            "y": 0
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "particle_vec4"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_parameters",
+          "node_position": {
+            "x": 0,
+            "y": 960
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "remote",
+          "widgets": []
+        }
+      ],
+      "parameters": {},
+      "seed_int": 0,
+      "shortdesc": "",
+      "type": "graph"
+    }
+  ],
+  "parameters": {},
+  "seed_int": 0,
+  "shortdesc": "",
+  "type": "graph"
+}

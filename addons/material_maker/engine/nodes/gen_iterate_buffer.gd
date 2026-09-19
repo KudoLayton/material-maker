@@ -107,6 +107,8 @@ func do_update_shaders() -> void:
 	if not is_inside_tree():
 		return
 	require_shaders_update = false
+	if preload("res://addons/material_maker/particles/dependencies.gd").requires_context(self) and not preload("res://addons/material_maker/particles/dependencies.gd").runtime_source(self).is_empty():
+		return
 	var sources : Array[ShaderCode] = [null, null]
 	var new_is_greyscale = true
 	for i in 2:

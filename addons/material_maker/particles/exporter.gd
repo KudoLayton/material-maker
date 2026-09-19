@@ -30,6 +30,9 @@ static func validate(result: Dictionary) -> Dictionary:
 static func export_files(document: Dictionary, prefix: String) -> Dictionary:
 	var compiler = Compiler.new()
 	var result: Dictionary = validate(compiler.compile(document))
+	return write_result(document, prefix, result)
+
+static func write_result(document: Dictionary, prefix: String, result: Dictionary) -> Dictionary:
 	if not result.errors.is_empty():
 		return result
 	var resources: Array[String] = []
@@ -76,6 +79,12 @@ static func export_files(document: Dictionary, prefix: String) -> Dictionary:
 			parameters.append("shader_parameter/" + uniform.name + " = " + ("[" + ", ".join(references) + "]" if int(uniform.get("array_size", 0)) else references[0]))
 	if not result.errors.is_empty():
 		return result
+	for name in result.get("material_parameters", {}):
+		parameters.append("shader_parameter/" + name + " = " + var_to_str(result.material_parameters[name]))
+	for name in result.get("texture_parameters", {}):
+		resources.append('[ext_resource type="Texture2D" path=%s id="%s"]' % [JSON.stringify(result.texture_parameters[name]), str(resource_id)])
+		parameters.append('shader_parameter/%s = ExtResource("%s")' % [name, str(resource_id)])
+		resource_id += 1
 	var material: String = '[gd_resource type="ShaderMaterial" load_steps=%d format=3]\n' % resource_id
 	material += '[ext_resource type="Shader" path=%s id="1"]\n' % JSON.stringify(prefix.get_file() + ".gdshader")
 	material += "\n".join(resources) + '\n[resource]\nshader = ExtResource("1")\n' + "\n".join(parameters) + "\n"

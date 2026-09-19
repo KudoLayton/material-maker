@@ -1,11 +1,13 @@
-extends SceneTree
+extends Node
+
+@onready var root = get_tree().root
 
 const Document = preload("res://addons/material_maker/particles/document.gd")
 const Compiler = preload("res://addons/material_maker/particles/compiler.gd")
 const Exporter = preload("res://addons/material_maker/particles/exporter.gd")
 var failures: Array[String] = []
 
-func _initialize() -> void:
+func _ready() -> void:
 	run.call_deferred()
 
 func check(ok: bool, message: String) -> void:
@@ -14,8 +16,11 @@ func check(ok: bool, message: String) -> void:
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute("res://exported")
 	for name in ["blank", "gravity", "collision", "subparticle"]:
-		var doc = Document.load_file("res://material_maker/examples/particles/" + name + ".ptex")
-		var result = Exporter.export_files(doc, "res://exported/" + name)
+		var doc = Document.load_file("res://test/particles/fixtures/" + name + ".json")
+		var graph = await preload("graph_fixtures.gd").create(doc, self)
+		var result = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(graph, "res://exported/" + name)
+		FileAccess.open("res://exported/" + name + ".ptex", FileAccess.WRITE).store_string(JSON.stringify(graph.serialize(), "\t"))
+		graph.queue_free()
 		check(result.errors.is_empty(), "Export example: " + name + str(result.errors))
 		check(load("res://exported/" + name + ".tres") is ShaderMaterial, "Load exported material: " + name)
 	var doc = Document.create()
@@ -54,16 +59,29 @@ func run() -> void:
 	collision.stages.process.nodes.append({"id": "color", "kind": "select", "data_type": "vec4", "inputs": {"condition": {"node": "hit", "port": "value"}, "true": {"value": [0, 1, 0, 1]}, "false": {"value": [1, 0, 0, 1]}}})
 	Document.node(collision.stages.process, "output").inputs.COLOR = {"node": "color", "port": "value"}
 	await render_probe(collision, true, "collision")
-	var emission = Document.load_file("res://material_maker/examples/particles/subparticle.ptex")
+	var emission = Document.load_file("res://test/particles/fixtures/subparticle.json")
 	Document.node(emission.stages.start, "emit_child").inputs.flags = {"value": 3}
 	Document.node(emission.stages.start, "emit_child").inputs.transform = {"value": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0.7, 0, 0, 1]]}
 	Document.node(emission.stages.start, "output").inputs.TRANSFORM = {"value": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [-0.7, 0, 0, 1]]}
 	await render_probe(emission, false, "subparticle", true)
+	var library_data = JSON.parse_string(FileAccess.get_file_as_string("res://exported/library_module.ptex"))
+	green_gradients(library_data)
+	var library_graph = await get_node("/root/mm_loader").create_gen(library_data)
+	add_child(library_graph)
+	var library_result: Dictionary = library_graph.get_node("Material").compile_shader()
+	await render_probe({}, false, "library_module", false, library_result)
+	library_graph.queue_free()
+	for name in ["blank", "gravity", "collision", "subparticle", "library_module", "library_gravity"]:
+		var published = await get_node("/root/mm_loader").load_gen("res://material_maker/examples/particles/" + name + ".ptex")
+		add_child(published)
+		var exported: Dictionary = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(published, "res://exported/" + name)
+		check(exported.errors.is_empty(), "Published example " + name + ": " + str(exported.errors))
+		published.queue_free()
 	print("PARTICLE_RUNTIME_TESTS: ", failures)
-	quit(0 if failures.is_empty() else 1)
+	get_tree().quit(0 if failures.is_empty() else 1)
 
-func render_probe(doc: Dictionary, collision: bool, name: String, subparticle := false) -> void:
-	var result = Exporter.validate(Compiler.new().compile(doc))
+func render_probe(doc: Dictionary, collision: bool, name: String, subparticle := false, compiled: Dictionary = {}) -> void:
+	var result = Exporter.validate(await preload("graph_fixtures.gd").compile(doc, self) if compiled.is_empty() else compiled)
 	check(result.errors.is_empty(), name + " compilation")
 	if not result.errors.is_empty(): return
 	var viewport := SubViewport.new()
@@ -84,6 +102,9 @@ func render_probe(doc: Dictionary, collision: bool, name: String, subparticle :=
 	shader.code = result.code
 	var material := ShaderMaterial.new()
 	material.shader = shader
+	for key in result.get("mm_uniforms", {}):
+		var uniform = result.mm_uniforms[key]
+		material.set_shader_parameter(key, await uniform.value.get_texture() if uniform.value is MMTexture else uniform.value)
 	particles.process_material = material
 	var mesh := QuadMesh.new()
 	mesh.size = Vector2(1, 1)
@@ -111,9 +132,9 @@ func render_probe(doc: Dictionary, collision: bool, name: String, subparticle :=
 		child.process_material = child_material
 		viewport.add_child(child)
 		particles.sub_emitter = particles.get_path_to(child)
-		for frame in 5: await process_frame
+		for frame in 5: await get_tree().process_frame
 	particles.restart()
-	for frame in 30: await process_frame
+	for frame in 30: await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var image = viewport.get_texture().get_image()
 	image.save_png("res://exported/" + name + ".png")
@@ -129,4 +150,13 @@ func render_probe(doc: Dictionary, collision: bool, name: String, subparticle :=
 	check(green > 100 and red == 0, name + ": green=" + str(green) + " red=" + str(red))
 	if subparticle: check(blue > 100, "Subparticles are actually emitted: blue=" + str(blue))
 	viewport.queue_free()
-	await process_frame
+	await get_tree().process_frame
+
+func green_gradients(data: Dictionary) -> void:
+	if data.get("parameters", {}).has("gradient"):
+		for point in data.parameters.gradient.points:
+			point.r = 0.0
+			point.g = 1.0
+			point.b = 0.0
+			point.a = 1.0
+	for child in data.get("nodes", []): green_gradients(child)

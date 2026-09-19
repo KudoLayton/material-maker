@@ -118,3 +118,8 @@ func _serialize(data: Dictionary) -> Dictionary:
 
 func _deserialize(data : Dictionary) -> void:
 	ports = data.ports.duplicate(true)
+	for port in ports:
+		if str(port.type).begins_with("particle_"):
+			var type: String = str(port.type).trim_prefix("particle_")
+			if "_array_" in type: type = type.replace("_array_", "[") + "]"
+			MMGenParticle.value_type(type)

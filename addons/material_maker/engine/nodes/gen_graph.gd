@@ -429,7 +429,7 @@ func create_subgraph(gens : Array) -> MMGenGraph:
 	var count = 0
 	# Filter group nodes and calculate bounding box
 	for g in gens:
-		if g.name != "Material" and g.name != "Brush" and g.name != "gen_inputs" and g.name != "gen_outputs":
+		if g.can_be_deleted() and g.name != "Material" and g.name != "Brush" and g.name != "gen_inputs" and g.name != "gen_outputs":
 			generators.push_back(g)
 			var p = g.position
 			center += p

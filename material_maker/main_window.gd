@@ -54,8 +54,8 @@ const MENU_MANAGE_PRESETS : int = 1003
 const THEMES = ["Default Dark", "Default Light", "Classic"]
 
 const MENU : Array[Dictionary] = [
-	{ menu="File/New material", command="new_material", shortcut="Control+N" },
 	{ menu="File/New Particle Shader", command="new_particle_shader" },
+	{ menu="File/New material", command="new_material", shortcut="Control+N" },
 	{ menu="File/New paint project (Experimental)", command="new_paint_project", shortcut="Control+Shift+N", not_in_ports=["HTML5"] },
 	{ menu="File/Load", command="load_project", shortcut="Control+O" },
 	{ menu="File/Load material from website", command="load_material_from_website" },
@@ -245,7 +245,7 @@ func _ready() -> void:
 						for f in files:
 							DirAccess.remove_absolute(f)
 
-	if get_current_project() == null:
+	if get_current_graph_edit() == null:
 		await get_tree().process_frame
 		new_material()
 
@@ -435,9 +435,6 @@ func export_profile_config_key(profile : String) -> String:
 
 func quick_export() -> void:
 	var project = get_current_project()
-	if project != null and project.has_method("get_project_type") and project.get_project_type() == "particle":
-		project.export_dialog()
-		return
 	if project == null:
 		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
@@ -743,11 +740,12 @@ func new_graph_panel() -> GraphEdit:
 	return graph_edit
 
 func new_particle_shader():
-	var editor = preload("res://material_maker/panels/particles/particle_editor.gd").new()
-	projects_panel.get_projects().add_tab(editor)
-	projects_panel.get_projects().current_tab = editor.get_index()
-	editor.project_selected()
-	return editor
+	var graph = new_graph_panel()
+	await graph.new_material({"nodes": [
+		{"type": "particle_export", "name": "Material"},
+		{"type": "particle_node", "name": "Process", "settings": {"kind": "output", "stage": "process"}, "node_position": {"x": 650, "y": 0}}
+	], "connections": []})
+	return graph
 
 func new_material() -> void:
 	var graph_edit = new_graph_panel()
@@ -845,11 +843,8 @@ func create_new_graph_edit_if_needed() -> MMGraphEdit:
 func do_load_material(filename : String, update_hierarchy : bool = true) -> bool:
 	var data = JSON.parse_string(FileAccess.get_file_as_string(filename))
 	if data is Dictionary and data.get("type") == "particle_graph":
-		var editor = new_particle_shader()
-		var loaded: bool = editor.load_file(filename)
-		if loaded:
-			add_recent(filename)
-		return loaded
+		mm_globals.set_tip_text("Open this prototype file with the previous particle editor. Automatic conversion is not supported.", 10, 1)
+		return false
 	var graph_edit : MMGraphEdit = create_new_graph_edit_if_needed()
 	await graph_edit.load_file(filename)
 	if update_hierarchy:
@@ -929,10 +924,6 @@ func quit() -> void:
 
 
 func edit_cut() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.cut()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.cut()
@@ -945,7 +936,7 @@ func edit_undo() -> void:
 func edit_undo_is_disabled() -> bool:
 	var project = get_current_project()
 	if project != null and project.get("undoredo") != null:
-		return not project.undoredo.has_undo() if project.undoredo is UndoRedo else not project.undoredo.can_undo()
+		return !project.undoredo.can_undo()
 	return true
 
 func edit_redo() -> void:
@@ -956,21 +947,14 @@ func edit_redo() -> void:
 func edit_redo_is_disabled() ->  bool:
 	var project = get_current_project()
 	if project != null and project.get("undoredo") != null:
-		return not project.undoredo.has_redo() if project.undoredo is UndoRedo else not project.undoredo.can_redo()
+		return !project.undoredo.can_redo()
 	return true
 
 func edit_cut_is_disabled() -> bool:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		return not particle.can_copy()
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	return graph_edit == null or !graph_edit.can_copy()
 
 func edit_copy() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.copy()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.copy()
@@ -979,10 +963,6 @@ func edit_copy_is_disabled() -> bool:
 	return edit_cut_is_disabled()
 
 func edit_paste() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.paste()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.paste()
@@ -991,10 +971,6 @@ func edit_paste_is_disabled() -> bool:
 	return false # todo validate_json(DisplayServer.clipboard_get()) != ""
 
 func edit_duplicate() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.duplicate_selected()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.duplicate_selected()
@@ -1013,28 +989,16 @@ func edit_swap_node_inputs() -> void:
 		graph_edit.swap_node_inputs()
 
 func edit_select_all() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.select_all()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.select_all()
 
 func edit_select_none() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.select_none()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.select_none()
 
 func edit_select_invert() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.select_invert()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null:
 		graph_edit.select_invert()
@@ -1117,9 +1081,7 @@ func edit_preferences() -> void:
 	dialog.edit_preferences(mm_globals.config)
 
 func edit_align_start() -> void:
-	var graph_edit = get_current_graph_edit()
-	if graph_edit == null: return
-	var nodes : Array = graph_edit.get_selected_nodes()
+	var nodes : Array = get_current_graph_edit().get_selected_nodes()
 	var min_offset : float = INF
 
 	for node : GraphElement in nodes:
@@ -1128,9 +1090,7 @@ func edit_align_start() -> void:
 		node.position_offset.x = min_offset
 
 func edit_align_center() -> void:
-	var graph_edit = get_current_graph_edit()
-	if graph_edit == null: return
-	var nodes : Array = graph_edit.get_selected_nodes()
+	var nodes : Array = get_current_graph_edit().get_selected_nodes()
 	var min_offset : float = INF
 	var max_offset : float = -INF
 
@@ -1141,9 +1101,7 @@ func edit_align_center() -> void:
 		node.position_offset.x = (max_offset + min_offset) * 0.5 - (node.size.x * 0.5)
 
 func edit_align_end() -> void:
-	var graph_edit = get_current_graph_edit()
-	if graph_edit == null: return
-	var nodes : Array = graph_edit.get_selected_nodes()
+	var nodes : Array = get_current_graph_edit().get_selected_nodes()
 	var max_offset : float = -INF
 
 	for node : GraphElement in nodes:
@@ -1152,28 +1110,17 @@ func edit_align_end() -> void:
 		node.position_offset.x = max_offset - node.size.x
 
 func view_center() -> void:
-	var project = get_current_project()
-	if project != null and project.has_method("get_project_type") and project.get_project_type() == "particle":
-		project.center_view()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
-	if graph_edit != null:
-		graph_edit.center_view()
+	graph_edit.center_view()
 
 func view_reset_zoom() -> void:
-	var project = get_current_project()
-	if project != null and project.has_method("get_project_type") and project.get_project_type() == "particle":
-		project.graph.zoom = 1.0
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
-	if graph_edit != null:
-		graph_edit.zoom = 1
+	graph_edit.zoom = 1
 
 func view_reset_panels() -> void:
 	$VBoxContainer/Layout.reset_panels()
 
 func toggle_side_panels() -> void:
-	if current_mode == "particle": return
 	$VBoxContainer/Layout.toggle_side_panels()
 
 func get_selected_nodes() -> Array:
@@ -1189,10 +1136,6 @@ func create_subgraph() -> void:
 		graph_edit.create_subgraph()
 
 func frame_nodes() -> void:
-	var particle = get_current_project()
-	if particle != null and particle.has_method("get_project_type") and particle.get_project_type() == "particle":
-		particle.frame_nodes()
-		return
 	var graph_edit : MMGraphEdit = get_current_graph_edit()
 	if graph_edit != null and get_selected_nodes().size():
 		graph_edit.undoredo.start_group()
@@ -1249,7 +1192,7 @@ func add_selection_to_library(index: int, should_ask_item_name: bool = true, upd
 		data = graph_edit.serialize_selection()
 	# Create thumbnail
 	var image : Image = null
-	if update_thumbnail:
+	if update_thumbnail and not preload("res://addons/material_maker/particles/dependencies.gd").requires_context(selected_nodes[0].generator):
 		var result = await selected_nodes[0].generator.render(self, 0, 64, true)
 		image = result.get_image()
 		result.release(self)
@@ -1412,9 +1355,7 @@ func _on_Projects_tab_changed(_tab) -> void:
 	var new_tab = projects_panel.get_projects().get_current_tab_control()
 	if new_tab != current_tab:
 		var new_graph_edit = null
-		if new_tab.has_method("get_project_type") and new_tab.get_project_type() == "particle":
-			set_current_mode("particle")
-		elif new_tab is GraphEdit:
+		if new_tab is GraphEdit:
 			new_graph_edit = new_tab
 			set_current_mode("material")
 			if current_mesh and new_graph_edit.top_generator:

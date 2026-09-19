@@ -1,9 +1,9 @@
-"""Generate readable native particle graph examples."""
+"""Generate particle behavior fixtures; validate.py exports them as MMGenGraph examples."""
 import copy
 import json
 from pathlib import Path
 
-DEST = Path(__file__).resolve().parents[2] / 'material_maker/examples/particles'
+DEST = Path(__file__).resolve().parents[2] / 'test/particles/fixtures'
 
 
 def document():
@@ -31,7 +31,7 @@ def output(doc, stage):
 
 def save(name, doc):
     DEST.mkdir(parents=True, exist_ok=True)
-    (DEST / (name + '.ptex')).write_text(json.dumps(doc, indent=2) + '\n', encoding='utf-8')
+    (DEST / (name + '.json')).write_text(json.dumps(doc, indent=2) + '\n', encoding='utf-8')
 
 
 def main():

@@ -1,4 +1,4 @@
-extends SceneTree
+extends Node
 
 const Document = preload("res://addons/material_maker/particles/document.gd")
 const Compiler = preload("res://addons/material_maker/particles/compiler.gd")
@@ -7,7 +7,7 @@ const Interface = preload("res://addons/material_maker/particles/interface.gd")
 var failures: Array = []
 var count := 0
 
-func _initialize() -> void:
+func _ready() -> void:
 	run.call_deferred()
 
 func run() -> void:
@@ -26,7 +26,7 @@ func run() -> void:
 				source = "convert"
 				type = "float"
 			Document.node(graph, "output").inputs[targets[type]] = {"node": source, "port": "value"}
-			var result: Dictionary = Exporter.validate(Compiler.new().compile(doc))
+			var result: Dictionary = Exporter.validate(await preload("graph_fixtures.gd").compile(doc, self))
 			count += 1
 			if not result.errors.is_empty():
 				failures.append({"case": stage + "/" + name, "errors": result.errors})
@@ -48,12 +48,14 @@ func run() -> void:
 				code = "return textureLod(value, " + coords + ", 0.0).r;"
 			doc.stages.start.nodes.append({"id": "consume", "kind": "custom", "data_type": "float", "input_ports": [{"name": "value", "type": type}], "code": code, "inputs": {"value": {"node": source, "port": "value"}}})
 			Document.node(doc.stages.start, "output").inputs.MASS = {"node": "consume", "port": "value"}
-			var result = Exporter.validate(Compiler.new().compile(doc))
+			var result = Exporter.validate(await preload("graph_fixtures.gd").compile(doc, self))
 			count += 1
 			if not result.errors.is_empty(): failures.append({"case": type + str(size), "errors": result.errors})
 			if size and not type.begins_with("sampler"):
 				var prefix: String = "res://array_exports/" + type
-				var exported = Exporter.export_files(doc, prefix)
+				var graph = await preload("graph_fixtures.gd").create(doc, self)
+				var exported = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(graph, prefix)
+				graph.queue_free()
 				if not exported.errors.is_empty():
 					failures.append({"case": type + " export", "errors": exported.errors})
 				else:
@@ -65,14 +67,14 @@ func run() -> void:
 	for mode in Interface.MODES:
 		var doc = Document.create()
 		doc.render_modes = [mode]
-		if not Exporter.validate(Compiler.new().compile(doc)).errors.is_empty(): failures.append(mode)
+		if not Exporter.validate(await preload("graph_fixtures.gd").compile(doc, self)).errors.is_empty(): failures.append(mode)
 	var bad = Document.create()
 	bad.stages.start.nodes.append({"id": "broken", "kind": "custom", "data_type": "float", "input_ports": [], "code": "return broken_syntax( ;", "inputs": {}})
 	Document.node(bad.stages.start, "output").inputs.MASS = {"node": "broken", "port": "value"}
-	var errors = Exporter.validate(Compiler.new().compile(bad)).errors
+	var errors = Exporter.validate(await preload("graph_fixtures.gd").compile(bad, self)).errors
 	if errors.is_empty():
 		failures.append("Custom code errors were not captured")
-	elif not errors.any(func(error): return error.node == "broken" and error.stage == "start"):
+	elif not errors.any(func(error): return str(error.node).ends_with("start_broken") and error.stage == "start"):
 		failures.append("Shader error was not localized to its source node")
 	print("PARTICLE_GPU_TESTS: ", count, " interface shaders; failures=", failures)
-	quit(0 if failures.is_empty() else 1)
+	get_tree().quit(0 if failures.is_empty() else 1)
