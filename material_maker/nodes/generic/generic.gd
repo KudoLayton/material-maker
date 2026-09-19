@@ -472,6 +472,9 @@ func update_node() -> void:
 			label = result.get_string(2)
 		else:
 			index += 1
+		var particle_port: bool = mm_io_types.types.get(input.type, {}).has("particle_type")
+		if particle_port and not generator.minimized:
+			label = mm_io_types.format_port_label(label if not label.is_empty() else input.name, input.type)
 		var hsizer : HBoxContainer
 		while get_child_count() <= index:
 			hsizer = HBoxContainer.new()
@@ -491,6 +494,7 @@ func update_node() -> void:
 		if label != "":
 			var label_widget : Label = Label.new()
 			label_widget.text = label
+			if particle_port: label_widget.set_meta("particle_type", input.type)
 			label_widget.theme_type_variation = "MM_NodePropertyLabel"
 			var replace : Control = hsizer.get_child(0)
 			hsizer.remove_child(replace)
@@ -587,7 +591,7 @@ func update_node() -> void:
 				continue
 			var input_label : Control = r.get_child(0)
 			input_label.custom_minimum_size.x = input_label_width
-			if input_label is Label:
+			if input_label is Label and not input_label.has_meta("particle_type"):
 				input_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			var param_label : Control = r.get_child(1)
 			param_label.custom_minimum_size.x = param_label_width
@@ -622,6 +626,13 @@ func update_node() -> void:
 		hsizer = get_child(i)
 		if hsizer.get_child_count() == 0:
 			hsizer.custom_minimum_size.y = minimum_line_height if !generator.minimized else 12
+		if not generator.minimized and mm_io_types.types.get(output.type, {}).has("particle_type"):
+			var output_label := Label.new()
+			output_label.text = mm_io_types.format_port_label(output.get("label", output.get("name", "value")), output.type)
+			output_label.theme_type_variation = "MM_NodePropertyLabel"
+			output_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			output_label.size_flags_horizontal = SIZE_EXPAND_FILL
+			hsizer.add_child(output_label)
 	
 	# Edit buttons
 	if generator.is_editable():

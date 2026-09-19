@@ -27,3 +27,9 @@ func _ready():
 			MMGenParticle.register_types()
 			return
 	print("Failed to load io types")
+
+func format_port_label(label: String, type: String) -> String:
+	var definition: Dictionary = types.get(type, {})
+	if definition.has("particle_type"):
+		return label + " : " + definition.particle_type
+	return label

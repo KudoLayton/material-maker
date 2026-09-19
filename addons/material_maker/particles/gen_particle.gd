@@ -11,9 +11,23 @@ static func value_type(type: String) -> String:
 	if not mm_io_types.types.has(key):
 		mm_io_types.types[key] = {"name": key, "label": type, "type": type, "particle_type": type,
 			"paramdefs": "vec2 uv", "params": "uv", "slot_type": 100 + mm_io_types.types.size(),
-			"color": Color("b78ae8")}
+			"color": port_color(type)}
 		mm_io_types.type_names.append(key)
 	return key
+
+static func port_color(type: String) -> Color:
+	var element := type.get_slice("[", 0)
+	match element:
+		"float": return mm_io_types.types.f.color
+		"vec3": return mm_io_types.types.rgb.color
+		"vec4": return mm_io_types.types.rgba.color
+		"exec": return mm_io_types.types.any.color
+		"vec2": return Color("43bfa9")
+	if element == "bool" or element.begins_with("bvec"): return Color("d9c65d")
+	if element in ["int", "uint"] or element.begins_with("ivec") or element.begins_with("uvec"): return Color("c98b60")
+	if element.begins_with("mat"): return Color("9a83d6")
+	if element.begins_with("sampler"): return Color("c879b5")
+	return mm_io_types.types.any.color
 
 static func register_types() -> void:
 	for type in Interface.TYPES + ["exec"]:
