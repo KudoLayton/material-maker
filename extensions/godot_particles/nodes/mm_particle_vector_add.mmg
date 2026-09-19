@@ -1,0 +1,40 @@
+{
+  "name": "mm_particle_vector_add",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Vector Add",
+    "shortdesc": "Vector Add",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "a",
+        "type": "rgb",
+        "default": "vec3(0.0)",
+        "label": "A"
+      },
+      {
+        "name": "b",
+        "type": "rgb",
+        "default": "vec3(0.0)",
+        "label": "B"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "rgb",
+        "shortdesc": "Value",
+        "rgb": "($a($uv) + $b($uv))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

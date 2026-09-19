@@ -1,0 +1,46 @@
+{
+  "name": "mm_particle_scalar_mix",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Scalar Mix",
+    "shortdesc": "Scalar Mix",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "a",
+        "type": "f",
+        "default": "0.0",
+        "label": "A"
+      },
+      {
+        "name": "b",
+        "type": "f",
+        "default": "1.0",
+        "label": "B"
+      },
+      {
+        "name": "weight",
+        "type": "f",
+        "default": "0.0",
+        "label": "Weight"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "f",
+        "shortdesc": "Value",
+        "f": "mix($a($uv), $b($uv), clamp($weight($uv), 0.0, 1.0))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

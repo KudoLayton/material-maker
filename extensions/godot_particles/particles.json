@@ -1,0 +1,130 @@
+{
+  "name": "Godot Particles",
+  "lib": [
+    {
+      "name": "mm_particle_scalar",
+      "type": "mm_particle_scalar",
+      "tree_item": "Godot Particles/Scalar"
+    },
+    {
+      "name": "mm_particle_vector",
+      "type": "mm_particle_vector",
+      "tree_item": "Godot Particles/Vector"
+    },
+    {
+      "name": "mm_particle_color",
+      "type": "mm_particle_color",
+      "tree_item": "Godot Particles/Color"
+    },
+    {
+      "name": "mm_particle_position",
+      "type": "mm_particle_position",
+      "tree_item": "Godot Particles/Position"
+    },
+    {
+      "name": "mm_particle_velocity",
+      "type": "mm_particle_velocity",
+      "tree_item": "Godot Particles/Velocity"
+    },
+    {
+      "name": "mm_particle_age",
+      "type": "mm_particle_age",
+      "tree_item": "Godot Particles/Age"
+    },
+    {
+      "name": "mm_particle_life_fraction",
+      "type": "mm_particle_life_fraction",
+      "tree_item": "Godot Particles/Life Fraction"
+    },
+    {
+      "name": "mm_particle_delta",
+      "type": "mm_particle_delta",
+      "tree_item": "Godot Particles/Delta"
+    },
+    {
+      "name": "mm_particle_scalar_add",
+      "type": "mm_particle_scalar_add",
+      "tree_item": "Godot Particles/Scalar Add"
+    },
+    {
+      "name": "mm_particle_scalar_subtract",
+      "type": "mm_particle_scalar_subtract",
+      "tree_item": "Godot Particles/Scalar Subtract"
+    },
+    {
+      "name": "mm_particle_scalar_multiply",
+      "type": "mm_particle_scalar_multiply",
+      "tree_item": "Godot Particles/Scalar Multiply"
+    },
+    {
+      "name": "mm_particle_scalar_divide",
+      "type": "mm_particle_scalar_divide",
+      "tree_item": "Godot Particles/Scalar Divide"
+    },
+    {
+      "name": "mm_particle_scalar_clamp",
+      "type": "mm_particle_scalar_clamp",
+      "tree_item": "Godot Particles/Scalar Clamp"
+    },
+    {
+      "name": "mm_particle_vector_add",
+      "type": "mm_particle_vector_add",
+      "tree_item": "Godot Particles/Vector Add"
+    },
+    {
+      "name": "mm_particle_vector_subtract",
+      "type": "mm_particle_vector_subtract",
+      "tree_item": "Godot Particles/Vector Subtract"
+    },
+    {
+      "name": "mm_particle_vector_multiply",
+      "type": "mm_particle_vector_multiply",
+      "tree_item": "Godot Particles/Vector Multiply"
+    },
+    {
+      "name": "mm_particle_vector_divide",
+      "type": "mm_particle_vector_divide",
+      "tree_item": "Godot Particles/Vector Divide"
+    },
+    {
+      "name": "mm_particle_vector_clamp",
+      "type": "mm_particle_vector_clamp",
+      "tree_item": "Godot Particles/Vector Clamp"
+    },
+    {
+      "name": "mm_particle_scalar_mix",
+      "type": "mm_particle_scalar_mix",
+      "tree_item": "Godot Particles/Scalar Mix"
+    },
+    {
+      "name": "mm_particle_vector_mix",
+      "type": "mm_particle_vector_mix",
+      "tree_item": "Godot Particles/Vector Mix"
+    },
+    {
+      "name": "mm_particle_color_mix",
+      "type": "mm_particle_color_mix",
+      "tree_item": "Godot Particles/Color Mix"
+    },
+    {
+      "name": "mm_particle_compose",
+      "type": "mm_particle_compose",
+      "tree_item": "Godot Particles/Compose Vector"
+    },
+    {
+      "name": "mm_particle_split",
+      "type": "mm_particle_split",
+      "tree_item": "Godot Particles/Split Vector"
+    },
+    {
+      "name": "mm_particle_scale_vector",
+      "type": "mm_particle_scale_vector",
+      "tree_item": "Godot Particles/Scale Vector"
+    },
+    {
+      "name": "mm_particle_output",
+      "type": "mm_particle_output",
+      "tree_item": "Godot Particles/Particles 3D Output (No Preview)"
+    }
+  ]
+}

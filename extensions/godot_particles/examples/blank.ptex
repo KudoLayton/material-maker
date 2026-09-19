@@ -1,0 +1,153 @@
+{
+  "type": "graph",
+  "name": "particles",
+  "label": "Godot Particles",
+  "nodes": [
+    {
+      "name": "output",
+      "type": "material_export",
+      "node_position": {
+        "x": 400,
+        "y": 0
+      },
+      "seed_int": 0,
+      "parameters": {},
+      "shader_model": {
+        "name": "Particles 3D Output (No Preview)",
+        "shortdesc": "Particles 3D Output (No Preview)",
+        "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+        "inputs": [
+          {
+            "name": "initial_position",
+            "type": "rgb",
+            "default": "vec3(0.0)",
+            "label": "Start: Position"
+          },
+          {
+            "name": "initial_velocity",
+            "type": "rgb",
+            "default": "vec3(0.0)",
+            "label": "Start: Velocity"
+          },
+          {
+            "name": "acceleration",
+            "type": "rgb",
+            "default": "vec3(0.0)",
+            "label": "Update: Acceleration"
+          },
+          {
+            "name": "color",
+            "type": "rgba",
+            "default": "vec4(1.0)",
+            "label": "Appearance: Color"
+          },
+          {
+            "name": "scale",
+            "type": "f",
+            "default": "1.0",
+            "label": "Appearance: Scale"
+          }
+        ],
+        "outputs": [],
+        "parameters": [],
+        "code": "",
+        "instance": "",
+        "global": "",
+        "preview_shader": [
+          "shader_type spatial;",
+          "render_mode unshaded;",
+          "void fragment() { ALBEDO = vec3(0.15); }"
+        ],
+        "exports": {
+          "Godot 4/Particles 3D": {
+            "name": "Godot 4/Particles 3D",
+            "export_extension": "tres",
+            "custom": [
+              "func process_option_particle_state(s : String, is_declaration : bool = false) -> String:",
+              "\tif is_declaration:",
+              "\t\treturn s",
+              "\ts = s.replace(\"mm_particle_position()\", \"mm_position\")",
+              "\ts = s.replace(\"mm_particle_velocity()\", \"mm_velocity\")",
+              "\ts = s.replace(\"mm_particle_age()\", \"mm_age\")",
+              "\ts = s.replace(\"mm_particle_life_fraction()\", \"mm_life_fraction\")",
+              "\ts = s.replace(\"mm_particle_delta()\", \"mm_delta\")",
+              "\treturn s"
+            ],
+            "files": [
+              {
+                "type": "template",
+                "file_name": "$(path_prefix).gdshader",
+                "template": [
+                  "shader_type particles;",
+                  "render_mode disable_force;",
+                  "$definitions float_uniform_to_const",
+                  "",
+                  "void mm_evaluate(vec3 mm_position, vec3 mm_velocity, float mm_age, float mm_life_fraction, float mm_delta,",
+                  "                 out vec3 initial_position, out vec3 initial_velocity, out vec3 acceleration,",
+                  "                 out vec4 particle_color, out float particle_scale) {",
+                  "    vec2 uv = vec2(0.0);",
+                  "$begin_generate particle_state",
+                  "    initial_position = $initial_position(uv);",
+                  "    initial_velocity = $initial_velocity(uv);",
+                  "    acceleration = $acceleration(uv);",
+                  "    particle_color = $color(uv);",
+                  "    particle_scale = max($scale(uv), 0.0);",
+                  "$end_generate",
+                  "}",
+                  "",
+                  "void start() {",
+                  "    CUSTOM.x = 0.0;",
+                  "    vec3 initial_position;",
+                  "    vec3 initial_velocity;",
+                  "    vec3 acceleration;",
+                  "    vec4 particle_color;",
+                  "    float particle_scale;",
+                  "    mm_evaluate(vec3(0.0), vec3(0.0), 0.0, 0.0, 0.0,",
+                  "                initial_position, initial_velocity, acceleration, particle_color, particle_scale);",
+                  "    TRANSFORM[3] = EMISSION_TRANSFORM * vec4(initial_position, 1.0);",
+                  "    VELOCITY = (EMISSION_TRANSFORM * vec4(initial_velocity, 0.0)).xyz;",
+                  "    COLOR = particle_color;",
+                  "    float mm_scale = particle_scale;",
+                  "    TRANSFORM[0] = vec4(mm_scale, 0.0, 0.0, 0.0);",
+                  "    TRANSFORM[1] = vec4(0.0, mm_scale, 0.0, 0.0);",
+                  "    TRANSFORM[2] = vec4(0.0, 0.0, mm_scale, 0.0);",
+                  "}",
+                  "",
+                  "void process() {",
+                  "    CUSTOM.x += DELTA;",
+                  "    vec3 initial_position;",
+                  "    vec3 initial_velocity;",
+                  "    vec3 acceleration;",
+                  "    vec4 particle_color;",
+                  "    float particle_scale;",
+                  "    mm_evaluate(TRANSFORM[3].xyz, VELOCITY, CUSTOM.x, clamp(CUSTOM.x / max(LIFETIME, 0.000001), 0.0, 1.0), DELTA,",
+                  "                initial_position, initial_velocity, acceleration, particle_color, particle_scale);",
+                  "    VELOCITY += acceleration * DELTA;",
+                  "    COLOR = particle_color;",
+                  "    float mm_scale = particle_scale;",
+                  "    TRANSFORM[0] = vec4(mm_scale, 0.0, 0.0, 0.0);",
+                  "    TRANSFORM[1] = vec4(0.0, mm_scale, 0.0, 0.0);",
+                  "    TRANSFORM[2] = vec4(0.0, 0.0, mm_scale, 0.0);",
+                  "    if (CUSTOM.x >= LIFETIME) { ACTIVE = false; }",
+                  "}"
+                ]
+              },
+              {
+                "type": "template",
+                "file_name": "$(path_prefix).tres",
+                "template": [
+                  "[gd_resource type=\"ShaderMaterial\" load_steps=2 format=3]",
+                  "[ext_resource type=\"Shader\" path=\"$(file_prefix).gdshader\" id=\"1\"]",
+                  "[resource]",
+                  "shader = ExtResource(\"1\")"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "export": {}
+    }
+  ],
+  "connections": []
+}

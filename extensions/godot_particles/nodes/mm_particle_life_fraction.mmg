@@ -1,0 +1,27 @@
+{
+  "name": "mm_particle_life_fraction",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Life Fraction",
+    "shortdesc": "Life Fraction",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "f",
+        "shortdesc": "Value",
+        "f": "mm_particle_life_fraction()"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": "float mm_particle_life_fraction() { return 0.0; }"
+  }
+}

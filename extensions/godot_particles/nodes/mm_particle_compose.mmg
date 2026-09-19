@@ -1,0 +1,46 @@
+{
+  "name": "mm_particle_compose",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Compose Vector",
+    "shortdesc": "Compose Vector",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "x",
+        "type": "f",
+        "default": "0.0",
+        "label": "X"
+      },
+      {
+        "name": "y",
+        "type": "f",
+        "default": "0.0",
+        "label": "Y"
+      },
+      {
+        "name": "z",
+        "type": "f",
+        "default": "0.0",
+        "label": "Z"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "rgb",
+        "shortdesc": "Value",
+        "rgb": "vec3($x($uv), $y($uv), $z($uv))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

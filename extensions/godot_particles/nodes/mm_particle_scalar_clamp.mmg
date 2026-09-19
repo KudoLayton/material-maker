@@ -1,0 +1,46 @@
+{
+  "name": "mm_particle_scalar_clamp",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Scalar Clamp",
+    "shortdesc": "Scalar Clamp",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "f",
+        "default": "0.0",
+        "label": "Value"
+      },
+      {
+        "name": "minimum",
+        "type": "f",
+        "default": "0.0",
+        "label": "Minimum"
+      },
+      {
+        "name": "maximum",
+        "type": "f",
+        "default": "1.0",
+        "label": "Maximum"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "f",
+        "shortdesc": "Value",
+        "f": "clamp($value($uv), $minimum($uv), $maximum($uv))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

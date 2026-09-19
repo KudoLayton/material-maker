@@ -1,0 +1,40 @@
+{
+  "name": "mm_particle_scale_vector",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Scale Vector",
+    "shortdesc": "Scale Vector",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "vector",
+        "type": "rgb",
+        "default": "vec3(0.0)",
+        "label": "Vector"
+      },
+      {
+        "name": "factor",
+        "type": "f",
+        "default": "1.0",
+        "label": "Factor"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "rgb",
+        "shortdesc": "Value",
+        "rgb": "($vector($uv) * $factor($uv))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

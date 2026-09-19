@@ -1,0 +1,27 @@
+{
+  "name": "mm_particle_velocity",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Velocity",
+    "shortdesc": "Velocity",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "rgb",
+        "shortdesc": "Value",
+        "rgb": "mm_particle_velocity()"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": "vec3 mm_particle_velocity() { return vec3(0.0); }"
+  }
+}

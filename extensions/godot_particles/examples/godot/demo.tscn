@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Material" path="res://gravity.tres" id="1"]
+
+[sub_resource type="StandardMaterial3D" id="DrawMaterial"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SphereMesh" id="ParticleMesh"]
+material = SubResource("DrawMaterial")
+radius = 0.5
+height = 1.0
+
+[node name="ParticleExample" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(1, 1.5, 7)
+current = true
+
+[node name="Particles" type="GPUParticles3D" parent="."]
+amount = 48
+lifetime = 2.0
+local_coords = true
+fixed_fps = 60
+visibility_aabb = AABB(-10, -10, -10, 20, 20, 20)
+process_material = ExtResource("1")
+draw_pass_1 = SubResource("ParticleMesh")

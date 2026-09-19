@@ -1,0 +1,46 @@
+{
+  "name": "mm_particle_vector_clamp",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Vector Clamp",
+    "shortdesc": "Vector Clamp",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "rgb",
+        "default": "vec3(0.0)",
+        "label": "Value"
+      },
+      {
+        "name": "minimum",
+        "type": "rgb",
+        "default": "vec3(0.0)",
+        "label": "Minimum"
+      },
+      {
+        "name": "maximum",
+        "type": "rgb",
+        "default": "vec3(1.0)",
+        "label": "Maximum"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "rgb",
+        "shortdesc": "Value",
+        "rgb": "clamp($value($uv), $minimum($uv), $maximum($uv))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

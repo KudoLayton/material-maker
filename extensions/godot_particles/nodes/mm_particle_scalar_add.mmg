@@ -1,0 +1,40 @@
+{
+  "name": "mm_particle_scalar_add",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Scalar Add",
+    "shortdesc": "Scalar Add",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "a",
+        "type": "f",
+        "default": "0.0",
+        "label": "A"
+      },
+      {
+        "name": "b",
+        "type": "f",
+        "default": "0.0",
+        "label": "B"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "f",
+        "shortdesc": "Value",
+        "f": "($a($uv) + $b($uv))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

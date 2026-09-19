@@ -1,0 +1,46 @@
+{
+  "name": "mm_particle_color_mix",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Color Mix",
+    "shortdesc": "Color Mix",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [
+      {
+        "name": "a",
+        "type": "rgba",
+        "default": "vec4(0.0)",
+        "label": "A"
+      },
+      {
+        "name": "b",
+        "type": "rgba",
+        "default": "vec4(1.0)",
+        "label": "B"
+      },
+      {
+        "name": "weight",
+        "type": "f",
+        "default": "0.0",
+        "label": "Weight"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "rgba",
+        "shortdesc": "Value",
+        "rgba": "mix($a($uv), $b($uv), clamp($weight($uv), 0.0, 1.0))"
+      }
+    ],
+    "parameters": [],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}

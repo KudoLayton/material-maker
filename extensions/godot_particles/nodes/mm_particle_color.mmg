@@ -1,0 +1,68 @@
+{
+  "name": "mm_particle_color",
+  "type": "shader",
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "seed_int": 0,
+  "parameters": {},
+  "shader_model": {
+    "name": "Color",
+    "shortdesc": "Color",
+    "longdesc": "Godot particles only. Preview uses placeholder state; validate the exported effect in Godot.",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "rgba",
+        "shortdesc": "Value",
+        "rgba": "vec4($r, $g, $b, $a)"
+      }
+    ],
+    "parameters": [
+      {
+        "name": "r",
+        "label": "R",
+        "type": "float",
+        "default": 1.0,
+        "min": -10000,
+        "max": 10000,
+        "step": 0.01,
+        "control": "None"
+      },
+      {
+        "name": "g",
+        "label": "G",
+        "type": "float",
+        "default": 1.0,
+        "min": -10000,
+        "max": 10000,
+        "step": 0.01,
+        "control": "None"
+      },
+      {
+        "name": "b",
+        "label": "B",
+        "type": "float",
+        "default": 1.0,
+        "min": -10000,
+        "max": 10000,
+        "step": 0.01,
+        "control": "None"
+      },
+      {
+        "name": "a",
+        "label": "A",
+        "type": "float",
+        "default": 1.0,
+        "min": -10000,
+        "max": 10000,
+        "step": 0.01,
+        "control": "None"
+      }
+    ],
+    "code": "",
+    "instance": "",
+    "global": ""
+  }
+}
