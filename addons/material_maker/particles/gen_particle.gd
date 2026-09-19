@@ -54,7 +54,7 @@ func accept_float_expressions() -> bool:
 
 func get_description() -> String:
 	if settings.kind == "random":
-		return "Deterministic per-particle random values. Unconnected particle_id/system_seed use NUMBER/RANDOM_SEED. Range and Seed controls apply when their inputs are unconnected."
+		return "Deterministic per-particle random values. Particle ID defaults to Godot NUMBER; System Seed defaults to Godot RANDOM_SEED. Seed Offset is an additional node-specific offset, not a Godot built-in. Input default controls apply only while the corresponding input is unconnected. Random Value is the only output."
 	return "Godot particle shader. State-dependent outputs have no image preview."
 
 func model_data() -> Dictionary:
@@ -110,7 +110,10 @@ func particle_ports() -> Dictionary:
 func port_defs(side: String) -> Array:
 	var result: Array = []
 	for p in particle_ports()[side]:
-		result.append({"name": p.name, "label": p.name, "type": p.type if p.type in FUNCTION_TYPES else value_type(p.type)})
+		var label: String = p.name
+		if settings.kind == "random":
+			label = {"particle_id": "Particle ID (NUMBER)", "system_seed": "System Seed (RANDOM_SEED)", "seed": "Seed Offset", "minimum": "Minimum", "maximum": "Maximum", "value": "Random Value"}.get(p.name, p.name)
+		result.append({"name": p.name, "label": label, "type": p.type if p.type in FUNCTION_TYPES else value_type(p.type)})
 	return result
 
 func get_input_defs() -> Array:
@@ -132,10 +135,17 @@ func get_parameter_defs() -> Array:
 	var result: Array = []
 	var n := model_data()
 	if n.kind == "random":
-		result.append(enum_parameter("data_type", Interface.RANDOM_TYPES, settings.get("data_type", "vec3")))
+		var output_type := enum_parameter("data_type", Interface.RANDOM_TYPES, settings.get("data_type", "vec3"))
+		output_type.label = "6:Output Type"
+		result.append(output_type)
 		for key in ["seed", "minimum", "maximum"]:
 			var parameter := number_parameter(key, n[key], key == "seed")
-			if key == "seed": parameter.min = 0.0
+			parameter.label = "%d:Input default" % {"seed": 3, "minimum": 4, "maximum": 5}[key]
+			parameter.shortdesc = {"seed": "Seed Offset", "minimum": "Minimum", "maximum": "Maximum"}[key]
+			parameter.longdesc = "Used only when this input is unconnected. A connected input overrides this setting."
+			if key == "seed":
+				parameter.min = 0.0
+				parameter.longdesc += " Additional node-specific offset; this is not Godot's RANDOM_SEED."
 			result.append(parameter)
 	if n.kind in ["constant", "operator", "convert", "compose", "split", "select", "uniform", "array_get", "sample"]:
 		result.append(enum_parameter("data_type", Interface.TYPES, settings.get("data_type", "float")))

@@ -55,6 +55,16 @@ func run() -> void:
 	created = await editor.create_nodes(item.item, Vector2(0, 0))
 	node = created[0]
 	assert(node.generator.model_data().data_type == "vec3")
+	var random_inputs = node.generator.get_input_defs()
+	assert(random_inputs[2].name == "seed" and random_inputs[2].label == "Seed Offset")
+	assert(random_inputs[1].label == "System Seed (RANDOM_SEED)")
+	assert(node.generator.get_output_defs().size() == 1)
+	assert(node.generator.get_output_defs()[0].label == "Random Value")
+	for key in ["seed", "minimum", "maximum"]:
+		assert(node.controls[key].tooltip_text.contains("unconnected"))
+		var row = node.controls[key].get_parent()
+		assert(row.get_child(1).text == "Input default")
+		assert(row.get_child(0).text.begins_with({"seed": "Seed Offset", "minimum": "Minimum", "maximum": "Maximum"}[key]))
 	option = node.controls.data_type
 	assert(option.item_count == 4)
 	option.select(1)

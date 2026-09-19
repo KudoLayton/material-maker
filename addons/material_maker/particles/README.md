@@ -72,12 +72,14 @@ python tools/particles/build_windows.py --godot <Godot-4.7.2.exe> --template <wi
 
 ## 파티클별 난수
 
-라이브러리의 **Particles → Tools → Random**을 추가합니다. 출력은 `float`, `vec2`, `vec3`, `vec4` 중 선택할 수 있으며 기본값은 `vec3`, 범위는 0~1, Seed는 0입니다. UV나 텍스처가 필요하지 않습니다.
+라이브러리의 **Particles → Tools → Random**을 추가합니다. 출력은 `float`, `vec2`, `vec3`, `vec4` 중 선택할 수 있으며 기본값은 `vec3`, 범위는 0~1, Seed Offset은 0입니다. UV나 텍스처가 필요하지 않습니다.
 
 - `particle_id` 입력을 비우면 `NUMBER`, `system_seed` 입력을 비우면 `RANDOM_SEED`를 사용합니다. 슬롯 번호를 기준으로 고정하려면 `INDEX`를 `particle_id`에 연결합니다.
-- `seed`, `minimum`, `maximum` 입력을 비우면 노드의 숫자 설정을 사용합니다. 벡터의 범위 설정은 모든 성분에 적용되며, 범위 포트에 벡터를 연결하면 성분별로 지정할 수 있습니다.
-- 동일한 입력은 Start와 Process에서 동일한 값을 반환합니다. 노드를 복제해도 같습니다. 다른 값을 원하면 Seed를 다르게 설정합니다. 매 프레임 자동으로 변하지 않습니다.
-- 내부적으로 Godot `ParticleProcessMaterial`의 해시와 `rand_from_seed` 방식으로 성분별 난수를 차례대로 생성합니다. 초기 상태는 `hash(particle_id + 1u + system_seed + seed)`입니다. Seed 0은 Godot의 초기화 방식과 같지만, 실제 머티리얼 속성값은 이후 난수 호출 순서에 따라 달라집니다.
+- `seed`, `minimum`, `maximum` 입력을 비우면 같은 행의 `Input default` 숫자 설정을 사용합니다. 입력을 연결하면 해당 숫자 설정은 무시됩니다. 벡터의 범위 설정은 모든 성분에 적용되며, 범위 포트에 벡터를 연결하면 성분별로 지정할 수 있습니다.
+- 동일한 입력은 Start와 Process에서 동일한 값을 반환합니다. 노드를 복제해도 같습니다. 다른 값을 원하면 Seed Offset을 다르게 설정합니다. 매 프레임 자동으로 변하지 않습니다.
+- 내부적으로 Godot `ParticleProcessMaterial`의 해시와 `rand_from_seed` 방식으로 성분별 난수를 차례대로 생성합니다. 초기 상태는 `hash(particle_id + 1u + system_seed + seed)`입니다. Seed Offset 0은 Godot의 초기화 방식과 같지만, 실제 머티리얼 속성값은 이후 난수 호출 순서에 따라 달라집니다.
 - 벡터 출력은 각 성분의 난수입니다. 단위 방향 벡터나 구면 균일 분포를 의미하지 않습니다.
 
 일반 노드와 동일하게 서브그래프로 묶고 라이브러리에 저장해 재사용할 수 있습니다. 파티클 실행 시 계산되는 값이므로 정적 텍스처 베이크의 입력으로는 사용할 수 없습니다.
+
+화면의 `Seed Offset`은 노드별 추가 시드이며, `System Seed (RANDOM_SEED)`는 Godot이 제공하는 시스템 시드입니다. 출력은 `Random Value` 하나뿐입니다. 저장 파일의 기존 `seed` 키와 계산 방식은 유지됩니다.
