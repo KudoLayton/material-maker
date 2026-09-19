@@ -3,6 +3,7 @@ extends RefCounted
 const BUILTINS = preload("abi.gd").BUILTINS
 const MODES = ["collision_use_scale", "disable_force", "disable_velocity", "keep_data"]
 const TYPES = ["bool", "int", "uint", "float", "bvec2", "bvec3", "bvec4", "ivec2", "ivec3", "ivec4", "uvec2", "uvec3", "uvec4", "vec2", "vec3", "vec4", "mat2", "mat3", "mat4", "sampler2D", "sampler2DArray", "sampler3D", "samplerCube", "samplerCubeArray"]
+const RANDOM_TYPES = ["float", "vec2", "vec3", "vec4"]
 const OPERATIONS = ["add", "subtract", "multiply", "divide", "mod", "min", "max", "clamp", "mix", "dot", "cross", "length", "normalize", "abs", "floor", "ceil", "fract", "sin", "cos", "sqrt", "pow", "equal", "less", "greater", "and", "or", "not", "bit_and", "bit_or", "bit_xor", "bit_not", "shift_left", "shift_right", "transpose", "inverse", "determinant"]
 
 static func port(name: String, type: String) -> Dictionary:
@@ -24,6 +25,9 @@ static func ports(n: Dictionary, stage: String, uniforms: Array = []) -> Diction
 			var item: Dictionary = BUILTINS.get(stage, {}).get(n.get("builtin", ""), {})
 			if not item.is_empty():
 				outputs = [port("value", item.type)]
+		"random":
+			inputs = [port("particle_id", "uint"), port("system_seed", "uint"), port("seed", "uint"), port("minimum", type), port("maximum", type)]
+			outputs = [port("value", type)]
 		"constant":
 			outputs = [port("value", type)]
 		"uniform":

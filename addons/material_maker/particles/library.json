@@ -515,6 +515,15 @@
       }
     },
     {
+      "name": "Tools_Random",
+      "type": "particle_node",
+      "tree_item": "Particles/Tools/Random",
+      "settings": {
+        "kind": "random",
+        "data_type": "vec3"
+      }
+    },
+    {
       "name": "Tools_Operator",
       "type": "particle_node",
       "tree_item": "Particles/Tools/Operator",

@@ -50,6 +50,38 @@ func run() -> void:
 	var reopened = window.get_current_graph_edit().top_generator.get_node(generator_name)
 	assert(reopened.model_data().data_type == "bvec3")
 	assert(reopened.model_data().value == [true, false, false])
+	editor = await window.new_particle_shader()
+	item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Random")
+	created = await editor.create_nodes(item.item, Vector2(0, 0))
+	node = created[0]
+	assert(node.generator.model_data().data_type == "vec3")
+	option = node.controls.data_type
+	assert(option.item_count == 4)
+	option.select(1)
+	option.item_selected.emit(1)
+	assert(is_instance_valid(option))
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().data_type == "vec2")
+	editor.undoredo.undo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().data_type == "vec3")
+	editor.undoredo.redo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().data_type == "vec2")
+	for pair in [["seed", 17.0], ["minimum", -2.0], ["maximum", 3.0]]:
+		assert(node.controls.has(pair[0]))
+		node.controls[pair[0]].value_changed_undo.emit(pair[1], false)
+	for frame in 3: await get_tree().process_frame
+	generator_name = node.generator.name
+	assert(await editor.save_file("res://app_random.ptex"))
+	assert(await window.do_load_project("res://app_random.ptex"))
+	for frame in 5: await get_tree().process_frame
+	reopened = window.get_current_graph_edit().top_generator.get_node(generator_name)
+	assert(reopened.model_data().data_type == "vec2")
+	assert(reopened.model_data().seed == 17.0)
+	assert(reopened.model_data().minimum == -2.0)
+	assert(reopened.model_data().maximum == 3.0)
+	print("PARTICLE_RANDOM_UI: type selection, undo/redo and settings roundtrip passed")
 	print("PARTICLE_CONSTANT_UI: passed")
 	mm_globals.set_config("confirm_quit", false)
 	mm_globals.set_config("confirm_close_project", false)

@@ -24,7 +24,7 @@ def main():
         add('Execution/' + stage.capitalize() + ' Entry', {'kind': 'entry', 'stage': stage})
     for kind, label in [('evaluate', 'Evaluate Function'), ('bridge', 'Value to Function')]:
         add('Library/' + label, {'kind': kind, 'function_type': 'rgba'})
-    for kind, data_type in [('constant', 'float'), ('operator', 'float'), ('convert', 'vec3'),
+    for kind, data_type in [('constant', 'float'), ('random', 'vec3'), ('operator', 'float'), ('convert', 'vec3'),
                             ('compose', 'vec3'), ('split', 'vec3'), ('transform', 'vec4'),
                             ('select', 'float'), ('uniform', 'float'), ('array_get', 'float'),
                             ('sample', 'vec4'), ('emit', 'bool')]:

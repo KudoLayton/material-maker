@@ -53,6 +53,8 @@ func accept_float_expressions() -> bool:
 	return false
 
 func get_description() -> String:
+	if settings.kind == "random":
+		return "Deterministic per-particle random values. Unconnected particle_id/system_seed use NUMBER/RANDOM_SEED. Range and Seed controls apply when their inputs are unconnected."
 	return "Godot particle shader. State-dependent outputs have no image preview."
 
 func model_data() -> Dictionary:
@@ -62,12 +64,16 @@ func model_data() -> Dictionary:
 	for key in ["data_type", "source_type", "operation", "function_type", "sampler_type"]:
 		if parameters.has(key):
 			var values: Array = Interface.OPERATIONS if key == "operation" else (FUNCTION_TYPES if key == "function_type" else (Interface.TYPES.filter(func(t): return t.begins_with("sampler")) if key == "sampler_type" else Interface.TYPES))
+			if n.kind == "random" and key == "data_type": values = Interface.RANDOM_TYPES
 			n[key] = values[clampi(int(parameters[key]), 0, values.size() - 1)]
 	if n.kind in ["evaluate", "bridge"]:
 		n["function_type"] = n.get("function_type", "rgba")
 		n["data_type"] = mm_io_types.types[n.function_type].type
 	if n.kind == "array_get": n["array_size"] = int(parameters.get("array_size", n.get("array_size", 1)))
 	if n.kind == "sample": n["sampler_type"] = n.get("sampler_type", "sampler2D")
+	if n.kind == "random":
+		for key in ["seed", "minimum", "maximum"]:
+			n[key] = parameters.get(key, n.get(key, 1.0 if key == "maximum" else 0.0))
 	if n.kind == "constant":
 		var type: String = n.get("data_type", "float")
 		var value = n.get("value", Interface.default_value(type))
@@ -125,6 +131,12 @@ static func number_parameter(key: String, value, integer: bool = false) -> Dicti
 func get_parameter_defs() -> Array:
 	var result: Array = []
 	var n := model_data()
+	if n.kind == "random":
+		result.append(enum_parameter("data_type", Interface.RANDOM_TYPES, settings.get("data_type", "vec3")))
+		for key in ["seed", "minimum", "maximum"]:
+			var parameter := number_parameter(key, n[key], key == "seed")
+			if key == "seed": parameter.min = 0.0
+			result.append(parameter)
 	if n.kind in ["constant", "operator", "convert", "compose", "split", "select", "uniform", "array_get", "sample"]:
 		result.append(enum_parameter("data_type", Interface.TYPES, settings.get("data_type", "float")))
 	if n.kind == "sample": result.append(enum_parameter("sampler_type", Interface.TYPES.filter(func(t): return t.begins_with("sampler")), settings.get("sampler_type", "sampler2D")))

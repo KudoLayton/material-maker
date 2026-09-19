@@ -91,6 +91,9 @@ static func shader_type(type: String) -> String:
 	return mm_io_types.types[type].get("particle_type", type) if mm_io_types.types.has(type) else type
 
 func validate_node(n: Dictionary) -> void:
+	if n.kind == "random":
+		if n.data_type not in Interface.RANDOM_TYPES: fail(n.id, "Random requires float, vec2, vec3 or vec4")
+		return
 	if n.kind in ["library", "evaluate", "bridge"]: return
 	if n.kind == "entry" and n.get("stage", stage) != stage:
 		fail(n.id, "Entry belongs to " + str(n.stage))
@@ -128,6 +131,7 @@ func line(text: String, node: String) -> void:
 func expression(id: String, output: String) -> String:
 	if not nodes.has(id): return super.expression(id, output)
 	var n: Dictionary = nodes[id]
+	if n.kind == "random": return random_expression(n)
 	if n.kind == "input": return "_mm_state." + str(n.builtin)
 	if n.kind == "emit" and emitted.has(id): return "_mm_state.result_" + id
 	if n.kind == "bridge": return argument(n, "value", n.data_type)
@@ -148,6 +152,24 @@ func expression(id: String, output: String) -> String:
 	var result := evaluate_library(source.generator, source.output_index, coordinates, id, n.function_type)
 	visiting.erase(id)
 	return result
+
+func random_expression(n: Dictionary) -> String:
+	if n.data_type not in Interface.RANDOM_TYPES: return "0.0"
+	functions["particle_random"] = {"lines": preload("random.gd").SHADER.split("\n"), "stage": "", "node": n.id}
+	var particle_id := argument(n, "particle_id", "uint") if n.inputs.has("particle_id") else "_mm_state.NUMBER"
+	var system_seed := argument(n, "system_seed", "uint") if n.inputs.has("system_seed") else "_mm_state.RANDOM_SEED"
+	var seed := argument(n, "seed", "uint", n.get("seed", 0))
+	var bounds: Array[String] = []
+	for key in ["minimum", "maximum"]:
+		var value = n.get(key, 1.0 if key == "maximum" else 0.0)
+		if n.data_type != "float":
+			var components: Array = []
+			components.resize(int(n.data_type.right(1)))
+			components.fill(value)
+			value = components
+		bounds.append(argument(n, key, n.data_type, value))
+	var swizzle: String = {"float": "x", "vec2": "xy", "vec3": "xyz", "vec4": "xyzw"}.get(n.data_type, "x")
+	return "mix(%s, %s, mm_particle_random(%s, %s, %s).%s)" % [bounds[0], bounds[1], particle_id, system_seed, seed, swizzle]
 
 func generate_value(generator: MMGenBase, output_index: int, uv: String, _context: MMGenContext) -> MMGenBase.ShaderCode:
 	var id := "g" + str(generator.get_instance_id())
@@ -208,7 +230,7 @@ func static_value(generator: MMGenBase, output_index: int, uv: String) -> MMGenB
 	collect(generator, models)
 	var result := MMGenBase.ShaderCode.new()
 	for model in models.values():
-		if model.kind in ["library", "evaluate", "input", "uniform", "set", "emit"]:
+		if model.kind in ["library", "evaluate", "input", "uniform", "set", "emit", "random"]:
 			result.error = generator.get_hier_name() + ": this value requires a particle context"
 			return result
 	nodes = models
