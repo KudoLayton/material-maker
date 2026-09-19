@@ -1,0 +1,192 @@
+{
+  "type": "particle_graph",
+  "version": 1,
+  "target": "Godot 4.7",
+  "uniforms": [],
+  "render_modes": [],
+  "target_project": "",
+  "active_stage": "start",
+  "stages": {
+    "start": {
+      "nodes": [
+        {
+          "id": "entry",
+          "kind": "entry",
+          "position": [
+            40,
+            40
+          ],
+          "inputs": {}
+        },
+        {
+          "id": "output",
+          "kind": "output",
+          "position": [
+            1000,
+            40
+          ],
+          "inputs": {
+            "exec": {
+              "node": "emit_child",
+              "port": "next"
+            },
+            "TRANSFORM": {
+              "node": "transform",
+              "port": "value"
+            },
+            "COLOR": {
+              "node": "emission_status",
+              "port": "value"
+            }
+          }
+        },
+        {
+          "id": "transform",
+          "kind": "input",
+          "position": [
+            40,
+            200
+          ],
+          "inputs": {},
+          "builtin": "EMISSION_TRANSFORM"
+        },
+        {
+          "id": "position_flag",
+          "kind": "input",
+          "position": [
+            340,
+            200
+          ],
+          "inputs": {},
+          "builtin": "FLAG_EMIT_POSITION"
+        },
+        {
+          "id": "rotation_scale_flag",
+          "kind": "input",
+          "position": [
+            640,
+            200
+          ],
+          "inputs": {},
+          "builtin": "FLAG_EMIT_ROT_SCALE"
+        },
+        {
+          "id": "flags",
+          "kind": "operator",
+          "position": [
+            40,
+            370
+          ],
+          "inputs": {
+            "a": {
+              "node": "position_flag",
+              "port": "value"
+            },
+            "b": {
+              "node": "rotation_scale_flag",
+              "port": "value"
+            }
+          },
+          "operation": "bit_or",
+          "data_type": "uint"
+        },
+        {
+          "id": "emit_child",
+          "kind": "emit",
+          "position": [
+            340,
+            370
+          ],
+          "inputs": {
+            "exec": {
+              "node": "entry",
+              "port": "next"
+            },
+            "transform": {
+              "node": "transform",
+              "port": "value"
+            },
+            "flags": {
+              "node": "flags",
+              "port": "value"
+            }
+          }
+        },
+        {
+          "id": "emission_status",
+          "kind": "select",
+          "position": [
+            640,
+            370
+          ],
+          "inputs": {
+            "condition": {
+              "node": "emit_child",
+              "port": "success"
+            },
+            "true": {
+              "value": [
+                0,
+                1,
+                0,
+                1
+              ]
+            },
+            "false": {
+              "value": [
+                1,
+                0,
+                0,
+                1
+              ]
+            }
+          },
+          "data_type": "vec4"
+        }
+      ],
+      "view": {
+        "scroll": [
+          0,
+          0
+        ],
+        "zoom": 0.8,
+        "selection": []
+      }
+    },
+    "process": {
+      "nodes": [
+        {
+          "id": "entry",
+          "kind": "entry",
+          "position": [
+            40,
+            40
+          ],
+          "inputs": {}
+        },
+        {
+          "id": "output",
+          "kind": "output",
+          "position": [
+            1000,
+            40
+          ],
+          "inputs": {
+            "exec": {
+              "node": "entry",
+              "port": "next"
+            }
+          }
+        }
+      ],
+      "view": {
+        "scroll": [
+          0,
+          0
+        ],
+        "zoom": 0.8,
+        "selection": []
+      }
+    }
+  }
+}

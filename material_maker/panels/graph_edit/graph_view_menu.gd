@@ -120,6 +120,8 @@ func update_view_settings(_arg_ignore : Variant = null) -> void:
 			graph = n.get_graph_edit()
 		else:
 			continue
+		if graph == null:
+			continue
 		graph.minimap_enabled = %Minimap.button_pressed
 		graph.show_grid = %GridVisibility.button_pressed
 		graph.snapping_distance = %GridSize.get_value()
