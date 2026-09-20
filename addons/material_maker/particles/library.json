@@ -634,6 +634,81 @@
         "function_type": "sdf3d",
         "editor_profile": "supplemental_v1"
       }
+    },
+    {
+      "name": "Filter_Math_Euler_to_Quaternion",
+      "type": "shader",
+      "tree_item": "Filter/Math/Euler to Quaternion",
+      "shader_model": {
+        "name": "Euler to Quaternion",
+        "longdesc": "Euler XYZ angles using intrinsic YXZ order, matching Godot Quaternion.from_euler. Output is quaternion (x, y, z, w).",
+        "parameters": [
+          {
+            "name": "unit",
+            "label": "Unit",
+            "type": "enum",
+            "default": 0,
+            "values": [
+              {
+                "name": "Degrees",
+                "value": "0.017453292519943295"
+              },
+              {
+                "name": "Radians",
+                "value": "1.0"
+              }
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "name": "angles",
+            "type": "rgb",
+            "label": "Euler Angles",
+            "default": "vec3(0.0)"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "rgba",
+            "shortdesc": "Quaternion (x, y, z, w)",
+            "rgba": "mm_quat_euler_yxz($angles($uv) * $unit)"
+          }
+        ],
+        "global": "\nvec4 mm_quat_normalize(vec4 q) {\n\tfloat magnitude = max(max(abs(q.x), abs(q.y)), max(abs(q.z), abs(q.w)));\n\tif (!(magnitude > 0.000001) || isinf(magnitude)) { return vec4(0.0, 0.0, 0.0, 1.0); }\n\treturn normalize(q / magnitude);\n}\nvec4 mm_quat_multiply(vec4 a, vec4 b) {\n\ta = mm_quat_normalize(a);\n\tb = mm_quat_normalize(b);\n\treturn mm_quat_normalize(vec4(a.w*b.xyz + b.w*a.xyz + cross(a.xyz, b.xyz), a.w*b.w - dot(a.xyz, b.xyz)));\n}\nvec4 mm_quat_euler_yxz(vec3 angles) {\n\tvec3 s = sin(angles * 0.5);\n\tvec3 c = cos(angles * 0.5);\n\treturn mm_quat_multiply(mm_quat_multiply(vec4(0.0, s.y, 0.0, c.y), vec4(s.x, 0.0, 0.0, c.x)), vec4(0.0, 0.0, s.z, c.z));\n}\n"
+      }
+    },
+    {
+      "name": "Filter_Math_Quaternion_Multiply",
+      "type": "shader",
+      "tree_item": "Filter/Math/Quaternion Multiply",
+      "shader_model": {
+        "name": "Quaternion Multiply",
+        "longdesc": "Compose rotations A * B: apply B, then A. Current * Delta applies a local increment; Delta * Current applies a parent-space increment. Inputs and output are normalized; zero becomes identity. This is not component-wise multiplication.",
+        "parameters": [],
+        "inputs": [
+          {
+            "name": "a",
+            "type": "rgba",
+            "label": "A",
+            "default": "vec4(0.0, 0.0, 0.0, 1.0)"
+          },
+          {
+            "name": "b",
+            "type": "rgba",
+            "label": "B",
+            "default": "vec4(0.0, 0.0, 0.0, 1.0)"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "rgba",
+            "shortdesc": "Quaternion (x, y, z, w)",
+            "rgba": "mm_quat_multiply($a($uv), $b($uv))"
+          }
+        ],
+        "global": "\nvec4 mm_quat_normalize(vec4 q) {\n\tfloat magnitude = max(max(abs(q.x), abs(q.y)), max(abs(q.z), abs(q.w)));\n\tif (!(magnitude > 0.000001) || isinf(magnitude)) { return vec4(0.0, 0.0, 0.0, 1.0); }\n\treturn normalize(q / magnitude);\n}\nvec4 mm_quat_multiply(vec4 a, vec4 b) {\n\ta = mm_quat_normalize(a);\n\tb = mm_quat_normalize(b);\n\treturn mm_quat_normalize(vec4(a.w*b.xyz + b.w*a.xyz + cross(a.xyz, b.xyz), a.w*b.w - dot(a.xyz, b.xyz)));\n}\nvec4 mm_quat_euler_yxz(vec3 angles) {\n\tvec3 s = sin(angles * 0.5);\n\tvec3 c = cos(angles * 0.5);\n\treturn mm_quat_multiply(mm_quat_multiply(vec4(0.0, s.y, 0.0, c.y), vec4(s.x, 0.0, 0.0, c.x)), vec4(0.0, 0.0, s.z, c.z));\n}\n"
+      }
     }
   ]
 }
