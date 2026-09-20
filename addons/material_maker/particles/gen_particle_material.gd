@@ -4,6 +4,28 @@ class_name MMGenParticleMaterial
 
 const Interface = preload("interface.gd")
 var particle_defaults: Dictionary = {}
+const PREVIEW_DEFAULTS = {"emission": 0, "shape": 1, "amount": 128, "lifetime": 2.0, "quad_size": 0.1}
+var preview_settings: Dictionary = PREVIEW_DEFAULTS.duplicate()
+signal preview_settings_changed
+
+func valid_preview_setting(key: String, value) -> bool:
+	if not (value is float or value is int) or not is_finite(float(value)): return false
+	match key:
+		"emission", "shape": return value == 0 or value == 1
+		"amount": return value == int(value) and value >= 1 and value <= 100000
+		"lifetime": return value >= 0.01 and value <= 3600
+		"quad_size": return value >= 0.001 and value <= 1000
+	return false
+
+func set_preview_setting(key: String, value) -> bool:
+	if not valid_preview_setting(key, value): return false
+	if key in ["emission", "shape", "amount"]: value = int(value)
+	if preview_settings[key] != value:
+		preview_settings[key] = value
+		preview_settings_changed.emit()
+		update_preview()
+	return true
+
 
 func _ready() -> void:
 	MMGenParticle.register_types()
@@ -86,10 +108,15 @@ func set_3d_previews(previews: Dictionary[Node, Array]) -> void:
 func _serialize(data: Dictionary) -> Dictionary:
 	data.type = "particle_export"
 	data.particle_defaults = particle_defaults
+	data.particle_preview = preview_settings.duplicate()
 	data.export = {"last_target": export_last_target, "paths": export_paths}
 	return data
 
 func _deserialize(data: Dictionary) -> void:
+	preview_settings = PREVIEW_DEFAULTS.duplicate()
+	for key in data.get("particle_preview", {}):
+		var value = data.particle_preview[key]
+		if valid_preview_setting(key, value): preview_settings[key] = int(value) if key in ["emission", "shape", "amount"] else float(value)
 	parameters["initialize_particle"] = data.get("parameters", {}).get("initialize_particle", true)
 	particle_defaults = data.get("particle_defaults", {}).duplicate(true)
 	var saved: Dictionary = data.get("export", {})

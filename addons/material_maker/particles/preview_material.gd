@@ -3,7 +3,7 @@ extends RefCounted
 const Exporter = preload("exporter.gd")
 const BufferState = preload("../engine/dependencies.gd").Buffer
 
-static func prepare(result: Dictionary, tree: SceneTree) -> Dictionary:
+static func prepare(result: Dictionary, tree: SceneTree, still_current: Callable = Callable()) -> Dictionary:
 	if not result.errors.is_empty(): return result
 	var parameters := {}
 	var texture_versions := {}
@@ -12,6 +12,9 @@ static func prepare(result: Dictionary, tree: SceneTree) -> Dictionary:
 		var value = result.mm_uniforms[name].value
 		if value is MMTexture:
 			while true:
+				if still_current.is_valid() and not still_current.call():
+					result["cancelled"] = true
+					return result
 				var pending := false
 				for buffer in mm_deps.buffers.values():
 					if not buffer.object is MMGenTexture or buffer.object.texture != value: continue
@@ -38,6 +41,9 @@ static func prepare(result: Dictionary, tree: SceneTree) -> Dictionary:
 			continue
 		var paths: Array = uniform.get("resources", []).duplicate() if count else [uniform.get("resource", "")]
 		if count and paths.is_empty(): paths.resize(count); paths.fill("")
+		if count and paths.size() != count:
+			result.errors.append({"message": "Texture array size mismatch: " + uniform.name})
+			return result
 		var textures: Array = []
 		for path in paths:
 			if path == "":

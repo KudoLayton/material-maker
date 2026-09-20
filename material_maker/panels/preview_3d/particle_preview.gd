@@ -19,6 +19,10 @@ var building := false
 var last_signature := 0
 var textures: Dictionary = {}
 var texture_versions: Dictionary = {}
+var controls: Control
+var applied_settings: Dictionary = {}
+var circle_texture: ImageTexture
+
 
 func _ready() -> void:
 	timer.one_shot = true
@@ -47,11 +51,20 @@ func _ready() -> void:
 	mm_deps.updated.connect(textures_updated)
 	preview.visibility_changed.connect(update_playback)
 
-func _exit_tree() -> void:
-	if is_instance_valid(particles): particles.queue_free()
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if is_instance_valid(controls): controls.queue_free()
+		if is_instance_valid(particles): particles.queue_free()
 
 func set_generator(value: MMGenParticleMaterial) -> void:
 	generator = value
+	if not generator.preview_settings_changed.is_connected(apply_settings):
+		generator.preview_settings_changed.connect(apply_settings)
+	apply_settings()
+	if controls == null and preview.get("main_menu") != null:
+		controls = preload("particle_preview_controls.gd").new()
+		controls.runtime = self
+		preview.main_menu.get_node("HBox").add_child(controls)
 	schedule_refresh()
 
 func schedule_refresh() -> void:
@@ -92,9 +105,12 @@ func refresh() -> void:
 	if result.errors.is_empty():
 		textures.clear()
 		for name in result.mm_uniforms: textures[name] = result.mm_uniforms[name].value
-	result = await Preparation.prepare(result, get_tree())
+	var owner_ref: WeakRef = weakref(self)
+	result = await Preparation.prepare(result, get_tree(), func():
+		var current = owner_ref.get_ref()
+		return current != null and current.is_inside_tree() and not current.is_queued_for_deletion() and current.request_revision == revision)
 	building = false
-	if not is_inside_tree() or not is_instance_valid(generator) or revision != request_revision: return
+	if not is_inside_tree() or is_queued_for_deletion() or result.get("cancelled", false) or not is_instance_valid(generator) or revision != request_revision: return
 	if result.errors.is_empty():
 		var signature := Preparation.signature(result)
 		if signature != last_signature or particles.process_material == null:
@@ -139,3 +155,25 @@ func set_paused(value: bool) -> void:
 	paused = value
 	update_playback()
 	status_changed.emit()
+
+func apply_settings() -> void:
+	var settings: Dictionary = generator.preview_settings
+	if settings == applied_settings: return
+	var restart_needed: bool = particles.amount != int(settings.amount) or particles.lifetime != float(settings.lifetime) or particles.explosiveness != float(settings.emission)
+	particles.amount = int(settings.amount)
+	particles.lifetime = float(settings.lifetime)
+	particles.explosiveness = float(settings.emission)
+	particles.one_shot = false
+	mesh.size = Vector2.ONE * float(settings.quad_size)
+	if int(settings.shape) == 1:
+		if circle_texture == null:
+			var image := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+			for y in 64:
+				for x in 64:
+					var radius := (Vector2(x + 0.5, y + 0.5) / 64.0 - Vector2(0.5, 0.5)).length() * 2.0
+					image.set_pixel(x, y, Color(1.0, 1.0, 1.0, clampf(1.0 - radius, 0.0, 1.0)))
+			circle_texture = ImageTexture.create_from_image(image)
+		mesh.material.albedo_texture = circle_texture
+	else: mesh.material.albedo_texture = null
+	applied_settings = settings.duplicate()
+	if restart_needed: restart()

@@ -21,8 +21,10 @@ def main():
     text = run(engine, project, 'integration.log',
                ['test/particles/test_integration.tscn', '--position', '-32000,-32000', '--max-fps', '60'], 180)
     print(text)
-    for name in ['preview', 'defaults', 'defaults_ui', 'gpu', 'runtime', 'app', 'constant_ui', 'port_ui', 'random', 'unified', 'sampling', 'profiles', 'workflow', 'examples', 'internal', 'textures', 'parameters', 'parameter_edit_ui', 'parameter_array_ui']:
+    for name in ['preview', 'preview_ui', 'defaults', 'defaults_ui', 'gpu', 'runtime', 'app', 'constant_ui', 'port_ui', 'random', 'unified', 'sampling', 'profiles', 'workflow', 'examples', 'internal', 'textures', 'parameters', 'parameter_edit_ui', 'parameter_array_ui']:
         output = run(engine, project, name + '.log', ['test/particles/test_' + name + '.tscn', '--position', '-32000,-32000', '--max-fps', '60'], 180)
+        if name.startswith('preview') and any(message in output for message in ['Parameter "uniform_set" is null', 'Parameter "scenario" is null']):
+            raise RuntimeError(f'{name}: particle viewport rendering failed')
         print('\n'.join(line for line in output.splitlines() if 'PARTICLE_' in line))
     if 'PARTICLE_INTEGRATION: passed' not in text:
         raise RuntimeError('Integration test did not complete')
