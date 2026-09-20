@@ -59,6 +59,8 @@ func accept_float_expressions() -> bool:
 	return false
 
 func get_description() -> String:
+	if settings.kind == "output":
+		return "Particle stage output. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Evaluate Function can override coordinates for a branch."
 	if settings.kind == "random":
 		return "Deterministic per-particle random values. Particle ID defaults to Godot NUMBER; System Seed defaults to Godot RANDOM_SEED. Seed Offset is an additional node-specific offset, not a Godot built-in. Input default controls apply only while the corresponding input is unconnected. Random Value is the only output."
 	return "Godot particle shader. State-dependent outputs have no image preview."
@@ -102,8 +104,14 @@ func uniform_definition() -> Dictionary:
 		"value": value, "hint": parameters.get("hint", ""), "resource": parameters.get("resource", ""),
 		"resources": JSON.parse_string(str(parameters.get("resources", "[]")))}
 
+static func output_ports(stage: String) -> Dictionary:
+	var ports := Interface.ports({"kind": "output"}, stage)
+	ports.inputs.append({"name": "sampling_uv", "type": "vec2"})
+	return ports
+
 func particle_ports() -> Dictionary:
 	var n := model_data()
+	if n.kind == "output": return output_ports(n.get("stage", "process"))
 	if n.kind == "evaluate":
 		var coordinate_type: String = "vec2" if n.function_type in ["f", "rgb", "rgba", "sdf2d"] else ("vec3" if n.function_type in ["sdf3d", "sdf3dc"] else "vec4")
 		return {"inputs": [{"name": "function", "type": n.function_type}, {"name": "coordinates", "type": coordinate_type}], "outputs": [{"name": "value", "type": n.data_type}]}
@@ -116,7 +124,7 @@ func particle_ports() -> Dictionary:
 func port_defs(side: String) -> Array:
 	var result: Array = []
 	for p in particle_ports()[side]:
-		var label: String = p.name
+		var label: String = "Sampling UV" if p.name == "sampling_uv" else p.name
 		if settings.kind == "random":
 			label = {"particle_id": "Particle ID (NUMBER)", "system_seed": "System Seed (RANDOM_SEED)", "seed": "Seed Offset", "minimum": "Minimum", "maximum": "Maximum", "value": "Random Value"}.get(p.name, p.name)
 		result.append({"name": p.name, "label": label, "type": p.type if p.type in FUNCTION_TYPES else value_type(p.type), "shader_type": "" if p.type in FUNCTION_TYPES else p.type})

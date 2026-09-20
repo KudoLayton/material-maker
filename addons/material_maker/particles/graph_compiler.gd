@@ -16,6 +16,7 @@ func compile_graph(graph: MMGenGraph) -> Dictionary:
 	graph_models = {}
 	state_fields = Interface.BUILTINS.start.duplicate(true)
 	state_fields.merge(Interface.BUILTINS.process)
+	state_fields["sampling_uv"] = {"type": "vec2"}
 	var data := Document.create()
 	var material = graph.get_node_or_null("Material")
 	if material != null and material.has_method("particle_configuration"):
@@ -102,8 +103,15 @@ func validate_node(n: Dictionary) -> void:
 	super.validate_node(n)
 
 func compile_stage(_graph: Dictionary) -> Array:
-	current_uv = "vec2(0.0)"
+	current_uv = "_mm_state.sampling_uv"
 	var models: Dictionary = graph_models[stage]
+	var sampling = {"id": "", "inputs": {}}
+	for model in models.values():
+		if model.kind == "output":
+			sampling.id = model.id
+			if model.inputs.has("sampling_uv"):
+				sampling.inputs.sampling_uv = model.inputs.sampling_uv
+				model.inputs.erase("sampling_uv")
 	var entries: Array = models.values().filter(func(n): return n.kind == "entry")
 	if entries.is_empty():
 		var entry := {"id": "entry", "kind": "entry", "inputs": {}}
@@ -116,9 +124,25 @@ func compile_stage(_graph: Dictionary) -> Array:
 	lines.append("};")
 	functions["particle_state"] = {"lines": lines, "node": "", "stage": ""}
 	var generated: Array = super.compile_stage({"nodes": models.values()})
+	body = []
+	cache = {}
+	visiting = {}
+	emitted = {}
+	current_uv = "vec2(0.0)"
+	var uv := "vec2(0.0)"
+	var binding = sampling.inputs.get("sampling_uv", {})
+	if not binding is Dictionary:
+		fail(sampling.id, "Malformed Sampling UV input")
+	elif binding.has("node") and not types_compatible(port_type(get_ports(nodes.get(str(binding.node), {})).outputs, binding.get("port", "value")), "vec2"):
+		fail(sampling.id, "Sampling UV requires vec2")
+	else:
+		uv = argument(sampling, "sampling_uv", "vec2", [0.0, 0.0])
 	var initial: Array = [{"text": "MMParticleState _mm_state;", "node": ""}, {"text": "float _seed_variation_ = 0.0; vec4 _controlled_variation_ = vec4(0.0);", "node": ""}]
 	for field in Interface.BUILTINS[stage]:
 		initial.append({"text": "_mm_state." + field + " = " + field + ";", "node": ""})
+	initial.append({"text": "_mm_state.sampling_uv = vec2(0.0);", "node": sampling.id})
+	initial.append_array(body)
+	initial.append({"text": "_mm_state.sampling_uv = " + uv + ";", "node": sampling.id})
 	initial.append_array(generated)
 	return initial
 

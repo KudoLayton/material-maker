@@ -24,10 +24,11 @@ func connect_output(graph, source, target_name: String, input_name: String):
 			return
 	check(false, "Missing input " + input_name)
 
-func probe(graph, assertion: String, name: String):
+func probe(graph, assertion: String, name: String, process_prelude: String = ""):
 	var result = graph.get_node("Material").compile_shader()
 	check(result.errors.is_empty(), name + ": " + str(result.errors))
 	if not result.errors.is_empty(): return
+	result.code = result.code.replace("void process() {", "void process() {\n" + process_prelude)
 	result.code = result.code.insert(result.code.rfind("}"), "COLOR = (" + assertion + ") ? vec4(0.0, 1.0, 0.0, 1.0) : vec4(1.0, 0.0, 0.0, 1.0);\n")
 	await render_probe({}, false, name, false, result)
 

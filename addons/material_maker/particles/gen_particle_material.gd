@@ -15,18 +15,18 @@ func get_type_name() -> String:
 	return "Start Output"
 
 func get_description() -> String:
-	return "Godot particle shader export. Shared render modes and resource project are configured here."
+	return "Godot particle shader export. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Shared render modes and resource project are configured here."
 
 func model_data() -> Dictionary:
 	return {"id": "g" + str(get_instance_id()), "kind": "output", "stage": "start", "inputs": particle_defaults.duplicate(true)}
 
 func particle_ports() -> Dictionary:
-	return Interface.ports(model_data(), "start")
+	return MMGenParticle.output_ports("start")
 
 func get_input_defs() -> Array:
 	var result: Array = []
 	for port in particle_ports().inputs:
-		result.append({"name": port.name, "label": port.name, "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
+		result.append({"name": port.name, "label": "Sampling UV" if port.name == "sampling_uv" else port.name, "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
 	return result
 
 func get_output_defs(_show_hidden: bool = false) -> Array:

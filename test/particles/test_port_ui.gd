@@ -43,10 +43,13 @@ func run() -> void:
 	for stage in ["Material", "Process"]:
 		var output = editor.get_node("node_" + stage)
 		var ports = output.generator.get_input_defs()
+		var original_ports = MMGenParticle.Interface.ports({"kind": "output"}, "start" if stage == "Material" else "process").inputs
+		check(ports.size() == original_ports.size() + 1 and ports[-1].name == "sampling_uv", stage + " appends Sampling UV")
+		for i in original_ports.size(): check(ports[i].name == original_ports[i].name, stage + " preserves port index " + str(i))
 		for i in ports.size():
 			var type: String = ports[i].get("shader_type", mm_io_types.types[ports[i].type].get("particle_type", ""))
 			check(output.get_input_port_color(i) == palette[type], stage + " color " + ports[i].name)
-			check(has_label(output, ports[i].name + " : " + type), stage + " label " + ports[i].name)
+			check(has_label(output, ports[i].get("label", ports[i].name) + " : " + type), stage + " label " + ports[i].name)
 	var item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Constant")
 	var created = await editor.create_nodes(item.item, Vector2(-500, 0))
 	var constant = created[0]
