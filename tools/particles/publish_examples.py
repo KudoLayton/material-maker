@@ -107,7 +107,8 @@ def main():
         {'from': 'ColorModule', 'from_port': 0, 'to': 'Material', 'to_port': 1},
         {'from': 'ColorModule', 'from_port': 0, 'to': 'process_output', 'to_port': 1}])
     write('library_gravity', effect)
-    print(f'Published {len(examples) + 1} MMGenGraph examples to {DEST}')
+    write('quaternion_rotation', json.loads((SOURCE / 'quaternion_rotation.ptex').read_text(encoding='utf-8')))
+    print(f'Published {len(examples) + 2} MMGenGraph examples to {DEST}')
 
 
 if __name__ == '__main__':

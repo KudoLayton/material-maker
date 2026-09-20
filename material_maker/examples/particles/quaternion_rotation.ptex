@@ -1,0 +1,382 @@
+{
+  "connections": [
+    {
+      "from": "InitialAngles",
+      "from_port": 0,
+      "to": "Filter_Math_Euler_to_Quaternion",
+      "to_port": 0
+    },
+    {
+      "from": "Filter_Math_Euler_to_Quaternion",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 13
+    },
+    {
+      "from": "Delta",
+      "from_port": 0,
+      "to": "graph",
+      "to_port": 0
+    },
+    {
+      "from": "Particles_Read_Rotation",
+      "from_port": 0,
+      "to": "Filter_Math_Quaternion_Multiply",
+      "to_port": 0
+    },
+    {
+      "from": "graph",
+      "from_port": 0,
+      "to": "Filter_Math_Quaternion_Multiply",
+      "to_port": 1
+    },
+    {
+      "from": "Filter_Math_Quaternion_Multiply",
+      "from_port": 0,
+      "to": "Process",
+      "to_port": 13
+    }
+  ],
+  "label": "Graph",
+  "longdesc": "Start at 30 degrees around Z, then integrate 90 degrees per second through a reusable subgraph. Disable draw-material billboard to see the full rotation.",
+  "name": "@Node@2",
+  "node_position": {
+    "x": 0.0,
+    "y": 0.0
+  },
+  "nodes": [
+    {
+      "export": {
+        "last_target": "",
+        "paths": {}
+      },
+      "export_paths": {},
+      "name": "Material",
+      "node_position": {
+        "x": 840,
+        "y": 0
+      },
+      "parameters": {
+        "collision_use_scale": false,
+        "disable_force": false,
+        "disable_velocity": false,
+        "initialize_particle": true,
+        "keep_data": false,
+        "target_project": "",
+        "transform_mode": 0
+      },
+      "particle_defaults": {},
+      "particle_preview": {
+        "amount": 128,
+        "emission": 0,
+        "lifetime": 2.0,
+        "quad_size": 0.1,
+        "shape": 1
+      },
+      "seed_int": 0,
+      "type": "particle_export"
+    },
+    {
+      "name": "Process",
+      "node_position": {
+        "x": 1260,
+        "y": 0
+      },
+      "parameters": {
+        "transform_mode": 0
+      },
+      "seed_int": 0,
+      "settings": {
+        "kind": "output",
+        "stage": "process"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "InitialAngles",
+      "node_position": {
+        "x": 0,
+        "y": 0
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 30.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "name": "Filter_Math_Euler_to_Quaternion",
+      "node_position": {
+        "x": 420,
+        "y": 0
+      },
+      "parameters": {
+        "unit": 0.0
+      },
+      "seed_int": 0,
+      "shader_model": {
+        "global": "\nvec4 mm_quat_normalize(vec4 q) {\n\tfloat magnitude = max(max(abs(q.x), abs(q.y)), max(abs(q.z), abs(q.w)));\n\tif (!(magnitude > 0.000001) || isinf(magnitude)) { return vec4(0.0, 0.0, 0.0, 1.0); }\n\treturn normalize(q / magnitude);\n}\nvec4 mm_quat_multiply(vec4 a, vec4 b) {\n\ta = mm_quat_normalize(a);\n\tb = mm_quat_normalize(b);\n\treturn mm_quat_normalize(vec4(a.w*b.xyz + b.w*a.xyz + cross(a.xyz, b.xyz), a.w*b.w - dot(a.xyz, b.xyz)));\n}\nvec4 mm_quat_euler_yxz(vec3 angles) {\n\tvec3 s = sin(angles * 0.5);\n\tvec3 c = cos(angles * 0.5);\n\treturn mm_quat_multiply(mm_quat_multiply(vec4(0.0, s.y, 0.0, c.y), vec4(s.x, 0.0, 0.0, c.x)), vec4(0.0, 0.0, s.z, c.z));\n}\n",
+        "inputs": [
+          {
+            "default": "vec3(0.0)",
+            "label": "Euler Angles",
+            "name": "angles",
+            "type": "rgb"
+          }
+        ],
+        "longdesc": "Euler XYZ angles using intrinsic YXZ order, matching Godot Quaternion.from_euler. Output is quaternion (x, y, z, w).",
+        "name": "Euler to Quaternion",
+        "outputs": [
+          {
+            "rgba": "mm_quat_euler_yxz($angles($uv) * $unit)",
+            "shortdesc": "Quaternion (x, y, z, w)",
+            "type": "rgba"
+          }
+        ],
+        "parameters": [
+          {
+            "default": 0.0,
+            "label": "Unit",
+            "name": "unit",
+            "type": "enum",
+            "values": [
+              {
+                "name": "Degrees",
+                "value": "0.017453292519943295"
+              },
+              {
+                "name": "Radians",
+                "value": "1.0"
+              }
+            ]
+          }
+        ]
+      },
+      "type": "shader"
+    },
+    {
+      "name": "Delta",
+      "node_position": {
+        "x": 0,
+        "y": 480
+      },
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "builtin": "DELTA",
+        "kind": "input"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "Particles_Read_Rotation",
+      "node_position": {
+        "x": 0,
+        "y": 960
+      },
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "component": "rotation",
+        "kind": "transform_read"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "Filter_Math_Quaternion_Multiply",
+      "node_position": {
+        "x": 840,
+        "y": 480
+      },
+      "parameters": {},
+      "seed_int": 0,
+      "shader_model": {
+        "global": "\nvec4 mm_quat_normalize(vec4 q) {\n\tfloat magnitude = max(max(abs(q.x), abs(q.y)), max(abs(q.z), abs(q.w)));\n\tif (!(magnitude > 0.000001) || isinf(magnitude)) { return vec4(0.0, 0.0, 0.0, 1.0); }\n\treturn normalize(q / magnitude);\n}\nvec4 mm_quat_multiply(vec4 a, vec4 b) {\n\ta = mm_quat_normalize(a);\n\tb = mm_quat_normalize(b);\n\treturn mm_quat_normalize(vec4(a.w*b.xyz + b.w*a.xyz + cross(a.xyz, b.xyz), a.w*b.w - dot(a.xyz, b.xyz)));\n}\nvec4 mm_quat_euler_yxz(vec3 angles) {\n\tvec3 s = sin(angles * 0.5);\n\tvec3 c = cos(angles * 0.5);\n\treturn mm_quat_multiply(mm_quat_multiply(vec4(0.0, s.y, 0.0, c.y), vec4(s.x, 0.0, 0.0, c.x)), vec4(0.0, 0.0, s.z, c.z));\n}\n",
+        "inputs": [
+          {
+            "default": "vec4(0.0, 0.0, 0.0, 1.0)",
+            "label": "A",
+            "name": "a",
+            "type": "rgba"
+          },
+          {
+            "default": "vec4(0.0, 0.0, 0.0, 1.0)",
+            "label": "B",
+            "name": "b",
+            "type": "rgba"
+          }
+        ],
+        "longdesc": "Compose rotations A * B: apply B, then A. Current * Delta applies a local increment; Delta * Current applies a parent-space increment. Inputs and output are normalized; zero becomes identity. This is not component-wise multiplication.",
+        "name": "Quaternion Multiply",
+        "outputs": [
+          {
+            "rgba": "mm_quat_multiply($a($uv), $b($uv))",
+            "shortdesc": "Quaternion (x, y, z, w)",
+            "type": "rgba"
+          }
+        ],
+        "parameters": []
+      },
+      "type": "shader"
+    },
+    {
+      "connections": [
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "AngularVelocity",
+          "to_port": 1
+        },
+        {
+          "from": "AngularVelocity",
+          "from_port": 0,
+          "to": "Filter_Math_Euler_to_Quaternion_2",
+          "to_port": 0
+        },
+        {
+          "from": "Filter_Math_Euler_to_Quaternion_2",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        }
+      ],
+      "label": "Graph",
+      "longdesc": "",
+      "name": "graph",
+      "node_position": {
+        "x": 420,
+        "y": 480
+      },
+      "nodes": [
+        {
+          "name": "AngularVelocity",
+          "node_position": {
+            "x": 420,
+            "y": 0
+          },
+          "parameters": {
+            "clamp": false,
+            "d_in1_x": 0.0,
+            "d_in1_y": 0.0,
+            "d_in1_z": 90.0,
+            "d_in2_x": 0.0,
+            "d_in2_y": 0.0,
+            "d_in2_z": 0.0,
+            "op": 2
+          },
+          "seed_int": 0,
+          "type": "math_v3"
+        },
+        {
+          "name": "Filter_Math_Euler_to_Quaternion_2",
+          "node_position": {
+            "x": 840,
+            "y": 0
+          },
+          "parameters": {
+            "unit": 0.0
+          },
+          "seed_int": 0,
+          "shader_model": {
+            "global": "\nvec4 mm_quat_normalize(vec4 q) {\n\tfloat magnitude = max(max(abs(q.x), abs(q.y)), max(abs(q.z), abs(q.w)));\n\tif (!(magnitude > 0.000001) || isinf(magnitude)) { return vec4(0.0, 0.0, 0.0, 1.0); }\n\treturn normalize(q / magnitude);\n}\nvec4 mm_quat_multiply(vec4 a, vec4 b) {\n\ta = mm_quat_normalize(a);\n\tb = mm_quat_normalize(b);\n\treturn mm_quat_normalize(vec4(a.w*b.xyz + b.w*a.xyz + cross(a.xyz, b.xyz), a.w*b.w - dot(a.xyz, b.xyz)));\n}\nvec4 mm_quat_euler_yxz(vec3 angles) {\n\tvec3 s = sin(angles * 0.5);\n\tvec3 c = cos(angles * 0.5);\n\treturn mm_quat_multiply(mm_quat_multiply(vec4(0.0, s.y, 0.0, c.y), vec4(s.x, 0.0, 0.0, c.x)), vec4(0.0, 0.0, s.z, c.z));\n}\n",
+            "inputs": [
+              {
+                "default": "vec3(0.0)",
+                "label": "Euler Angles",
+                "name": "angles",
+                "type": "rgb"
+              }
+            ],
+            "longdesc": "Euler XYZ angles using intrinsic YXZ order, matching Godot Quaternion.from_euler. Output is quaternion (x, y, z, w).",
+            "name": "Euler to Quaternion",
+            "outputs": [
+              {
+                "rgba": "mm_quat_euler_yxz($angles($uv) * $unit)",
+                "shortdesc": "Quaternion (x, y, z, w)",
+                "type": "rgba"
+              }
+            ],
+            "parameters": [
+              {
+                "default": 0.0,
+                "label": "Unit",
+                "name": "unit",
+                "type": "enum",
+                "values": [
+                  {
+                    "name": "Degrees",
+                    "value": "0.017453292519943295"
+                  },
+                  {
+                    "name": "Radians",
+                    "value": "1.0"
+                  }
+                ]
+              }
+            ]
+          },
+          "type": "shader"
+        },
+        {
+          "name": "gen_inputs",
+          "node_position": {
+            "x": 0,
+            "y": 0
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "shader_type": "float",
+              "type": "f"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_outputs",
+          "node_position": {
+            "x": 1260,
+            "y": 0
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "port0",
+              "type": "rgba"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_parameters",
+          "node_position": {
+            "x": 0,
+            "y": 480
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "remote",
+          "widgets": []
+        }
+      ],
+      "parameters": {},
+      "seed_int": 0,
+      "shortdesc": "Angular velocity to rotation increment",
+      "type": "graph"
+    }
+  ],
+  "parameters": {},
+  "seed_int": 0,
+  "shortdesc": "Quaternion particle rotation",
+  "type": "graph"
+}

@@ -7,11 +7,30 @@
 1. 확장 빌드의 `material_maker.exe`에서 **File → New Particle Shader**를 선택합니다.
 2. 같은 캔버스의 **Start Output**은 초기화, **Process Output**은 매 프레임 처리입니다.
 3. 기존 Library의 **Uniform / Grayscale Uniform**, **Math / Vec3 Math**, **Combine / Decompose**, Noise 등으로 계산을 구성합니다. 필요한 상태만 **Particles → Read**로 가져옵니다.
-4. 원하는 계산을 출력의 COLOR, VELOCITY, MASS, TRANSFORM 등에 연결합니다. Start는 아래 기본 초기화 이후 연결한 값을 기록합니다. Process는 연결하지 않은 상태를 바꾸지 않습니다.
+4. 원하는 계산을 출력의 COLOR, VELOCITY, MASS, Position·Rotation·Scale 등에 연결합니다. Start는 아래 기본 초기화 이후 연결한 값을 기록합니다. Process는 연결하지 않은 상태를 바꾸지 않습니다.
 5. 노드들을 선택하고 기존 **Create subgraph**를 사용합니다. 입력·출력·파라미터를 노출하고 기존 방식으로 라이브러리에 저장할 수 있습니다. 출력 두 개는 최상위에 남습니다.
 6. 기존 Export 메뉴에서 **Godot 4/Particles**를 선택합니다. `.gdshader`, `.tres`, 필요한 `_texture_N.res`를 함께 보관합니다. Godot에서는 `.tres`를 사용합니다.
 
-`examples/particles`의 blank, gravity, collision, subparticle, library_module, library_gravity 예제를 사용할 수 있습니다. `godot/project.godot`는 실제 파티클 실행 예제입니다.
+`examples/particles`의 blank, gravity, collision, subparticle, library_module, library_gravity, quaternion_rotation 예제를 사용할 수 있습니다. `godot/project.godot`는 실제 파티클 실행 예제입니다.
+
+## Position·Rotation·Scale과 Quaternion
+
+새 문서의 Start / Process Output은 **Transform Mode → Components**를 기본으로 사용합니다. Position·Scale은 Color (`vec3`), Rotation은 RGBA (`vec4`)로 연결합니다. 색상을 뜻하는 값이 아니므로 부호와 1을 넘는 값을 그대로 사용할 수 있습니다. 기존 문서는 **Matrix** 모드와 TRANSFORM 연결을 유지합니다.
+
+- 연결한 성분만 절대값으로 설정합니다. 미연결 성분은 현재 값을 유지합니다. Position만 연결하면 나머지 행렬을 변경하지 않습니다.
+- Quaternion 순서는 `(x, y, z, w)`, 단위 회전은 `(0, 0, 0, 1)`입니다. Rotation과 Quaternion Multiply는 입력을 정규화하며, 거의 0인 입력은 단위 회전으로 취급합니다.
+- **Filter → Math → Euler to Quaternion**: XYZ 각도를 RGBA quaternion으로 변환합니다. 기본 단위는 Degrees이며 Radians로 바꿀 수 있습니다. 회전 순서는 Godot `Quaternion.from_euler()`와 같은 intrinsic YXZ입니다.
+- **Filter → Math → Quaternion Multiply**: `A * B`는 B 다음 A를 적용하는 회전 합성입니다. 일반 RGBA의 성분별 곱셈과 다릅니다. `Current * Delta`는 파티클의 로컬 축 기준 증분, `Delta * Current`는 부모 좌표계 기준 증분입니다.
+- **Particles → Read → Position / Rotation / Scale**: 현재 TRANSFORM의 성분을 읽습니다. 실행 체인에서 Write TRANSFORM을 사용했다면 변경된 값을 읽습니다. Position 좌표계는 Godot `local_coords`에 따른 TRANSFORM 좌표계입니다.
+- 모드를 바꿀 때 사라질 입력에 연결이나 명시적 값이 있으면 전환을 막고 안내를 표시합니다. 해당 입력을 해제한 뒤 전환하세요. COLOR·VELOCITY·Sampling UV 등 공통 입력의 연결은 유지됩니다.
+
+**초기 회전 설정:** Vec3 Math로 `(0, 0, 30)`을 만들고 Euler to Quaternion → Start Output의 Rotation에 연결하면 Z축 30도 회전으로 시작합니다.
+
+**회전 누적:** 각속도 `(0, 0, 90)`과 Read DELTA를 Vec3 Math의 곱셈으로 계산하고 Euler to Quaternion으로 변환합니다. Read Rotation을 Quaternion Multiply의 A에, 변환 결과를 B에 연결한 뒤 Process Output의 Rotation에 연결합니다. `quaternion_rotation.ptex`는 각속도 계산을 subgraph로 묶은 예제이며 기존 방식으로 라이브러리에 저장해 재사용할 수 있습니다. 변환·합성 노드는 일반 Material Maker 그래프에서도 동작합니다.
+
+회전·크기를 바꾸면 현재 행렬에서 필요한 성분을 읽어 `rotation × scale`로 재구성합니다. 음수 Scale은 Godot처럼 determinant 부호를 적용한 축 길이로 읽으므로 원래 입력한 축별 부호와 다를 수 있지만 일반 TRS 행렬은 재구성 시 같은 변환을 표현합니다. 기울임은 직교화되므로 정확히 유지하려면 Matrix 모드를 사용하세요. 축 길이나 정규화한 기저의 determinant가 `1e-6` 이하로 퇴화하면 Rotation 읽기는 단위 회전으로 돌아갑니다. Scale 0으로 잃은 회전은 행렬에서 복원할 수 없으므로 다시 키울 때 원하는 Rotation도 함께 연결하세요.
+
+기존 3D Preview의 Quad는 카메라 정렬을 사용하므로 전체 3D 회전이 그대로 보이지 않을 수 있습니다. 회전 결과를 확인하려면 Godot의 Quad 재질에서 billboard를 끄세요. 미리보기와 export는 같은 process shader 계산을 사용합니다. 이 기능은 내부 계산값을 외부 파라미터로 추가하지 않습니다.
 
 ## 기존 노드 활용
 

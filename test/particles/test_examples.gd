@@ -11,7 +11,7 @@ func inspect_example(data: Dictionary, name: String) -> void:
 
 func run():
 	DirAccess.make_dir_recursive_absolute("res://exported/published")
-	for name in ["blank", "gravity", "collision", "subparticle", "library_module", "library_gravity"]:
+	for name in ["blank", "gravity", "collision", "subparticle", "library_module", "library_gravity", "quaternion_rotation"]:
 		var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://material_maker/examples/particles/" + name + ".ptex"))
 		inspect_example(data, name)
 		if name in ["gravity", "collision", "library_gravity"]:
