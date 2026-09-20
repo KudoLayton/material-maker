@@ -161,15 +161,15 @@ func compile_stage(graph: Dictionary) -> Array:
 				line("if (" + enabled + ") { " + result + " = emit_subparticle(" + ", ".join(arguments) + "); }", current)
 				emitted[current] = result
 			"output":
-				var assignments: Array[String] = []
+				var values: Dictionary = {}
 				for p in get_ports(n).inputs:
 					if p.name == "exec" or not n.get("inputs", {}).has(p.name):
 						continue
 					var value: String = argument(n, p.name, p.type)
 					var temporary: String = "output_" + p.name
 					line(p.type + " " + temporary + " = " + value + ";", current)
-					assignments.append(p.name + " = " + temporary + ";")
-				for assignment in assignments:
+					values[p.name] = temporary
+				for assignment in output_assignments(n, values):
 					line(assignment, current)
 		current = successors.get(current, "")
 	if not visited.has(outputs[0]):
@@ -178,6 +178,11 @@ func compile_stage(graph: Dictionary) -> Array:
 		if n.kind in ["set", "emit"] and not visited.has(n.id):
 			fail(n.id, "Connect this action to the execution chain")
 	return body.duplicate()
+
+func output_assignments(_n: Dictionary, values: Dictionary) -> Array[String]:
+	var assignments: Array[String] = []
+	for key in values: assignments.append(key + " = " + values[key] + ";")
+	return assignments
 
 func validate_node(n: Dictionary) -> void:
 	var kind: String = n.get("kind", "")

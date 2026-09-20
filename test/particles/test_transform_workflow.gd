@@ -1,0 +1,45 @@
+extends "test_transform_output.gd"
+
+func run():
+	var definitions := {}
+	for item in JSON.parse_string(FileAccess.get_file_as_string("res://addons/material_maker/particles/library.json")).lib:
+		definitions[item.tree_item] = item
+	var graph = await make_graph()
+	for name in ["Material", "Process"]: graph.get_node(name).set_parameter("transform_mode", 0)
+	var initial_angles = await add(graph, {"type": "math_v3", "name": "InitialAngles", "parameters": {"op": 0, "d_in1_x": 0.0, "d_in1_y": 0.0, "d_in1_z": 30.0}})
+	var initial = await add(graph, definitions["Filter/Math/Euler to Quaternion"].duplicate(true))
+	graph.connect_children(initial_angles, 0, initial, 0)
+	connect_output(graph, initial, "Material", "rotation")
+	var delta = await particle(graph, "Delta", {"kind": "input", "builtin": "DELTA"})
+	var speed = await add(graph, {"type": "math_v3", "name": "AngularVelocity", "parameters": {"op": 2, "d_in1_x": 0.0, "d_in1_y": 0.0, "d_in1_z": 90.0}})
+	graph.connect_children(delta, 0, speed, 1)
+	var increment = await add(graph, definitions["Filter/Math/Euler to Quaternion"].duplicate(true))
+	graph.connect_children(speed, 0, increment, 0)
+	var current = await add(graph, definitions["Particles/Read/Rotation"].duplicate(true))
+	var multiply = await add(graph, definitions["Filter/Math/Quaternion Multiply"].duplicate(true))
+	graph.connect_children(current, 0, multiply, 0)
+	graph.connect_children(increment, 0, multiply, 1)
+	connect_output(graph, multiply, "Process", "rotation")
+	var module = graph.create_subgraph([speed, increment])
+	module.shortdesc = "Angular velocity to rotation increment"
+	var exported = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(graph, "res://exported/quaternion_rotation")
+	check(exported.errors.is_empty(), "Export quaternion workflow: " + str(exported.errors))
+	check(FileAccess.get_file_as_string("res://exported/quaternion_rotation.gdshader") == graph.get_node("Material").compile_shader().code, "Preview and export use identical shader code")
+	FileAccess.open("res://exported/quaternion_rotation.ptex", FileAccess.WRITE).store_string(JSON.stringify(graph.serialize(), "\t"))
+	var result = graph.get_node("Material").compile_shader()
+	result.code = result.code.replace("void process() {", "void process() { TRANSFORM = mat4(1.0);")
+	var condition := "distance(TRANSFORM[0].xyz, vec3(cos(DELTA*PI*0.5), sin(DELTA*PI*0.5), 0.0)) < 0.0001"
+	result.code = result.code.insert(result.code.rfind("}"), "COLOR = (" + condition + ") ? vec4(0,1,0,1) : vec4(1,0,0,1); TRANSFORM = mat4(1.0);\n")
+	await render_probe({}, false, "quaternion_increment", false, result)
+	var entry = await particle(graph, "Entry", {"kind": "entry", "stage": "process"})
+	var write = await particle(graph, "WriteTransform", {"kind": "set", "builtin": "TRANSFORM"})
+	graph.connect_children(entry, 0, write, 0)
+	connect_output(graph, write, "Process", "exec")
+	result = graph.get_node("Material").compile_shader()
+	check(result.errors.is_empty(), "Compile transform action chain")
+	result.code = result.code.replace("void process() {", "void process() { TRANSFORM = mat4(vec4(1,0,0,0),vec4(0,0,1,0),vec4(0,-1,0,0),vec4(0,0,0,1));")
+	result.code = result.code.insert(result.code.rfind("}"), "COLOR = (" + condition + ") ? vec4(0,1,0,1) : vec4(1,0,0,1); TRANSFORM = mat4(1.0);\n")
+	await render_probe({}, false, "read_after_write_transform", false, result)
+	graph.queue_free()
+	print("PARTICLE_TRANSFORM_WORKFLOW: passed" if failures.is_empty() else "PARTICLE_TRANSFORM_WORKFLOW: " + str(failures))
+	get_tree().quit(0 if failures.is_empty() else 1)

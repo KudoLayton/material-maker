@@ -742,8 +742,8 @@ func new_graph_panel() -> GraphEdit:
 func new_particle_shader():
 	var graph = new_graph_panel()
 	await graph.new_material({"nodes": [
-		{"type": "particle_export", "name": "Material"},
-		{"type": "particle_node", "name": "Process", "settings": {"kind": "output", "stage": "process"}, "node_position": {"x": 650, "y": 0}}
+		{"type": "particle_export", "name": "Material", "parameters": {"transform_mode": 0}},
+		{"type": "particle_node", "name": "Process", "parameters": {"transform_mode": 0}, "settings": {"kind": "output", "stage": "process"}, "node_position": {"x": 650, "y": 0}}
 	], "connections": []})
 	return graph
 

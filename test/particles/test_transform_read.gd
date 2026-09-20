@@ -8,9 +8,10 @@ func run():
 			readers[item.tree_item.get_file()] = item
 	check(readers.size() == 3, "Transform component readers are available")
 	if readers.size() == 3:
-		for scale_value in [Vector3.ONE, Vector3(2, 3, 4), Vector3(-2, 3, 4), Vector3(0, 2, 3)]:
+		for transform_case in [[Vector3(0.3, 0.7, -0.5), Vector3.ONE], [Vector3(0.3, 0.7, -0.5), Vector3(2, 3, 4)], [Vector3(0.3, 0.7, -0.5), Vector3(-2, 3, 4)], [Vector3(0.3, 0.7, -0.5), Vector3(0, 2, 3)], [Vector3(PI,0,0), Vector3.ONE], [Vector3(0,PI,0), Vector3.ONE], [Vector3(0,0,PI), Vector3.ONE]]:
+			var scale_value: Vector3 = transform_case[1]
 			var graph = await make_graph()
-			var q := Quaternion.from_euler(Vector3(0.3, 0.7, -0.5))
+			var q := Quaternion.from_euler(transform_case[0])
 			var basis := Basis(q).scaled_local(scale_value)
 			var columns: Array = []
 			for column in [basis.x, basis.y, basis.z]: columns.append([column.x, column.y, column.z, 0])

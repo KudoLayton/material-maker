@@ -339,3 +339,17 @@ func types_compatible(source: String, target: String) -> bool:
 		for conversion in mm_io_types.types[source].get("convert", []):
 			if conversion.type == target: return true
 	return false
+
+func output_assignments(n: Dictionary, values: Dictionary) -> Array[String]:
+	if n.get("transform_mode", 1) == 1: return super.output_assignments(n, values)
+	var ordinary := values.duplicate()
+	for key in ["position", "rotation", "scale"]: ordinary.erase(key)
+	var assignments := super.output_assignments(n, ordinary)
+	if values.has("rotation") or values.has("scale"):
+		functions["particle_transform"] = {"lines": preload("transform.gd").SHADER.split("\n"), "stage": "", "node": n.id}
+		var rotation: String = values.get("rotation", "mm_particle_rotation(TRANSFORM)")
+		var scale_value: String = values.get("scale", "mm_particle_scale(TRANSFORM)")
+		assignments.append("mat3 output_basis = mm_particle_basis(" + rotation + ", " + scale_value + ");")
+		for i in 3: assignments.append("TRANSFORM[%d] = vec4(output_basis[%d], 0.0);" % [i, i])
+	if values.has("position"): assignments.append("TRANSFORM[3].xyz = " + values.position + ";")
+	return assignments

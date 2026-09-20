@@ -40,22 +40,28 @@ func get_description() -> String:
 	return "Godot particle shader export. Initialize Particle resets restarted position/basis to the emitter, velocity to zero, color to white and custom to zero before graph evaluation; keep_data skips this. Explicit outputs override defaults. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Shared render modes and resource project are configured here."
 
 func model_data() -> Dictionary:
-	return {"id": "g" + str(get_instance_id()), "kind": "output", "stage": "start", "inputs": particle_defaults.duplicate(true)}
+	return {"id": "g" + str(get_instance_id()), "kind": "output", "stage": "start", "transform_mode": int(parameters.get("transform_mode", 1)), "inputs": particle_defaults.duplicate(true)}
 
 func particle_ports() -> Dictionary:
-	return MMGenParticle.output_ports("start")
+	return MMGenParticle.output_ports("start", int(parameters.get("transform_mode", 1)))
 
 func get_input_defs() -> Array:
 	var result: Array = []
 	for port in particle_ports().inputs:
-		result.append({"name": port.name, "label": {"sampling_uv": "Sampling UV", "exec": "Execution"}.get(port.name, port.name), "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
+		result.append({"name": port.name, "label": {"sampling_uv": "Sampling UV", "exec": "Execution", "position": "Position", "rotation": "Rotation (Quaternion)", "scale": "Scale"}.get(port.name, port.name), "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
 	return result
 
 func get_output_defs(_show_hidden: bool = false) -> Array:
 	return []
 
+func set_parameter(key: String, value) -> void:
+	if key == "transform_mode":
+		preload("output_mode.gd").set_mode(self, value)
+		return
+	super.set_parameter(key, value)
+
 func get_parameter_defs() -> Array:
-	var result: Array = [{"name": "initialize_particle", "label": "Initialize Particle", "type": "boolean", "default": true}]
+	var result: Array = [preload("output_mode.gd").parameter(self), {"name": "initialize_particle", "label": "Initialize Particle", "type": "boolean", "default": true}]
 	for mode in Interface.MODES:
 		result.append({"name": mode, "label": mode, "type": "boolean", "default": false})
 	result.append({"name": "target_project", "label": "Godot Project Directory", "type": "string", "default": ""})

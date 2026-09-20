@@ -110,6 +110,7 @@ func model_data() -> Dictionary:
 	var n := settings.duplicate(true)
 	n["id"] = "g" + str(get_instance_id())
 	n["inputs"] = settings.get("inputs", {}).duplicate(true)
+	if n.kind == "output": n["transform_mode"] = int(parameters.get("transform_mode", 1))
 	for key in ["data_type", "source_type", "operation", "function_type", "sampler_type"]:
 		if parameters.has(key):
 			var values := option_values(key, n.get("data_type", "float"))
@@ -154,14 +155,14 @@ func uniform_definition() -> Dictionary:
 		"value": value, "hint": parameters.get("hint", ""), "resource": parameters.get("resource", ""),
 		"resources": JSON.parse_string(str(parameters.get("resources", "[]")))}
 
-static func output_ports(stage: String) -> Dictionary:
-	var ports := Interface.ports({"kind": "output"}, stage)
+static func output_ports(stage: String, transform_mode: int = 1) -> Dictionary:
+	var ports := Interface.ports({"kind": "output", "transform_mode": transform_mode}, stage)
 	ports.inputs.append({"name": "sampling_uv", "type": "vec2"})
 	return ports
 
 func particle_ports() -> Dictionary:
 	var n := model_data()
-	if n.kind == "output": return output_ports(n.get("stage", "process"))
+	if n.kind == "output": return output_ports(n.get("stage", "process"), n.transform_mode)
 	if n.kind == "evaluate":
 		var coordinate_type: String = "vec2" if n.function_type in ["f", "rgb", "rgba", "sdf2d"] else ("vec3" if n.function_type in ["sdf3d", "sdf3dc"] else "vec4")
 		return {"inputs": [{"name": "function", "type": n.function_type}, {"name": "coordinates", "type": coordinate_type}], "outputs": [{"name": "value", "type": n.data_type}]}
@@ -174,7 +175,7 @@ func particle_ports() -> Dictionary:
 func port_defs(side: String) -> Array:
 	var result: Array = []
 	for p in particle_ports()[side]:
-		var label: String = {"sampling_uv": "Sampling UV", "exec": "Execution", "lod": "LOD"}.get(p.name, str(p.name).capitalize())
+		var label: String = {"sampling_uv": "Sampling UV", "exec": "Execution", "lod": "LOD", "rotation": "Rotation (Quaternion)"}.get(p.name, str(p.name).capitalize())
 		if p.name == str(p.name).to_upper(): label = p.name
 		if str(p.name).begins_with("c") and str(p.name).substr(1).is_valid_int():
 			var index := int(str(p.name).substr(1))
@@ -212,6 +213,7 @@ static func number_parameter(key: String, value, integer: bool = false) -> Dicti
 func get_parameter_defs() -> Array:
 	var result: Array = []
 	var n := model_data()
+	if n.kind == "output": result.append(preload("output_mode.gd").parameter(self))
 	if n.kind == "random":
 		var output_type := enum_parameter("data_type", Interface.RANDOM_TYPES, settings.get("data_type", "vec3"))
 		output_type.label = "6:Output Type"
@@ -290,6 +292,9 @@ func get_parameter(key: String):
 	return super.get_parameter(key)
 
 func set_parameter(key: String, value) -> void:
+	if key == "transform_mode" and settings.kind == "output":
+		preload("output_mode.gd").set_mode(self, value)
+		return
 	if key == "is_array" and not loading_parameters and value == parameters.get("is_array", false): return
 	if is_parameter_component(key):
 		var edited = parameter_editor_value()

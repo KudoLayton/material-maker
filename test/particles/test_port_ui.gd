@@ -43,7 +43,7 @@ func run() -> void:
 	for stage in ["Material", "Process"]:
 		var output = editor.get_node("node_" + stage)
 		var ports = output.generator.get_input_defs()
-		var original_ports = MMGenParticle.Interface.ports({"kind": "output"}, "start" if stage == "Material" else "process").inputs
+		var original_ports = MMGenParticle.Interface.ports({"kind": "output", "transform_mode": 0}, "start" if stage == "Material" else "process").inputs
 		check(ports.size() == original_ports.size() + 1 and ports[-1].name == "sampling_uv", stage + " appends Sampling UV")
 		for i in original_ports.size(): check(ports[i].name == original_ports[i].name, stage + " preserves port index " + str(i))
 		for i in ports.size():

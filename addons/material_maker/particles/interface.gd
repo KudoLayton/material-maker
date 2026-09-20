@@ -20,7 +20,10 @@ static func ports(n: Dictionary, stage: String, uniforms: Array = []) -> Diction
 			inputs = [port("exec", "exec")]
 			for key in BUILTINS.get(stage, {}):
 				if BUILTINS[stage][key].write:
-					inputs.append(port(key, BUILTINS[stage][key].type))
+					if key == "TRANSFORM" and n.get("transform_mode", 1) == 0:
+						inputs.append_array([port("position", "vec3"), port("rotation", "vec4"), port("scale", "vec3")])
+					else:
+						inputs.append(port(key, BUILTINS[stage][key].type))
 		"transform_read":
 			outputs = [port("value", "vec4" if n.get("component") == "rotation" else "vec3")]
 		"input":
