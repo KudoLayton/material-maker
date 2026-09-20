@@ -142,6 +142,16 @@ func compile_stage(_graph: Dictionary) -> Array:
 	else:
 		uv = argument(sampling, "sampling_uv", "vec2", [0.0, 0.0])
 	var initial: Array = [{"text": "MMParticleState _mm_state;", "node": ""}, {"text": "float _seed_variation_ = 0.0; vec4 _controlled_variation_ = vec4(0.0);", "node": ""}]
+	if stage == "start" and document.get("initialize_particle", true) and "keep_data" not in document.get("render_modes", []):
+		var defaults: Array[String] = [
+			"if (RESTART_POSITION) { TRANSFORM[3] = EMISSION_TRANSFORM[3]; }",
+			"if (RESTART_ROT_SCALE) { TRANSFORM[0] = EMISSION_TRANSFORM[0]; TRANSFORM[1] = EMISSION_TRANSFORM[1]; TRANSFORM[2] = EMISSION_TRANSFORM[2]; }",
+			"if (RESTART_VELOCITY) { VELOCITY = vec3(0.0); }",
+			"if (RESTART_COLOR) { COLOR = vec4(1.0); }",
+			"if (RESTART_CUSTOM) { CUSTOM = vec4(0.0); }"
+		]
+		for statement in defaults:
+			initial.append({"text": statement, "node": sampling.id})
 	for field in Interface.BUILTINS[stage]:
 		initial.append({"text": "_mm_state." + field + " = " + field + ";", "node": ""})
 	initial.append({"text": "_mm_state.sampling_uv = vec2(0.0);", "node": sampling.id})

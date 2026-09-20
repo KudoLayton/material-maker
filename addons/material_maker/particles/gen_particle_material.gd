@@ -15,7 +15,7 @@ func get_type_name() -> String:
 	return "Start Output"
 
 func get_description() -> String:
-	return "Godot particle shader export. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Shared render modes and resource project are configured here."
+	return "Godot particle shader export. Initialize Particle resets restarted position/basis to the emitter, velocity to zero, color to white and custom to zero before graph evaluation; keep_data skips this. Explicit outputs override defaults. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Shared render modes and resource project are configured here."
 
 func model_data() -> Dictionary:
 	return {"id": "g" + str(get_instance_id()), "kind": "output", "stage": "start", "inputs": particle_defaults.duplicate(true)}
@@ -33,7 +33,7 @@ func get_output_defs(_show_hidden: bool = false) -> Array:
 	return []
 
 func get_parameter_defs() -> Array:
-	var result: Array = []
+	var result: Array = [{"name": "initialize_particle", "label": "Initialize Particle", "type": "boolean", "default": true}]
 	for mode in Interface.MODES:
 		result.append({"name": mode, "label": mode, "type": "boolean", "default": false})
 	result.append({"name": "target_project", "label": "Godot Project Directory", "type": "string", "default": ""})
@@ -43,7 +43,7 @@ func particle_configuration() -> Dictionary:
 	var modes: Array = []
 	for mode in Interface.MODES:
 		if parameters.get(mode, false): modes.append(mode)
-	return {"render_modes": modes, "target_project": str(parameters.get("target_project", "")).replace("\\", "/")}
+	return {"initialize_particle": parameters.get("initialize_particle", true), "render_modes": modes, "target_project": str(parameters.get("target_project", "")).replace("\\", "/")}
 
 func compile_shader() -> Dictionary:
 	return load("res://addons/material_maker/particles/graph_compiler.gd").new().compile_graph(get_parent())
@@ -92,6 +92,7 @@ func _serialize(data: Dictionary) -> Dictionary:
 	return data
 
 func _deserialize(data: Dictionary) -> void:
+	parameters["initialize_particle"] = data.get("parameters", {}).get("initialize_particle", true)
 	particle_defaults = data.get("particle_defaults", {}).duplicate(true)
 	var saved: Dictionary = data.get("export", {})
 	export_last_target = saved.get("last_target", "")
