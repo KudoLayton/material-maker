@@ -1,0 +1,27 @@
+extends "test_unified.gd"
+
+func run():
+	DirAccess.make_dir_recursive_absolute("res://exported")
+	var graph = await make_graph()
+	var img := Image.create(2, 2, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.2, 0.4, 0.6, 0.8))
+	img.save_png("res://internal_texture.png")
+	var source = await add(graph, {"type": "image", "name": "Image", "parameters": {"image": "res://internal_texture.png"}})
+	connect_output(graph, source, "Material", "COLOR")
+	connect_output(graph, source, "Process", "COLOR")
+	var result = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(graph, "res://exported/internal_texture")
+	check(result.errors.is_empty(), "Image exports: " + str(result.errors))
+	check(result.get("texture_parameters", {}).keys() == ["texture_1"], "Both stages share a simple texture binding")
+	var material = load("res://exported/internal_texture.tres")
+	check(material.get_shader_parameter("texture_1") is Texture2D, "Simple texture binding loads")
+	var parameter = await particle(graph, "ReservedTextureName", {"kind": "uniform", "data_type": "float", "uniform": "texture_1"})
+	connect_output(graph, parameter, "Process", "MASS")
+	result = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(graph, "res://exported/reserved_texture")
+	check(result.errors.is_empty() and result.get("texture_parameters", {}).keys() == ["texture_2"], "Texture names avoid public parameters")
+	var repeated = await preload("res://addons/material_maker/particles/graph_exporter.gd").export_graph(graph, "res://exported/repeated_texture")
+	check(repeated.errors.is_empty() and repeated.code == result.code and repeated.texture_parameters.keys() == result.texture_parameters.keys(), "Repeated exports preserve bindings")
+	graph.queue_free()
+	for frame in 5: await get_tree().process_frame
+	await mm_renderer.stop_rendering_thread()
+	print("PARTICLE_TEXTURES: failures=" + str(failures))
+	get_tree().quit(0 if failures.is_empty() else 1)

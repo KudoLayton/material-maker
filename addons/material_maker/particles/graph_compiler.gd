@@ -229,7 +229,17 @@ func evaluate_library(generator: MMGenBase, index: int, coordinates: String, own
 	serial += 1
 	var prefix := "mm_%s_%d_" % [stage, serial]
 	var symbols := RegEx.create_from_string("mm_(?:start|process)_[0-9]+_o[0-9]+|o[0-9]+")
+	var texture_names: Dictionary = {}
+	for uniform in code.uniforms:
+		if uniform.type.begins_with("sampler"):
+			texture_names[uniform.name] = texture_binding(uniform)
+	var identifiers := RegEx.create_from_string("[A-Za-z_][A-Za-z0-9_]*")
 	var rewrite = func(text: String) -> String:
+		var tokens := identifiers.search_all(text)
+		tokens.reverse()
+		for token in tokens:
+			if texture_names.has(token.get_string()):
+				text = text.left(token.get_start()) + texture_names[token.get_string()] + text.substr(token.get_end())
 		var matches := symbols.search_all(text)
 		matches.reverse()
 		for match in matches:
@@ -237,7 +247,7 @@ func evaluate_library(generator: MMGenBase, index: int, coordinates: String, own
 				text = text.insert(match.get_start(), prefix)
 		return text.replace("vec4 _controlled_variation_", "vec4 _controlled_variation_, MMParticleState _mm_state").replace("_controlled_variation_)", "_controlled_variation_, _mm_state)").replace("(, float _seed_variation_", "(float _seed_variation_").replace("(, _seed_variation_", "(_seed_variation_")
 	for uniform in code.uniforms:
-		var name: String = rewrite.call(uniform.name)
+		var name: String = texture_names.get(uniform.name, rewrite.call(uniform.name))
 		if not uniform.type.begins_with("sampler"):
 			functions[name] = {"lines": [rewrite.call(uniform.to_str("const", true))], "stage": stage, "node": owner_id}
 			continue
@@ -257,6 +267,19 @@ func evaluate_library(generator: MMGenBase, index: int, coordinates: String, own
 		fail(owner_id, "Library output cannot provide " + type)
 		return "0.0"
 	return rewrite.call(code.output_values[type])
+
+func texture_binding(uniform: MMGenBase.ShaderUniform) -> String:
+	for name in mm_uniforms:
+		var existing: MMGenBase.ShaderUniform = mm_uniforms[name]
+		if existing.type == uniform.type and existing.size == uniform.size and existing.value == uniform.value:
+			return name
+	var index := 1
+	var name := "texture_%d" % index
+	while mm_uniforms.has(name) or document.get("uniforms", []).any(func(u): return u.name == name):
+		index += 1
+		name = "texture_%d" % index
+	mm_uniforms[name] = uniform
+	return name
 
 func static_value(generator: MMGenBase, output_index: int, uv: String) -> MMGenBase.ShaderCode:
 	var models: Dictionary = {}

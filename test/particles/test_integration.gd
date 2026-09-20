@@ -102,7 +102,7 @@ func run() -> void:
 			texture_count += 1
 			var pixel: Color = texture.get_image().get_pixel(0, 0)
 			if not check(absf(pixel.r + 2.0) < 0.001 and absf(pixel.g - 3.0) < 0.001 and absf(pixel.a - 0.4) < 0.001, "HDR/alpha: " + str(pixel)): return
-	if not check(texture_count == 2, "Both stages share texture"): return
+	if not check(texture_count == 1, "Both stages share texture"): return
 	var constant = await particle("StaticColor", {"kind": "constant", "data_type": "vec4"}, {"v0": 0.75, "v1": 0.25, "v2": 0.5, "v3": 1.0})
 	var static_bridge = await particle("StaticFunction", {"kind": "bridge", "function_type": "rgba"})
 	var fast_blur = await add({"type": "fast_blur", "name": "FastBlur"})
