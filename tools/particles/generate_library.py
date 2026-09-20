@@ -20,6 +20,8 @@ def main():
         add('Particles/Read/' + name, {'kind': 'input', 'builtin': name})
         if definition.get('write'):
             add('Particles/Write/' + name, {'kind': 'set', 'builtin': name})
+    for component in ['position', 'rotation', 'scale']:
+        add('Particles/Read/' + component.capitalize(), {'kind': 'transform_read', 'component': component})
     for stage in ['start', 'process']:
         add('Particles/Execution/' + stage.capitalize() + ' Entry', {'kind': 'entry', 'stage': stage})
     add('Particles/Random', {'kind': 'random', 'data_type': 'vec3'})

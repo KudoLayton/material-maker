@@ -98,6 +98,9 @@ static func shader_type(type: String) -> String:
 	return mm_io_types.types[type].get("particle_type", type) if mm_io_types.types.has(type) else type
 
 func validate_node(n: Dictionary) -> void:
+	if n.kind == "transform_read":
+		if n.get("component") not in ["position", "rotation", "scale"]: fail(n.id, "Unknown transform component")
+		return
 	if n.kind == "random":
 		if n.data_type not in Interface.RANDOM_TYPES: fail(n.id, "Random requires float, vec2, vec3 or vec4")
 		return
@@ -174,6 +177,10 @@ func expression(id: String, output: String) -> String:
 	var n: Dictionary = nodes[id]
 	if n.kind == "random": return random_expression(n)
 	if n.kind == "input": return "_mm_state." + str(n.builtin)
+	if n.kind == "transform_read":
+		if n.component == "position": return "_mm_state.TRANSFORM[3].xyz"
+		functions["particle_transform"] = {"lines": preload("transform.gd").SHADER.split("\n"), "stage": "", "node": id}
+		return "mm_particle_" + n.component + "(_mm_state.TRANSFORM)"
 	if n.kind == "emit" and emitted.has(id): return "_mm_state.result_" + id
 	if n.kind == "bridge": return argument(n, "value", n.data_type)
 	if n.kind == "library":
@@ -300,7 +307,7 @@ func static_value(generator: MMGenBase, output_index: int, uv: String) -> MMGenB
 	collect(generator, models)
 	var result := MMGenBase.ShaderCode.new()
 	for model in models.values():
-		if model.kind in ["library", "evaluate", "input", "uniform", "set", "emit", "random"]:
+		if model.kind in ["library", "evaluate", "input", "transform_read", "uniform", "set", "emit", "random"]:
 			result.error = generator.get_hier_name() + ": this value requires a particle context"
 			return result
 	nodes = models

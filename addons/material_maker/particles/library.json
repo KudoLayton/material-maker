@@ -470,6 +470,33 @@
       }
     },
     {
+      "name": "Particles_Read_Position",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/Position",
+      "settings": {
+        "kind": "transform_read",
+        "component": "position"
+      }
+    },
+    {
+      "name": "Particles_Read_Rotation",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/Rotation",
+      "settings": {
+        "kind": "transform_read",
+        "component": "rotation"
+      }
+    },
+    {
+      "name": "Particles_Read_Scale",
+      "type": "particle_node",
+      "tree_item": "Particles/Read/Scale",
+      "settings": {
+        "kind": "transform_read",
+        "component": "scale"
+      }
+    },
+    {
       "name": "Particles_Execution_Start_Entry",
       "type": "particle_node",
       "tree_item": "Particles/Execution/Start Entry",

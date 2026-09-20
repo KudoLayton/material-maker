@@ -49,6 +49,7 @@ func get_type() -> String:
 func get_type_name() -> String:
 	var n := model_data()
 	match n.kind:
+		"transform_read": return "Read " + str(n.get("component", "position")).capitalize()
 		"input": return "Read " + n.get("builtin", "VELOCITY")
 		"set": return "Write " + n.get("builtin", "VELOCITY")
 		"output": return "Process Output" if n.get("stage") == "process" else "Start Output"
@@ -71,6 +72,8 @@ func get_description() -> String:
 		return "Particle stage output. Unconnected attributes retain their current values; Process does not initialize particle state. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Evaluate Function can override coordinates for a branch."
 	if settings.kind == "random":
 		return "Deterministic per-particle random values. Particle ID defaults to Godot NUMBER; System Seed defaults to Godot RANDOM_SEED. Seed Offset is an additional node-specific offset, not a Godot built-in. Input default controls apply only while the corresponding input is unconnected. Random Value is the only output."
+	if settings.kind == "transform_read":
+		return "Read a component of current particle TRANSFORM. Rotation is quaternion (x, y, z, w). Scale uses determinant-signed column lengths; degenerate rotation becomes identity. Shear is orthogonalized. Coordinates follow TRANSFORM and local_coords."
 	var descriptions := {
 		"input": "Read a Godot particle shader built-in value.",
 		"set": "Write a Godot particle shader built-in value in execution order.",

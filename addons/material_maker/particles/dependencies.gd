@@ -7,7 +7,7 @@ static func runtime_source(generator: MMGenBase, visited: Dictionary = {}) -> St
 		return generator.get_hier_name() + ": animated shader"
 	if generator.has_method("model_data"):
 		var kind: String = generator.model_data().kind
-		if kind in ["input", "uniform", "emit", "set", "random"]: return generator.get_hier_name()
+		if kind in ["input", "transform_read", "uniform", "emit", "set", "random"]: return generator.get_hier_name()
 	for i in generator.get_input_defs().size():
 		var source = source(generator, i)
 		if source != null:

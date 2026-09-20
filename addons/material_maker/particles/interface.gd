@@ -21,6 +21,8 @@ static func ports(n: Dictionary, stage: String, uniforms: Array = []) -> Diction
 			for key in BUILTINS.get(stage, {}):
 				if BUILTINS[stage][key].write:
 					inputs.append(port(key, BUILTINS[stage][key].type))
+		"transform_read":
+			outputs = [port("value", "vec4" if n.get("component") == "rotation" else "vec3")]
 		"input":
 			var item: Dictionary = BUILTINS.get(stage, {}).get(n.get("builtin", ""), {})
 			if not item.is_empty():
