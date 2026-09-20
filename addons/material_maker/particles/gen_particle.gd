@@ -3,8 +3,10 @@ extends MMGenBase
 class_name MMGenParticle
 
 const Interface = preload("interface.gd")
+const EditorProfile = preload("editor_profile.gd")
 const FUNCTION_TYPES = ["f", "rgb", "rgba", "sdf2d", "sdf3d", "sdf3dc", "tex3d_gs", "tex3d", "v4v4"]
 var settings: Dictionary = {"kind": "constant", "data_type": "float"}
+var loading_parameters := false
 
 static func value_type(type: String) -> String:
 	if type in ["float", "vec3", "vec4"]: return {"float": "f", "vec3": "rgb", "vec4": "rgba"}[type]
@@ -65,14 +67,23 @@ func get_description() -> String:
 		return "Deterministic per-particle random values. Particle ID defaults to Godot NUMBER; System Seed defaults to Godot RANDOM_SEED. Seed Offset is an additional node-specific offset, not a Godot built-in. Input default controls apply only while the corresponding input is unconnected. Random Value is the only output."
 	return "Godot particle shader. State-dependent outputs have no image preview."
 
+func option_values(key: String, type: String = "") -> Array:
+	var values: Array = Interface.TYPES
+	match key:
+		"operation": values = Interface.OPERATIONS
+		"function_type": values = FUNCTION_TYPES
+		"sampler_type": values = Interface.TYPES.filter(func(t): return t.begins_with("sampler"))
+		"data_type":
+			if settings.kind == "random": values = Interface.RANDOM_TYPES
+	return EditorProfile.options(settings.get("editor_profile", ""), settings.kind, key, type, values)
+
 func model_data() -> Dictionary:
 	var n := settings.duplicate(true)
 	n["id"] = "g" + str(get_instance_id())
 	n["inputs"] = settings.get("inputs", {}).duplicate(true)
 	for key in ["data_type", "source_type", "operation", "function_type", "sampler_type"]:
 		if parameters.has(key):
-			var values: Array = Interface.OPERATIONS if key == "operation" else (FUNCTION_TYPES if key == "function_type" else (Interface.TYPES.filter(func(t): return t.begins_with("sampler")) if key == "sampler_type" else Interface.TYPES))
-			if n.kind == "random" and key == "data_type": values = Interface.RANDOM_TYPES
+			var values := option_values(key, n.get("data_type", "float"))
 			n[key] = values[clampi(int(parameters[key]), 0, values.size() - 1)]
 	if n.kind in ["evaluate", "bridge"]:
 		n["function_type"] = n.get("function_type", "rgba")
@@ -88,13 +99,20 @@ func model_data() -> Dictionary:
 		if value is Array:
 			for i in value.size():
 				if value[i] is Array:
-					for j in value[i].size(): value[i][j] = parameters.get("v%d_%d" % [i, j], value[i][j])
-				else: value[i] = parameters.get("v%d" % i, value[i])
-		else: value = parameters.get("value", n.get("value", value))
+					for j in value[i].size(): value[i][j] = constant_component("v%d_%d" % [i, j], value[i][j], type)
+				else: value[i] = constant_component("v%d" % i, value[i], type)
+		else: value = constant_component("value", n.get("value", value), type)
 		n["value"] = value
 	if n.kind == "uniform":
 		n["uniform"] = parameters.get("uniform_name", n.get("uniform", "parameter"))
 	return n
+
+func constant_component(key: String, fallback, type: String):
+	var value = parameters.get(key, fallback)
+	var scalar := Interface.scalar_type(type)
+	if type == "bool" or scalar == "bool": return bool(value)
+	if type in ["int", "uint"] or scalar in ["int", "uint"]: return int(value)
+	return float(value)
 
 func uniform_definition() -> Dictionary:
 	var n := model_data()
@@ -162,11 +180,11 @@ func get_parameter_defs() -> Array:
 				parameter.longdesc += " Additional node-specific offset; this is not Godot's RANDOM_SEED."
 			result.append(parameter)
 	if n.kind in ["constant", "operator", "convert", "compose", "split", "select", "uniform", "array_get", "sample"]:
-		result.append(enum_parameter("data_type", Interface.TYPES, settings.get("data_type", "float")))
+		result.append(enum_parameter("data_type", option_values("data_type"), settings.get("data_type", "float")))
 	if n.kind == "sample": result.append(enum_parameter("sampler_type", Interface.TYPES.filter(func(t): return t.begins_with("sampler")), settings.get("sampler_type", "sampler2D")))
-	if n.kind == "convert": result.append(enum_parameter("source_type", Interface.TYPES, settings.get("source_type", "float")))
-	if n.kind == "operator": result.append(enum_parameter("operation", Interface.OPERATIONS, settings.get("operation", "add")))
-	if n.kind in ["evaluate", "bridge"]: result.append(enum_parameter("function_type", FUNCTION_TYPES, settings.get("function_type", "rgba")))
+	if n.kind == "convert": result.append(enum_parameter("source_type", option_values("source_type"), settings.get("source_type", "float")))
+	if n.kind == "operator": result.append(enum_parameter("operation", option_values("operation", n.data_type), settings.get("operation", "add")))
+	if n.kind in ["evaluate", "bridge"]: result.append(enum_parameter("function_type", option_values("function_type"), settings.get("function_type", "rgba")))
 	if n.kind == "constant":
 		var value = n.value
 		var integer: bool = n.get("data_type", "float") in ["int", "uint"] or Interface.scalar_type(n.get("data_type", "float")) in ["int", "uint"]
@@ -184,7 +202,12 @@ func get_parameter_defs() -> Array:
 	return result
 
 func set_parameter(key: String, value) -> void:
+	var remap_operation: bool = not loading_parameters and key == "data_type" and settings.kind == "operator" and settings.has("editor_profile")
+	var previous_operation: String = model_data().get("operation", "add") if remap_operation else ""
 	super.set_parameter(key, value)
+	if remap_operation:
+		var options := option_values("operation", model_data().data_type)
+		super.set_parameter("operation", maxi(0, options.find(previous_operation)))
 	if is_inside_tree(): all_sources_changed.call_deferred()
 	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "uniform_name", "sampler_type"]:
 		parameter_changed.emit.call_deferred("__update_all__", null)
@@ -205,3 +228,8 @@ func _serialize(data: Dictionary) -> Dictionary:
 
 func _deserialize(data: Dictionary) -> void:
 	settings = data.get("settings", settings).duplicate(true)
+
+func deserialize(data: Dictionary) -> void:
+	loading_parameters = true
+	await super.deserialize(data)
+	loading_parameters = false
