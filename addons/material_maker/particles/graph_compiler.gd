@@ -238,6 +238,9 @@ func evaluate_library(generator: MMGenBase, index: int, coordinates: String, own
 		return text.replace("vec4 _controlled_variation_", "vec4 _controlled_variation_, MMParticleState _mm_state").replace("_controlled_variation_)", "_controlled_variation_, _mm_state)").replace("(, float _seed_variation_", "(float _seed_variation_").replace("(, _seed_variation_", "(_seed_variation_")
 	for uniform in code.uniforms:
 		var name: String = rewrite.call(uniform.name)
+		if not uniform.type.begins_with("sampler"):
+			functions[name] = {"lines": [rewrite.call(uniform.to_str("const", true))], "stage": stage, "node": owner_id}
+			continue
 		mm_uniforms[name] = uniform
 		var declaration := "uniform " + uniform.type + " " + name
 		if uniform.size > 0: declaration += "[%d]" % uniform.size
