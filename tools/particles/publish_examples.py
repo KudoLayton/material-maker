@@ -31,7 +31,6 @@ def layout(graph):
 
 
 def use_stock_nodes(graph):
-    remote = {'name': 'EffectParameters', 'type': 'remote', 'widgets': [], 'parameters': {}}
     for node in graph.get('nodes', []):
         if 'nodes' in node:
             use_stock_nodes(node)
@@ -39,7 +38,7 @@ def use_stock_nodes(graph):
             continue
         settings = node['settings']
         kind, data_type = settings['kind'], settings.get('data_type')
-        if kind not in ['constant', 'uniform'] or data_type not in ['float', 'vec3', 'vec4']:
+        if kind != 'constant' or data_type not in ['float', 'vec3', 'vec4']:
             if kind in ['constant', 'operator', 'compose', 'split', 'convert', 'transform',
                         'select', 'uniform', 'array_get', 'sample', 'evaluate', 'bridge']:
                 settings['editor_profile'] = 'supplemental_v1'
@@ -47,20 +46,8 @@ def use_stock_nodes(graph):
                     node.get('parameters', {}).pop(key, None)
             continue
         parameters = node.get('parameters', {})
-        value = json.loads(parameters['default_json']) if kind == 'uniform' else settings.get('value', 0.0)
-        if kind == 'constant':
-            value = parameters.get('value', value) if data_type == 'float' else [parameters.get('v' + str(i), v) for i, v in enumerate(value)]
-        if kind == 'uniform':
-            uniform_name = parameters.get('uniform_name', settings['uniform'])
-            components = [value] if data_type == 'float' else value
-            expressions = []
-            for i, component in enumerate(components):
-                name = uniform_name if data_type == 'float' else uniform_name + '_' + 'xyzw'[i]
-                remote['widgets'].append({'name': name, 'label': name.replace('_', ' ').title(),
-                    'type': 'named_parameter', 'min': -100.0, 'max': 100.0, 'step': 0.01, 'default': component})
-                remote['parameters'][name] = component
-                expressions.append('$' + name)
-            value = expressions[0] if data_type == 'float' else expressions
+        value = settings.get('value', 0.0)
+        value = parameters.get('value', value) if data_type == 'float' else [parameters.get('v' + str(i), v) for i, v in enumerate(value)]
         node.pop('settings')
         if data_type == 'float':
             node.update(type='uniform_greyscale', parameters={'color': value})
@@ -68,10 +55,7 @@ def use_stock_nodes(graph):
             node.update(type='math_v3', parameters={'op': 0, 'clamp': False,
                 **{'d_in1_' + axis: value[i] for i, axis in enumerate('xyz')}})
         else:
-            assert kind == 'constant', 'Vector uniforms should use explicit component nodes'
             node.update(type='uniform', parameters={'color': dict(type='Color', **dict(zip('rgba', value)))})
-    if remote['widgets']:
-        graph['nodes'].append(remote)
     integrate = next((n for n in graph.get('nodes', []) if n['name'] == 'process_integrate'), None)
     if integrate is not None:
         integrate.pop('shader_model', None)
