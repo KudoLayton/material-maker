@@ -57,14 +57,14 @@
     {
       "from": "process_gravity",
       "from_port": 0,
-      "to": "process_integrate",
-      "to_port": 1
+      "to": "AccelerationStep",
+      "to_port": 0
     },
     {
       "from": "process_delta",
       "from_port": 0,
-      "to": "process_integrate",
-      "to_port": 2
+      "to": "AccelerationStep",
+      "to_port": 1
     },
     {
       "from": "process_integrate",
@@ -95,6 +95,12 @@
       "from_port": 0,
       "to": "process_choose_velocity",
       "to_port": 2
+    },
+    {
+      "from": "AccelerationStep",
+      "from_port": 0,
+      "to": "process_integrate",
+      "to_port": 1
     }
   ],
   "label": "Graph",
@@ -175,28 +181,10 @@
         "y": 960
       },
       "parameters": {
-        "array_size": 0,
-        "data_type": 3,
-        "default_json": "5.0",
-        "hint": "",
-        "resource": "",
-        "resources": "[]",
-        "uniform_name": "launch_speed"
+        "color": "$launch_speed"
       },
       "seed": 21988.0,
-      "settings": {
-        "data_type": "float",
-        "id": "speed",
-        "inputs": {},
-        "kind": "uniform",
-        "position": [
-          340.0,
-          200.0
-        ],
-        "stage": "start",
-        "uniform": "launch_speed"
-      },
-      "type": "particle_node"
+      "type": "uniform_greyscale"
     },
     {
       "name": "start_number",
@@ -233,7 +221,7 @@
             "default": "0.000000000",
             "label": "speed",
             "name": "speed",
-            "type": "particle_float"
+            "type": "f"
           },
           {
             "default": "0u",
@@ -246,8 +234,8 @@
         "name": "Launch",
         "outputs": [
           {
-            "particle_vec3": "$(name)_evaluate($speed($uv), $number($uv))",
-            "type": "particle_vec3"
+            "rgb": "$(name)_evaluate($speed($uv), $number($uv))",
+            "type": "rgb"
           }
         ],
         "parameters": []
@@ -261,24 +249,16 @@
         "y": 1920
       },
       "parameters": {
-        "data_type": 15,
-        "v0": 0.2,
-        "v1": 0.7,
-        "v2": 1.0,
-        "v3": 1.0
+        "color": {
+          "type": "Color",
+          "r": 0.2,
+          "g": 0.7,
+          "b": 1.0,
+          "a": 1.0
+        }
       },
       "seed": -41158.0,
-      "settings": {
-        "data_type": "vec4",
-        "kind": "constant",
-        "value": [
-          0.2,
-          0.7,
-          1.0,
-          1.0
-        ]
-      },
-      "type": "particle_node"
+      "type": "uniform"
     },
     {
       "name": "process_entry",
@@ -303,7 +283,7 @@
     {
       "name": "process_output",
       "node_position": {
-        "x": 1680,
+        "x": 2100,
         "y": 0
       },
       "parameters": {},
@@ -369,69 +349,27 @@
         "y": 3840
       },
       "parameters": {
-        "array_size": 0,
-        "data_type": 14,
-        "default_json": "[0.0,-9.8,0.0]",
-        "hint": "",
-        "resource": "",
-        "resources": "[]",
-        "uniform_name": "gravity"
+        "op": 0,
+        "clamp": false,
+        "d_in1_x": "$gravity_x",
+        "d_in1_y": "$gravity_y",
+        "d_in1_z": "$gravity_z"
       },
       "seed": 51610.0,
-      "settings": {
-        "data_type": "vec3",
-        "id": "gravity",
-        "inputs": {},
-        "kind": "uniform",
-        "position": [
-          640.0,
-          200.0
-        ],
-        "stage": "process",
-        "uniform": "gravity"
-      },
-      "type": "particle_node"
+      "type": "math_v3"
     },
     {
       "name": "process_integrate",
       "node_position": {
-        "x": 420,
+        "x": 840,
         "y": 480
       },
-      "parameters": {},
-      "seed": 55324.0,
-      "shader_model": {
-        "inputs": [
-          {
-            "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
-            "label": "velocity",
-            "name": "velocity",
-            "type": "particle_vec3"
-          },
-          {
-            "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
-            "label": "acceleration",
-            "name": "acceleration",
-            "type": "particle_vec3"
-          },
-          {
-            "default": "0.000000000",
-            "label": "delta",
-            "name": "delta",
-            "type": "particle_float"
-          }
-        ],
-        "instance": "vec3 $(name)_evaluate(vec3 velocity, vec3 acceleration, float delta) {\nreturn velocity + acceleration * delta;\n}",
-        "name": "Integrate",
-        "outputs": [
-          {
-            "particle_vec3": "$(name)_evaluate($velocity($uv), $acceleration($uv), $delta($uv))",
-            "type": "particle_vec3"
-          }
-        ],
-        "parameters": []
+      "parameters": {
+        "op": 0,
+        "clamp": false
       },
-      "type": "shader"
+      "seed": 55324.0,
+      "type": "math_v3"
     },
     {
       "name": "process_collided",
@@ -478,8 +416,8 @@
     {
       "name": "process_bounce",
       "node_position": {
-        "x": 840,
-        "y": 480
+        "x": 1260,
+        "y": 0
       },
       "parameters": {},
       "seed": 55734.0,
@@ -489,21 +427,21 @@
             "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
             "label": "velocity",
             "name": "velocity",
-            "type": "particle_vec3"
+            "type": "rgb"
           },
           {
             "default": "vec3(0.000000000, 0.000000000, 0.000000000)",
             "label": "normal",
             "name": "normal",
-            "type": "particle_vec3"
+            "type": "rgb"
           }
         ],
         "instance": "vec3 $(name)_evaluate(vec3 velocity, vec3 normal) {\nreturn reflect(velocity, normal) * 0.8;\n}",
         "name": "Bounce",
         "outputs": [
           {
-            "particle_vec3": "$(name)_evaluate($velocity($uv), $normal($uv))",
-            "type": "particle_vec3"
+            "rgb": "$(name)_evaluate($velocity($uv), $normal($uv))",
+            "type": "rgb"
           }
         ],
         "parameters": []
@@ -513,12 +451,10 @@
     {
       "name": "process_choose_velocity",
       "node_position": {
-        "x": 1260,
+        "x": 1680,
         "y": 0
       },
-      "parameters": {
-        "data_type": 14
-      },
+      "parameters": {},
       "seed": 20546.0,
       "settings": {
         "data_type": "vec3",
@@ -529,9 +465,74 @@
           340.0,
           540.0
         ],
-        "stage": "process"
+        "stage": "process",
+        "editor_profile": "supplemental_v1"
       },
       "type": "particle_node"
+    },
+    {
+      "name": "EffectParameters",
+      "type": "remote",
+      "widgets": [
+        {
+          "name": "launch_speed",
+          "label": "Launch Speed",
+          "type": "named_parameter",
+          "min": -100.0,
+          "max": 100.0,
+          "step": 0.01,
+          "default": 5.0
+        },
+        {
+          "name": "gravity_x",
+          "label": "Gravity X",
+          "type": "named_parameter",
+          "min": -100.0,
+          "max": 100.0,
+          "step": 0.01,
+          "default": 0.0
+        },
+        {
+          "name": "gravity_y",
+          "label": "Gravity Y",
+          "type": "named_parameter",
+          "min": -100.0,
+          "max": 100.0,
+          "step": 0.01,
+          "default": -9.8
+        },
+        {
+          "name": "gravity_z",
+          "label": "Gravity Z",
+          "type": "named_parameter",
+          "min": -100.0,
+          "max": 100.0,
+          "step": 0.01,
+          "default": 0.0
+        }
+      ],
+      "parameters": {
+        "launch_speed": 5.0,
+        "gravity_x": 0.0,
+        "gravity_y": -9.8,
+        "gravity_z": 0.0
+      },
+      "node_position": {
+        "x": 0,
+        "y": 5280
+      }
+    },
+    {
+      "name": "AccelerationStep",
+      "type": "math_v3",
+      "parameters": {
+        "op": 2,
+        "clamp": false
+      },
+      "node_position": {
+        "x": 420,
+        "y": 480
+      }
     }
   ],
   "parameters": {},

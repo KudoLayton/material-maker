@@ -86,7 +86,7 @@ def main():
     shutil.copytree(ROOT / 'material_maker/examples/particles', output / 'examples/particles', dirs_exist_ok=True)
     for name in ['gravity', 'collision', 'subparticle', 'library_gravity']:
         for suffix in ['.gdshader', '.tres']:
-            shutil.copy2(ROOT / 'build/particle-integration/app/exported' / (name + suffix), output / 'examples/particles/godot' / (name + suffix))
+            shutil.copy2(ROOT / 'build/particle-integration/app/exported/published' / (name + suffix), output / 'examples/particles/godot' / (name + suffix))
     shutil.copy2(ROOT / 'addons/material_maker/particles/README.md', output / 'PARTICLE_EDITOR_README.md')
     print(f'BUILT: {output / "material_maker.exe"}')
 

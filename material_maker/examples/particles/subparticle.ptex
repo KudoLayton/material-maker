@@ -192,10 +192,7 @@
         "x": 420,
         "y": 0
       },
-      "parameters": {
-        "data_type": 2,
-        "operation": 28
-      },
+      "parameters": {},
       "seed": 56746.0,
       "settings": {
         "data_type": "uint",
@@ -207,7 +204,8 @@
           40.0,
           370.0
         ],
-        "stage": "start"
+        "stage": "start",
+        "editor_profile": "supplemental_v1"
       },
       "type": "particle_node"
     },
@@ -237,9 +235,7 @@
         "x": 1260,
         "y": 0
       },
-      "parameters": {
-        "data_type": 15
-      },
+      "parameters": {},
       "seed": 52466.0,
       "settings": {
         "data_type": "vec4",
@@ -250,7 +246,8 @@
           640.0,
           370.0
         ],
-        "stage": "start"
+        "stage": "start",
+        "editor_profile": "supplemental_v1"
       },
       "type": "particle_node"
     },
@@ -261,24 +258,16 @@
         "y": 1920
       },
       "parameters": {
-        "data_type": 15,
-        "v0": 0.0,
-        "v1": 1.0,
-        "v2": 0.0,
-        "v3": 1.0
+        "color": {
+          "type": "Color",
+          "r": 0.0,
+          "g": 1.0,
+          "b": 0.0,
+          "a": 1.0
+        }
       },
       "seed": -42390.0,
-      "settings": {
-        "data_type": "vec4",
-        "kind": "constant",
-        "value": [
-          0.0,
-          1.0,
-          0.0,
-          1.0
-        ]
-      },
-      "type": "particle_node"
+      "type": "uniform"
     },
     {
       "name": "start_emission_status_false",
@@ -287,24 +276,16 @@
         "y": 2400
       },
       "parameters": {
-        "data_type": 15,
-        "v0": 1.0,
-        "v1": 0.0,
-        "v2": 0.0,
-        "v3": 1.0
+        "color": {
+          "type": "Color",
+          "r": 1.0,
+          "g": 0.0,
+          "b": 0.0,
+          "a": 1.0
+        }
       },
       "seed": -42700.0,
-      "settings": {
-        "data_type": "vec4",
-        "kind": "constant",
-        "value": [
-          1.0,
-          0.0,
-          0.0,
-          1.0
-        ]
-      },
-      "type": "particle_node"
+      "type": "uniform"
     },
     {
       "name": "process_entry",
