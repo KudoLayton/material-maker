@@ -31,6 +31,9 @@ func run():
 	check(choices(compare, "operation") == ["equal"] and compare.model_data().operation == "equal", "Vector Compare only exposes whole-vector equality")
 	var bridge = await particle(graph, "Function", {"kind": "bridge", "function_type": "sdf3d", "editor_profile": "supplemental_v1"})
 	check(not choices(bridge, "function_type").has("f") and not choices(bridge, "function_type").has("rgb") and not choices(bridge, "function_type").has("rgba"), "Numeric values do not need a function adapter")
+	check(graph.get_node("Material").get_input_defs()[0].label == "Execution", "Start uses the same execution label as Process")
+	var uniform = await particle(graph, "Parameter", {"kind": "uniform", "data_type": "float", "editor_profile": "supplemental_v1"})
+	check(uniform.get_parameter_def("data_type").values.filter(func(v): return v.value == "float")[0].name == "Grayscale (float)", "Shader type chooser retains Material Maker terminology")
 	graph.queue_free()
 	for frame in 5: await get_tree().process_frame
 	await mm_renderer.stop_rendering_thread()

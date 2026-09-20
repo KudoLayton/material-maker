@@ -7,6 +7,7 @@ const EditorProfile = preload("editor_profile.gd")
 const FUNCTION_TYPES = ["f", "rgb", "rgba", "sdf2d", "sdf3d", "sdf3dc", "tex3d_gs", "tex3d", "v4v4"]
 var settings: Dictionary = {"kind": "constant", "data_type": "float"}
 var loading_parameters := false
+var operations_by_type: Dictionary = {}
 
 static func value_type(type: String) -> String:
 	if type in ["float", "vec3", "vec4"]: return {"float": "f", "vec3": "rgb", "vec4": "rgba"}[type]
@@ -50,9 +51,13 @@ func get_type_name() -> String:
 		"input": return "Read " + n.get("builtin", "VELOCITY")
 		"set": return "Write " + n.get("builtin", "VELOCITY")
 		"output": return "Process Output" if n.get("stage") == "process" else "Start Output"
-		"evaluate": return "Evaluate " + n.function_type
-		"bridge": return "Value to " + n.function_type
-	return "Particle " + str(n.kind).capitalize()
+		"entry": return "Process Entry" if n.get("stage") == "process" else "Start Entry"
+		"operator": return "Compare" if settings.get("editor_profile") == "compare_v1" else "Typed Math"
+	return {"constant": "Typed Constant", "compose": "Typed Combine", "split": "Typed Decompose",
+		"convert": "Type Cast", "transform": "Matrix Transform", "select": "Select",
+		"uniform": "Typed Uniform", "array_get": "Array Element", "sample": "Texture Sample",
+		"evaluate": "Evaluate Function", "bridge": "Value to Function", "random": "Particle Random",
+		"emit": "Emit Subparticle"}.get(n.kind, str(n.kind).capitalize())
 
 func can_be_deleted() -> bool:
 	return settings.kind != "output"
@@ -65,7 +70,27 @@ func get_description() -> String:
 		return "Particle stage output. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Evaluate Function can override coordinates for a branch."
 	if settings.kind == "random":
 		return "Deterministic per-particle random values. Particle ID defaults to Godot NUMBER; System Seed defaults to Godot RANDOM_SEED. Seed Offset is an additional node-specific offset, not a Godot built-in. Input default controls apply only while the corresponding input is unconnected. Random Value is the only output."
-	return "Godot particle shader. State-dependent outputs have no image preview."
+	var descriptions := {
+		"input": "Read a Godot particle shader built-in value.",
+		"set": "Write a Godot particle shader built-in value in execution order.",
+		"entry": "Begin the execution chain for this particle stage.",
+		"emit": "Emit a subparticle in execution order. Success is available after emission.",
+		"constant": "A literal of an additional shader type. Use Grayscale Uniform, Uniform or Vec3 Math for ordinary numeric values. Existing saved constants remain supported.",
+		"operator": "Math for additional shader types. Use Math and Vec3 Math for ordinary float and Color calculations.",
+		"compose": "Combine components or matrix columns of an additional type. Use Combine for Color and RGBA.",
+		"split": "Decompose components or matrix columns of an additional type. Use Decompose for Color and RGBA.",
+		"convert": "Explicit shader type constructor. Unlike Material Maker color conversion, casting a vector to float selects its first component instead of averaging RGB.",
+		"transform": "Multiply a mat4 matrix by a vec4 vector. This does not remap image UV coordinates.",
+		"select": "Choose a value using a runtime bool condition. The existing Switch chooses a graph input through an editor setting.",
+		"uniform": "Declare an explicitly named shader uniform, including additional types, arrays and Godot hints. Use Remote for ordinary graph parameters. Currently supported by particle shader export only.",
+		"array_get": "Read an element of a shader array by index.",
+		"sample": "Sample a shader texture resource with explicit coordinates and LOD. Use Image for ordinary 2D images. Currently supported by particle shader export only.",
+		"evaluate": "Evaluate a function at explicit coordinates. Ordinary numeric connections need no adapter. Currently supported by particle shader export only.",
+		"bridge": "Provide a value as an SDF or 3D function. Grayscale, Color and RGBA values connect directly without this adapter. Existing saved adapters remain supported."
+	}
+	if settings.get("editor_profile") == "compare_v1":
+		return "Compare scalar numbers or test whole-vector equality, returning bool for runtime conditions."
+	return descriptions.get(settings.kind, "Supplemental node for particle shader authoring.")
 
 func option_values(key: String, type: String = "") -> Array:
 	var values: Array = Interface.TYPES
@@ -142,7 +167,11 @@ func particle_ports() -> Dictionary:
 func port_defs(side: String) -> Array:
 	var result: Array = []
 	for p in particle_ports()[side]:
-		var label: String = "Sampling UV" if p.name == "sampling_uv" else p.name
+		var label: String = {"sampling_uv": "Sampling UV", "exec": "Execution", "lod": "LOD"}.get(p.name, str(p.name).capitalize())
+		if p.name == str(p.name).to_upper(): label = p.name
+		if str(p.name).begins_with("c") and str(p.name).substr(1).is_valid_int():
+			var index := int(str(p.name).substr(1))
+			label = "Column %d" % (index + 1) if str(model_data().data_type).begins_with("mat") else ["X", "Y", "Z", "W"][index]
 		if settings.kind == "random":
 			label = {"particle_id": "Particle ID (NUMBER)", "system_seed": "System Seed (RANDOM_SEED)", "seed": "Seed Offset", "minimum": "Minimum", "maximum": "Maximum", "value": "Random Value"}.get(p.name, p.name)
 		result.append({"name": p.name, "label": label, "type": p.type if p.type in FUNCTION_TYPES else value_type(p.type), "shader_type": "" if p.type in FUNCTION_TYPES else p.type})
@@ -156,11 +185,21 @@ func get_output_defs(_show_hidden: bool = false) -> Array:
 
 static func enum_parameter(key: String, values: Array, selected: String) -> Dictionary:
 	var options: Array = []
-	for value in values: options.append({"name": value, "value": value})
-	return {"name": key, "label": key.capitalize(), "type": "enum", "values": options, "default": maxi(0, values.find(selected))}
+	for value in values:
+		var label: String = value
+		if key == "function_type": label = mm_io_types.types[value].label
+		elif key in ["data_type", "source_type"] and value in ["float", "vec3", "vec4"]:
+			label = mm_io_types.types[value_type(value)].label + " (" + value + ")"
+		elif key == "operation": label = {"add": "A+B", "subtract": "A-B", "multiply": "A*B", "divide": "A/B", "equal": "A == B", "less": "A < B", "greater": "A > B"}.get(value, str(value).capitalize())
+		options.append({"name": label, "value": value})
+	return {"name": key, "label": {"data_type": "Type", "source_type": "From Type"}.get(key, key.capitalize()), "type": "enum", "values": options, "default": maxi(0, values.find(selected))}
 
 static func number_parameter(key: String, value, integer: bool = false) -> Dictionary:
-	return {"name": key, "label": key, "type": "boolean" if value is bool else "float", "default": value,
+	var label := key.capitalize()
+	if key.begins_with("v") and key.substr(1).get_slice("_", 0).is_valid_int():
+		var indices := key.substr(1).split("_")
+		label = "C%d / R%d" % [int(indices[0]) + 1, int(indices[1]) + 1] if indices.size() == 2 else ["X", "Y", "Z", "W"][int(indices[0])]
+	return {"name": key, "label": label, "type": "boolean" if value is bool else "float", "default": value,
 		"min": -4294967295.0, "max": 4294967295.0, "step": 1.0 if integer else 0.01}
 
 func get_parameter_defs() -> Array:
@@ -179,10 +218,12 @@ func get_parameter_defs() -> Array:
 				parameter.min = 0.0
 				parameter.longdesc += " Additional node-specific offset; this is not Godot's RANDOM_SEED."
 			result.append(parameter)
-	if n.kind in ["constant", "operator", "convert", "compose", "split", "select", "uniform", "array_get", "sample"]:
+	if n.kind in ["constant", "operator", "convert", "compose", "split", "select", "uniform", "array_get"] or (n.kind == "sample" and not settings.has("editor_profile")):
 		result.append(enum_parameter("data_type", option_values("data_type"), settings.get("data_type", "float")))
 	if n.kind == "sample": result.append(enum_parameter("sampler_type", Interface.TYPES.filter(func(t): return t.begins_with("sampler")), settings.get("sampler_type", "sampler2D")))
-	if n.kind == "convert": result.append(enum_parameter("source_type", option_values("source_type"), settings.get("source_type", "float")))
+	if n.kind == "convert":
+		result[0].label = "To Type"
+		result.append(enum_parameter("source_type", option_values("source_type"), settings.get("source_type", "float")))
 	if n.kind == "operator": result.append(enum_parameter("operation", option_values("operation", n.data_type), settings.get("operation", "add")))
 	if n.kind in ["evaluate", "bridge"]: result.append(enum_parameter("function_type", option_values("function_type"), settings.get("function_type", "rgba")))
 	if n.kind == "constant":
@@ -197,17 +238,18 @@ func get_parameter_defs() -> Array:
 	if n.kind == "array_get": result.append(number_parameter("array_size", settings.get("array_size", 1), true))
 	if n.kind == "uniform":
 		for pair in [["uniform_name", settings.get("uniform", "parameter")], ["default_json", JSON.stringify(Interface.default_value(n.get("data_type", "float")))], ["hint", ""], ["resource", ""], ["resources", "[]"]]:
-			result.append({"name": pair[0], "label": pair[0], "type": "string", "default": pair[1]})
+			result.append({"name": pair[0], "label": {"uniform_name": "Name", "default_json": "Default (JSON)", "hint": "Hint", "resource": "Resource", "resources": "Paths (JSON)"}[pair[0]], "type": "string", "default": pair[1]})
 		result.append(number_parameter("array_size", 0, true))
 	return result
 
 func set_parameter(key: String, value) -> void:
 	var remap_operation: bool = not loading_parameters and key == "data_type" and settings.kind == "operator" and settings.has("editor_profile")
 	var previous_operation: String = model_data().get("operation", "add") if remap_operation else ""
+	if remap_operation: operations_by_type[model_data().data_type] = previous_operation
 	super.set_parameter(key, value)
 	if remap_operation:
 		var options := option_values("operation", model_data().data_type)
-		super.set_parameter("operation", maxi(0, options.find(previous_operation)))
+		super.set_parameter("operation", maxi(0, options.find(operations_by_type.get(model_data().data_type, previous_operation))))
 	if is_inside_tree(): all_sources_changed.call_deferred()
 	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "uniform_name", "sampler_type"]:
 		parameter_changed.emit.call_deferred("__update_all__", null)
@@ -231,5 +273,6 @@ func _deserialize(data: Dictionary) -> void:
 
 func deserialize(data: Dictionary) -> void:
 	loading_parameters = true
+	operations_by_type.clear()
 	await super.deserialize(data)
 	loading_parameters = false

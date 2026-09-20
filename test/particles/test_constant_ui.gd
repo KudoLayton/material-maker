@@ -8,11 +8,11 @@ func run() -> void:
 	get_tree().root.add_child(window)
 	for frame in 30: await get_tree().process_frame
 	var editor = await window.new_particle_shader()
-	var item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Constant")
+	var item = window.get_node("NodeLibraryManager").get_item("Simple/Constant/Typed")
 	var created = await editor.create_nodes(item.item, Vector2(0, 0))
 	var node = created[0]
 	var option: OptionButton = node.controls.data_type
-	var index: int = MMGenParticle.Interface.TYPES.find("bvec3")
+	var index: int = node.generator.option_values("data_type").find("bvec3")
 	print("PARTICLE_CONSTANT_UI: selecting bvec3 through popup")
 	option.select(index)
 	option.item_selected.emit(index)
@@ -36,7 +36,7 @@ func run() -> void:
 	editor.undoredo.undo()
 	editor.undoredo.undo()
 	for frame in 3: await get_tree().process_frame
-	assert(node.generator.model_data().data_type == "float")
+	assert(node.generator.model_data().data_type == "vec2")
 	editor.undoredo.redo()
 	for frame in 3: await get_tree().process_frame
 	assert(node.generator.model_data().data_type == "bvec3")
@@ -51,7 +51,7 @@ func run() -> void:
 	assert(reopened.model_data().data_type == "bvec3")
 	assert(reopened.model_data().value == [true, false, false])
 	editor = await window.new_particle_shader()
-	item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Random")
+	item = window.get_node("NodeLibraryManager").get_item("Particles/Random")
 	created = await editor.create_nodes(item.item, Vector2(0, 0))
 	node = created[0]
 	assert(node.generator.model_data().data_type == "vec3")
@@ -100,7 +100,37 @@ func run() -> void:
 	assert(reopened.model_data().seed == 17.0)
 	assert(reopened.model_data().minimum == -2.0)
 	assert(reopened.model_data().maximum == 3.0)
+	editor = await window.new_particle_shader()
+	item = window.get_node("NodeLibraryManager").get_item("Filter/Math/Compare")
+	created = await editor.create_nodes(item.item, Vector2(0, 0))
+	node = created[0]
+	index = node.generator.option_values("data_type").find("vec3")
+	node.controls.data_type.select(index)
+	node.controls.data_type.item_selected.emit(index)
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().operation == "equal")
+	editor.undoredo.undo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().operation == "less", "Undo must restore the previous comparison")
+	editor.undoredo.redo()
+	for frame in 3: await get_tree().process_frame
+	assert(node.generator.model_data().operation == "equal")
 	print("PARTICLE_RANDOM_UI: type selection, undo/redo and settings roundtrip passed")
+	get_tree().root.size = Vector2i(1600, 1000)
+	window.layout.reset_panels()
+	editor.get_node("node_Material").position_offset = Vector2(0, 1100)
+	editor.get_node("node_Process").position_offset = Vector2(650, 1100)
+	node.position_offset = Vector2(0, 380)
+	for pair in [["Simple/Constant/Typed", Vector2(0, 0)], ["Filter/Math/Typed", Vector2(310, 0)], ["Miscellaneous/Typed Uniform", Vector2(650, 0)]]:
+		item = window.get_node("NodeLibraryManager").get_item(pair[0])
+		created = await editor.create_nodes(item.item, pair[1])
+		created[0].position_offset = pair[1]
+	editor.zoom = 0.85
+	editor.scroll_offset = Vector2(-30, -30)
+	for frame in 15: await get_tree().process_frame
+	window.modulate = Color.WHITE
+	await RenderingServer.frame_post_draw
+	get_tree().root.get_texture().get_image().save_png("res://app_supplemental_ui.png")
 	print("PARTICLE_CONSTANT_UI: passed")
 	mm_globals.set_config("confirm_quit", false)
 	mm_globals.set_config("confirm_close_project", false)

@@ -50,20 +50,19 @@ func run() -> void:
 			var type: String = ports[i].get("shader_type", mm_io_types.types[ports[i].type].get("particle_type", ""))
 			check(output.get_input_port_color(i) == palette[type], stage + " color " + ports[i].name)
 			check(has_label(output, ports[i].get("label", ports[i].name) + " : " + type), stage + " label " + ports[i].name)
-	var item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Constant")
-	var created = await editor.create_nodes(item.item, Vector2(-500, 0))
+	var created = await editor.create_nodes({"type": "particle_node", "settings": {"kind": "constant", "data_type": "float"}}, Vector2(-500, 0))
 	var constant = created[0]
-	check(has_label(constant, "value : float"), "Constant output label")
+	check(has_label(constant, "Value : float"), "Constant output label")
 	constant.controls.data_type.select(MMGenParticle.Interface.TYPES.find("bvec3"))
 	constant.controls.data_type.item_selected.emit(MMGenParticle.Interface.TYPES.find("bvec3"))
 	for frame in 3: await get_tree().process_frame
-	check(has_label(constant, "value : bvec3") and constant.get_output_port_color(0) == palette.bool, "Type change refreshes label and color")
+	check(has_label(constant, "Value : bvec3") and constant.get_output_port_color(0) == palette.bool, "Type change refreshes label and color")
 	editor.undoredo.undo()
 	for frame in 3: await get_tree().process_frame
-	check(has_label(constant, "value : float") and constant.get_output_port_color(0) == palette.float, "Undo refreshes label and color")
+	check(has_label(constant, "Value : float") and constant.get_output_port_color(0) == palette.float, "Undo refreshes label and color")
 	editor.undoredo.redo()
 	for frame in 3: await get_tree().process_frame
-	check(has_label(constant, "value : bvec3"), "Redo refreshes label")
+	check(has_label(constant, "Value : bvec3"), "Redo refreshes label")
 	check(mm_io_types.types.f.slot_type == mm_io_types.types.particle_float.slot_type, "Legacy numeric aliases share the standard connection type")
 	var custom_nodes = await editor.create_nodes({"type": "shader", "name": "TypedCustom", "shader_model": {
 		"name": "Typed Custom", "parameters": [],
@@ -72,7 +71,7 @@ func run() -> void:
 	check(has_label(custom_nodes[0], "velocity : vec3") and has_label(custom_nodes[0], "value : vec3"), "Custom Shader typed ports")
 	var evaluation_nodes = await editor.create_nodes({"type": "particle_node", "name": "Evaluate", "settings": {"kind": "evaluate", "function_type": "rgba"}}, Vector2(-500, 500))
 	check(evaluation_nodes[0].get_input_port_color(0) == mm_io_types.types.rgba.color, "Evaluate keeps function color")
-	check(has_label(evaluation_nodes[0], "coordinates : vec2") and has_label(evaluation_nodes[0], "value : vec4"), "Evaluate typed value ports")
+	check(has_label(evaluation_nodes[0], "Coordinates : vec2") and has_label(evaluation_nodes[0], "Value : vec4"), "Evaluate typed value ports")
 	var graph = editor.top_generator
 	var uniform = await mm_loader.create_gen({"type": "particle_node", "name": "Array", "settings": {"kind": "uniform", "data_type": "float"}, "parameters": {"array_size": 4}})
 	var element = await mm_loader.create_gen({"type": "particle_node", "name": "Element", "settings": {"kind": "array_get", "data_type": "float", "array_size": 4}})

@@ -250,7 +250,11 @@ func expression(id: String, output: String) -> String:
 				value = ("!" if operation == "not" else "~") + args[0]
 			else:
 				value = operation + "(" + ", ".join(args) + ")"
-		"convert", "compose": value = type + "(" + ", ".join(args) + ")"
+		"convert":
+			if n.get("editor_profile") == "supplemental_v1" and type in ["bool", "int", "uint", "float"] and "vec" in n.get("source_type", ""):
+				args[0] += "[0]"
+			value = type + "(" + ", ".join(args) + ")"
+		"compose": value = type + "(" + ", ".join(args) + ")"
 		"split": value = args[0] + "[%d]" % int(output.trim_prefix("c"))
 		"transform": value = "(" + args[0] + " * " + args[1] + ")"
 		"select": value = "(" + args[0] + " ? " + args[1] + " : " + args[2] + ")"

@@ -18,20 +18,20 @@ func run() -> void:
 	assert(window.get_panel("Library").is_inside_tree())
 	assert(window.get_panel("Hierarchy").is_inside_tree())
 	var library = window.get_node("NodeLibraryManager")
-	var item = library.get_item("Particles/Tools/Constant")
+	var item = library.get_item("Simple/Uniform/Grayscale")
 	assert(item != null)
 	var created = await editor.create_nodes(item.item, Vector2(0, 0))
 	assert(created.size() == 1)
 	var node = created[0]
 	var original_count = editor.top_generator.get_child_count()
-	node.set_generator_parameter("value", 0.75)
-	assert(node.generator.get_parameter("value") == 0.75)
+	node.set_generator_parameter("color", 0.75)
+	assert(node.generator.get_parameter("color") == 0.75)
 	editor.undoredo.undo()
 	for frame in 3: await get_tree().process_frame
-	assert(node.generator.get_parameter("value") == 0)
+	assert(node.generator.get_parameter("color") == 0.5)
 	editor.undoredo.redo()
 	for frame in 3: await get_tree().process_frame
-	assert(node.generator.get_parameter("value") == 0.75)
+	assert(node.generator.get_parameter("color") == 0.75)
 	editor.select_none()
 	node.selected = true
 	window.edit_copy()
@@ -45,8 +45,9 @@ func run() -> void:
 	for frame in 3: await get_tree().process_frame
 	assert(editor.top_generator.get_child_count() == original_count + 1)
 	editor.select_none()
-	editor.on_connect_node("node_Tools_Constant_2", 0, "node_Process", 3)
-	editor.get_node("node_Tools_Constant_2").selected = true
+	var pasted = editor.get_children().filter(func(child): return child is GraphNode and child != node and str(child.name).begins_with(str(node.name)))[0]
+	editor.on_connect_node(pasted.name, 0, "node_Process", 3)
+	pasted.selected = true
 	print("PARTICLE_APP_STEP: group")
 	window.create_subgraph()
 	for frame in 5: await get_tree().process_frame

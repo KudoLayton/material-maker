@@ -26,7 +26,7 @@ func particle_ports() -> Dictionary:
 func get_input_defs() -> Array:
 	var result: Array = []
 	for port in particle_ports().inputs:
-		result.append({"name": port.name, "label": "Sampling UV" if port.name == "sampling_uv" else port.name, "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
+		result.append({"name": port.name, "label": {"sampling_uv": "Sampling UV", "exec": "Execution"}.get(port.name, port.name), "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
 	return result
 
 func get_output_defs(_show_hidden: bool = false) -> Array:
@@ -36,7 +36,7 @@ func get_parameter_defs() -> Array:
 	var result: Array = []
 	for mode in Interface.MODES:
 		result.append({"name": mode, "label": mode, "type": "boolean", "default": false})
-	result.append({"name": "target_project", "label": "Godot project directory", "type": "string", "default": ""})
+	result.append({"name": "target_project", "label": "Godot Project Directory", "type": "string", "default": ""})
 	return result
 
 func particle_configuration() -> Dictionary:

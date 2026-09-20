@@ -11,29 +11,39 @@ def main():
     builtins = json.loads(abi.split('const BUILTINS = ', 1)[1])
     entries = []
 
-    def add(label, settings):
-        entries.append({'name': re.sub(r'\W+', '_', label), 'type': 'particle_node',
-                        'tree_item': 'Particles/' + label, 'settings': settings})
+    def add(path, settings):
+        entries.append({'name': re.sub(r'\W+', '_', path), 'type': 'particle_node',
+                        'tree_item': path, 'settings': settings})
 
     merged = dict(builtins['start'], **builtins['process'])
     for name, definition in merged.items():
-        add('Read/' + name, {'kind': 'input', 'builtin': name})
+        add('Particles/Read/' + name, {'kind': 'input', 'builtin': name})
         if definition.get('write'):
-            add('Write/' + name, {'kind': 'set', 'builtin': name})
+            add('Particles/Write/' + name, {'kind': 'set', 'builtin': name})
     for stage in ['start', 'process']:
-        add('Execution/' + stage.capitalize() + ' Entry', {'kind': 'entry', 'stage': stage})
-    for kind, label in [('evaluate', 'Evaluate Function'), ('bridge', 'Value to Function')]:
-        add('Library/' + label, {'kind': kind, 'function_type': 'rgba'})
-    for kind, data_type in [('constant', 'float'), ('random', 'vec3'), ('operator', 'float'), ('convert', 'vec3'),
-                            ('compose', 'vec3'), ('split', 'vec3'), ('transform', 'vec4'),
-                            ('select', 'float'), ('uniform', 'float'), ('array_get', 'float'),
-                            ('sample', 'vec4'), ('emit', 'bool')]:
-        add('Tools/' + kind.replace('_', ' ').title(), {'kind': kind, 'data_type': data_type})
-    entries.append({'name': 'particle_custom', 'type': 'shader', 'tree_item': 'Particles/Tools/Custom Shader',
-                    'shader_model': {'name': 'Particle Custom Shader', 'parameters': [],
-                                     'inputs': [{'name': 'value', 'type': 'f', 'default': '0.0', 'label': 'Value'}],
-                                     'outputs': [{'type': 'f', 'f': '$value($uv)'}],
-                                     'code': '', 'instance': '', 'global': ''}})
+        add('Particles/Execution/' + stage.capitalize() + ' Entry', {'kind': 'entry', 'stage': stage})
+    add('Particles/Random', {'kind': 'random', 'data_type': 'vec3'})
+    add('Particles/Execution/Emit', {'kind': 'emit'})
+    supplemental = [
+        ('Simple/Constant/Typed', 'constant', 'vec2'),
+        ('Filter/Math/Typed', 'operator', 'int'),
+        ('Filter/Combine/Typed', 'compose', 'vec2'),
+        ('Filter/Decompose/Typed', 'split', 'vec2'),
+        ('Filter/Math/Type Cast', 'convert', 'vec2'),
+        ('Filter/Math/Matrix Transform', 'transform', 'vec4'),
+        ('Filter/Math/Select', 'select', 'float'),
+        ('Miscellaneous/Typed Uniform', 'uniform', 'float'),
+        ('Miscellaneous/Array Element', 'array_get', 'float'),
+        ('Miscellaneous/Texture Sample', 'sample', 'vec4'),
+    ]
+    for path, kind, data_type in supplemental:
+        add(path, {'kind': kind, 'data_type': data_type, 'editor_profile': 'supplemental_v1'})
+    add('Filter/Math/Compare', {'kind': 'operator', 'data_type': 'float',
+                              'operation': 'less', 'editor_profile': 'compare_v1'})
+    for kind, label, function_type in [('evaluate', 'Evaluate Function', 'rgba'),
+                                      ('bridge', 'Value to Function', 'sdf3d')]:
+        add('Miscellaneous/' + label, {'kind': kind, 'function_type': function_type,
+                                       'editor_profile': 'supplemental_v1'})
     (ROOT / 'addons/material_maker/particles/library.json').write_text(
         json.dumps({'name': 'Particles', 'lib': entries}, indent=2) + '\n', encoding='utf-8')
 
