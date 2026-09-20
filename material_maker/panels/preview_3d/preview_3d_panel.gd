@@ -11,6 +11,7 @@ func _ready() -> void:
 
 
 func on_right_click():
+	if particle_preview != null: return
 	# Hide viewport while we capture the position
 	var hide_texture : ImageTexture = ImageTexture.new()
 	hide_texture.set_image($MaterialPreview.get_texture().get_image())

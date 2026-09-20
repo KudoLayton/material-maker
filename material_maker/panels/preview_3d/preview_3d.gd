@@ -20,6 +20,9 @@ const CAMERA_FOV_MAX = 90
 var trigger_on_right_click = true
 
 var moving = false
+var particle_preview: Node
+var particle_menu_visibility: Dictionary = {}
+
 
 var _mouse_start_position : Vector2 = Vector2.ZERO
 
@@ -31,6 +34,30 @@ var current_environment : int = mm_globals.get_config("ui_3d_preview_environment
 
 signal need_update(me)
 
+
+func set_particle_generator(generator: MMGenParticleMaterial) -> void:
+	if generator == null:
+		if particle_preview != null:
+			particle_preview.queue_free()
+			particle_preview = null
+			objects.show()
+			for control in particle_menu_visibility:
+				control.visible = particle_menu_visibility[control]
+			particle_menu_visibility.clear()
+		return
+	if particle_preview != null and particle_preview.generator != generator:
+		set_particle_generator(null)
+	if particle_preview == null:
+		particle_preview = preload("particle_preview.gd").new()
+		particle_preview.preview = self
+		add_child(particle_preview)
+		objects.hide()
+		for path in ["HBox/ModelMenu", "HBox/ExportMenu"]:
+			var control = main_menu.get_node_or_null(path)
+			if control != null:
+				particle_menu_visibility[control] = control.visible
+				control.hide()
+	particle_preview.set_generator(generator)
 
 func _enter_tree():
 	mm_deps.create_buffer("preview_"+str(get_instance_id()), self)
@@ -162,6 +189,7 @@ func get_preview_settings() -> Dictionary:
 
 
 func on_dep_update_value(_buffer_name, parameter_name, value) -> bool:
+	if particle_preview != null: return false
 	var preview_material = current_object.get_material()
 	preview_material.set_shader_parameter(parameter_name, value)
 	return false

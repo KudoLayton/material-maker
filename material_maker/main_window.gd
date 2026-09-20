@@ -1338,6 +1338,9 @@ func update_preview_3d(previews : Array) -> void:
 		gen_material = graph_edit.top_generator.get_node("Material")
 	if gen_material != current_gen_material:
 		current_gen_material = gen_material
+	if not current_gen_material is MMGenParticleMaterial:
+		for p in previews:
+			if is_instance_valid(p) and p.has_method("set_particle_generator"): p.set_particle_generator(null)
 	if current_gen_material != null:
 		var materials : Dictionary[Node, Array] = {}
 		for p in previews:

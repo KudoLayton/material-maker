@@ -78,11 +78,9 @@ func update_shaders() -> void:
 	pass
 
 func set_3d_previews(previews: Dictionary[Node, Array]) -> void:
-	var shader := Shader.new()
-	shader.code = "shader_type spatial; render_mode unshaded; void fragment() { ALBEDO = vec3(0.1); }"
 	for preview in previews:
-		for material in previews[preview]:
-			if material is ShaderMaterial: material.shader = shader
+		if preview.has_method("set_particle_generator"):
+			preview.set_particle_generator(self)
 
 
 func _serialize(data: Dictionary) -> Dictionary:
