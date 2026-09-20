@@ -6,6 +6,7 @@ var graph_models: Dictionary = {}
 var state_fields: Dictionary = {}
 var collecting: Dictionary = {}
 var collection_errors: Array = []
+var current_uv := "vec2(0.0)"
 
 func compile_graph(graph: MMGenGraph) -> Dictionary:
 	collecting = {}
@@ -88,6 +89,7 @@ func get_ports(n: Dictionary) -> Dictionary:
 	return super.get_ports(n)
 
 static func shader_type(type: String) -> String:
+	if type in ["f", "rgb", "rgba"]: return mm_io_types.types[type].type
 	return mm_io_types.types[type].get("particle_type", type) if mm_io_types.types.has(type) else type
 
 func validate_node(n: Dictionary) -> void:
@@ -100,6 +102,7 @@ func validate_node(n: Dictionary) -> void:
 	super.validate_node(n)
 
 func compile_stage(_graph: Dictionary) -> Array:
+	current_uv = "vec2(0.0)"
 	var models: Dictionary = graph_models[stage]
 	var entries: Array = models.values().filter(func(n): return n.kind == "entry")
 	if entries.is_empty():
@@ -136,7 +139,7 @@ func expression(id: String, output: String) -> String:
 	if n.kind == "emit" and emitted.has(id): return "_mm_state.result_" + id
 	if n.kind == "bridge": return argument(n, "value", n.data_type)
 	if n.kind == "library":
-		return evaluate_library(generators[id], int(output.trim_prefix("port")), "vec2(0.0)", id)
+		return evaluate_library(generators[id], int(output.trim_prefix("port")), current_uv, id)
 	if n.kind != "evaluate": return super.expression(id, output)
 	if visiting.has(id):
 		fail(id, "Evaluation dependency cycle")
@@ -175,6 +178,8 @@ func generate_value(generator: MMGenBase, output_index: int, uv: String, _contex
 	var id := "g" + str(generator.get_instance_id())
 	var saved_body := body
 	var saved_cache := cache
+	var saved_uv := current_uv
+	current_uv = uv
 	body = []
 	cache = {}
 	var ports: Dictionary = generator.particle_ports()
@@ -185,6 +190,7 @@ func generate_value(generator: MMGenBase, output_index: int, uv: String, _contex
 	for item in body: result.code += item.text + "\n"
 	body = saved_body
 	cache = saved_cache
+	current_uv = saved_uv
 	return result
 
 func evaluate_library(generator: MMGenBase, index: int, coordinates: String, owner_id: String, requested_type: String = "") -> String:
@@ -241,8 +247,23 @@ func static_value(generator: MMGenBase, output_index: int, uv: String) -> MMGenB
 	if not errors.is_empty(): result.error = str(errors)
 	return result
 
+func argument(n: Dictionary, name: String, type: String, default = null) -> String:
+	var value := super.argument(n, name, type, default)
+	var binding: Dictionary = n.get("inputs", {}).get(name, {})
+	if not binding.has("node"): return value
+	var source: Dictionary = nodes.get(str(binding.node), {})
+	var source_type := shader_type(port_type(get_ports(source).outputs, binding.get("port", "value")))
+	var target_type := shader_type(type)
+	if source_type == target_type: return value
+	if source_type in ["float", "vec3", "vec4"] and target_type in ["float", "vec3", "vec4"]:
+		for conversion in mm_io_types.types[MMGenParticle.value_type(source_type)].get("convert", []):
+			if conversion.type == MMGenParticle.value_type(target_type):
+				return conversion.expr.replace("$(value)", value)
+	return value
+
 func types_compatible(source: String, target: String) -> bool:
-	if source == target: return true
+	if shader_type(source) == shader_type(target): return true
+	if shader_type(source) in ["float", "vec3", "vec4"] and shader_type(target) in ["float", "vec3", "vec4"]: return true
 	if source in MMGenParticle.FUNCTION_TYPES and target in MMGenParticle.FUNCTION_TYPES:
 		for conversion in mm_io_types.types[source].get("convert", []):
 			if conversion.type == target: return true

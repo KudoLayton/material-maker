@@ -472,9 +472,9 @@ func update_node() -> void:
 			label = result.get_string(2)
 		else:
 			index += 1
-		var particle_port: bool = mm_io_types.types.get(input.type, {}).has("particle_type")
+		var particle_port: bool = not input.get("shader_type", "").is_empty() or mm_io_types.types.get(input.type, {}).has("particle_type")
 		if particle_port and not generator.minimized:
-			label = mm_io_types.format_port_label(label if not label.is_empty() else input.name, input.type)
+			label = mm_io_types.format_port_label(label if not label.is_empty() else input.name, input.type, input.get("shader_type", ""))
 		var hsizer : HBoxContainer
 		while get_child_count() <= index:
 			hsizer = HBoxContainer.new()
@@ -626,9 +626,9 @@ func update_node() -> void:
 		hsizer = get_child(i)
 		if hsizer.get_child_count() == 0:
 			hsizer.custom_minimum_size.y = minimum_line_height if !generator.minimized else 12
-		if not generator.minimized and mm_io_types.types.get(output.type, {}).has("particle_type"):
+		if not generator.minimized and (not output.get("shader_type", "").is_empty() or mm_io_types.types.get(output.type, {}).has("particle_type")):
 			var output_label := Label.new()
-			output_label.text = mm_io_types.format_port_label(output.get("label", output.get("name", "value")), output.type)
+			output_label.text = mm_io_types.format_port_label(output.get("label", output.get("name", "value")), output.type, output.get("shader_type", ""))
 			output_label.theme_type_variation = "MM_NodePropertyLabel"
 			output_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			output_label.size_flags_horizontal = SIZE_EXPAND_FILL

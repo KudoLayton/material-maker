@@ -1,6 +1,8 @@
 @tool
 extends Node
 
+const TYPE_ALIASES = {"particle_float": "f", "particle_vec3": "rgb", "particle_vec4": "rgba"}
+
 var type_names : Array = []
 var types : Dictionary = {}
 
@@ -28,14 +30,22 @@ func _ready():
 			return
 	print("Failed to load io types")
 
-func format_port_label(label: String, type: String) -> String:
-	var definition: Dictionary = types.get(type, {})
-	if definition.has("particle_type"):
-		return label + " : " + definition.particle_type
-	return label
+func canonical_type(type: String) -> String:
+	return TYPE_ALIASES.get(type, type)
 
-func is_particle_function_connection(output_slot: int, input_slot: int) -> bool:
-	if input_slot != types.rgb.slot_type: return false
-	for type in ["particle_float", "particle_vec3", "particle_vec4"]:
-		if types.has(type) and output_slot == types[type].slot_type: return true
-	return false
+func format_port_label(label: String, type: String, shader_type: String = "") -> String:
+	var definition: Dictionary = types.get(type, {})
+	if shader_type.is_empty(): shader_type = definition.get("particle_type", "")
+	return label + " : " + shader_type if not shader_type.is_empty() else label
+
+func complete_output_values(output_type: String, values: Dictionary) -> void:
+	if not values.has(output_type): return
+	var type := canonical_type(output_type)
+	if not types.has(type): return
+	if not values.has(type): values[type] = values[output_type]
+	for conversion in types[type].get("convert", []):
+		if not values.has(conversion.type):
+			values[conversion.type] = conversion.expr.replace("$(value)", values[type])
+	for alias in TYPE_ALIASES:
+		if values.has(TYPE_ALIASES[alias]) and not values.has(alias):
+			values[alias] = values[TYPE_ALIASES[alias]]

@@ -44,7 +44,7 @@ func run() -> void:
 		var output = editor.get_node("node_" + stage)
 		var ports = output.generator.get_input_defs()
 		for i in ports.size():
-			var type: String = mm_io_types.types[ports[i].type].particle_type
+			var type: String = ports[i].get("shader_type", mm_io_types.types[ports[i].type].get("particle_type", ""))
 			check(output.get_input_port_color(i) == palette[type], stage + " color " + ports[i].name)
 			check(has_label(output, ports[i].name + " : " + type), stage + " label " + ports[i].name)
 	var item = window.get_node("NodeLibraryManager").get_item("Particles/Tools/Constant")
@@ -61,7 +61,7 @@ func run() -> void:
 	editor.undoredo.redo()
 	for frame in 3: await get_tree().process_frame
 	check(has_label(constant, "value : bvec3"), "Redo refreshes label")
-	check(not editor.is_valid_connection_type(mm_io_types.types.f.slot_type, mm_io_types.types.particle_float.slot_type), "Same color does not enable function-to-value connections")
+	check(mm_io_types.types.f.slot_type == mm_io_types.types.particle_float.slot_type, "Legacy numeric aliases share the standard connection type")
 	var custom_nodes = await editor.create_nodes({"type": "shader", "name": "TypedCustom", "shader_model": {
 		"name": "Typed Custom", "parameters": [],
 		"inputs": [{"name": "velocity", "type": "particle_vec3", "default": "vec3(0.0)"}],

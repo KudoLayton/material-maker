@@ -28,6 +28,7 @@ func get_io_defs() -> Array:
 	var rv : Array = []
 	for p in ports:
 		var port = { name=p.name, type=p.type }
+		if p.has("shader_type"): port.shader_type = p.shader_type
 		if p.has("shortdesc"):
 			port.shortdesc = p.shortdesc
 		if p.has("longdesc"):

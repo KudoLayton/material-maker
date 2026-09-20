@@ -15,12 +15,11 @@
 
 ## 기존 노드 활용
 
-기존 Grayscale/Color 노드의 포트는 좌표에서 값을 계산하는 함수입니다. 파티클의 숫자·벡터 포트와 구별합니다.
+파티클의 `float`, `vec3`, `vec4`는 기존 Grayscale(`f`), Color(`rgb`), RGBA(`rgba`) 포트를 그대로 사용합니다. **Random → Vec3 Math → VELOCITY**처럼 기존 노드와 파티클 입출력을 직접 연결할 수 있습니다. 숫자·색상 간 변환은 Material Maker의 기존 규칙을 따릅니다.
 
-- **Evaluate Function**: Function에 기존 노드나 서브그래프를, Coordinates에 파티클 값으로 만든 좌표를 연결합니다. Grayscale은 float, Color는 vec3, RGBA는 vec4 값을 반환합니다. 좌표는 반드시 명시합니다. SDF와 3D 함수는 해당 차원의 좌표를 사용합니다.
-- 파티클 `float`, `vec3`, `vec4` 출력은 기존 Grayscale/Color/RGBA 입력에 직접 연결할 수 있습니다. 예를 들어 **Random → Vec3 Math**를 연결합니다. 색상·그레이스케일 간 변환은 Material Maker의 기존 규칙을 따릅니다. Math 결과를 파티클 출력으로 가져올 때는 **Evaluate Function**과 좌표 입력을 사용합니다. 순수 숫자 계산에는 `(0, 0)` 좌표를 사용할 수 있습니다.
-- **Value to Function**: 파티클 값을 기존 노드의 함수 입력으로 전달합니다. 예를 들어 시간으로 만든 float 값을 Colorize에 전달하고 그 결과를 Evaluate하여 COLOR에 연결할 수 있습니다.
-- **Custom Shader**: 기존 노드 편집기에서 입력·출력·코드·함수를 편집합니다. `particle_float`, `particle_vec3` 등의 타입을 사용하면 기존 수학 노드와 함께 파티클 값을 처리할 수 있습니다. 상태는 Read 노드에서 입력으로 전달합니다.
+- **Evaluate Function**: 특정 분기를 명시한 Coordinates에서 평가할 때 사용합니다. 일반 수학 계산에는 필요하지 않습니다. SDF와 3D 함수는 해당 차원의 좌표를 지정합니다.
+- **Value to Function**: 이전 그래프와 SDF·3D 함수 연결을 위해 유지합니다. 공통 숫자 타입을 연결할 때는 필요하지 않습니다.
+- **Custom Shader**: 기존 노드 편집기에서 Grayscale/Color/RGBA로 입력·출력·코드·함수를 편집합니다. 파티클 상태는 Read 노드를 입력에 연결합니다. 예전 `particle_float`, `particle_vec3`, `particle_vec4`는 호환 별칭으로 읽으며, 기존 포트와 표현식은 편집·저장 시 보존합니다.
 - 일반 이미지와 정적 Buffer/Fast Blur 결과는 텍스처 리소스로 내보냅니다. 베이크 후에도 파티클마다 다른 좌표에서 샘플링할 수 있습니다. 버퍼의 해상도와 픽셀 형식, 알파를 보존합니다.
 
 파티클 상태, 런타임 uniform 또는 시간에 따라 달라지는 내용을 정적 버퍼로 베이크할 수는 없습니다. 해당 연결은 오류에 노드 경로를 표시합니다. 베이크에 사용한 편집 파라미터를 변경하면 다시 내보내야 합니다. 임의의 사용자 셰이더가 Godot 파티클 단계에서 지원하지 않는 기능을 사용하면 컴파일 오류가 표시됩니다.
@@ -39,7 +38,7 @@
 | sampler | 분홍색 |
 | exec | 밝은 회색 |
 
-색상이 같아도 같은 연결 타입이라는 뜻은 아닙니다. 기존 함수 포트와 파티클 값 포트 사이에는 Evaluate Function 또는 Value to Function을 사용합니다. 기존 SDF·텍스처·Fill 포트 색상은 유지합니다.
+공통 숫자 타입은 기존 노드와 같은 연결 타입입니다. 정수·불리언·vec2·행렬·배열·샘플러·실행 연결은 각각의 타입을 유지합니다. SDF·3D Texture는 함수 계약이 다르므로 반환 자료형만 같다고 숫자 포트와 합치지 않습니다.
 
 ## 상태·실행 순서
 

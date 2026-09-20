@@ -1,5 +1,8 @@
 extends HBoxContainer
 
+var original_type := ""
+var original_expressions: Dictionary = {}
+
 func _ready():
 	$Type.clear()
 	for tn in mm_io_types.type_names:
@@ -21,6 +24,13 @@ func set_model_data(data, remaining_group_size = 0) -> int:
 		if data.has(mm_io_types.type_names[i]):
 			$Type.selected = i
 			$Value.text = data[mm_io_types.type_names[i]]
+	original_type = data.get("type", "")
+	original_expressions = {}
+	for key in data:
+		if mm_io_types.types.has(key): original_expressions[key] = data[key]
+	if mm_io_types.TYPE_ALIASES.has(original_type) and data.has(original_type):
+		$Type.selected = mm_io_types.type_names.find(mm_io_types.canonical_type(original_type))
+		$Value.text = data[original_type]
 	if data.has("group_size") and data.group_size > 1:
 		$PortGroupButton.set_state(1)
 		return data.group_size-1
@@ -29,7 +39,12 @@ func set_model_data(data, remaining_group_size = 0) -> int:
 	return int(max(remaining_group_size-1, 0))
 
 func get_model_data() -> Dictionary:
-	var data = { "type":mm_io_types.type_names[$Type.selected], mm_io_types.type_names[$Type.selected]:$Value.text }
+	var selected_type: String = mm_io_types.type_names[$Type.selected]
+	var data = { "type":selected_type, selected_type:$Value.text }
+	if mm_io_types.TYPE_ALIASES.has(original_type) and mm_io_types.canonical_type(original_type) == selected_type:
+		data = original_expressions.duplicate()
+		data.type = original_type
+		data[original_type] = $Value.text
 	if $Description.short_description != "":
 		data.shortdesc = $Description.short_description
 	if $Description.long_description != "":

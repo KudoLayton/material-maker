@@ -7,14 +7,12 @@ const FUNCTION_TYPES = ["f", "rgb", "rgba", "sdf2d", "sdf3d", "sdf3dc", "tex3d_g
 var settings: Dictionary = {"kind": "constant", "data_type": "float"}
 
 static func value_type(type: String) -> String:
+	if type in ["float", "vec3", "vec4"]: return {"float": "f", "vec3": "rgb", "vec4": "rgba"}[type]
 	var key := "particle_" + type.replace("[", "_array_").replace("]", "")
 	if not mm_io_types.types.has(key):
 		mm_io_types.types[key] = {"name": key, "label": type, "type": type, "particle_type": type,
 			"paramdefs": "vec2 uv", "params": "uv", "slot_type": 100 + mm_io_types.types.size(),
 			"color": port_color(type)}
-		var function_type: String = {"float": "f", "vec3": "rgb", "vec4": "rgba"}.get(type, "")
-		if not function_type.is_empty():
-			mm_io_types.types[key]["convert"] = [{"type": function_type, "expr": "$(value)"}] + mm_io_types.types[function_type].get("convert", []).duplicate(true)
 		mm_io_types.type_names.append(key)
 	return key
 
@@ -35,6 +33,11 @@ static func port_color(type: String) -> Color:
 static func register_types() -> void:
 	for type in Interface.TYPES + ["exec"]:
 		value_type(type)
+	for alias in mm_io_types.TYPE_ALIASES:
+		var type: String = mm_io_types.TYPE_ALIASES[alias]
+		mm_io_types.types[alias] = mm_io_types.types[type].duplicate(true)
+		mm_io_types.types[alias].name = alias
+		mm_io_types.types[alias]["particle_type"] = mm_io_types.types[type].type
 
 func get_type() -> String:
 	return "particle_node"
@@ -116,7 +119,7 @@ func port_defs(side: String) -> Array:
 		var label: String = p.name
 		if settings.kind == "random":
 			label = {"particle_id": "Particle ID (NUMBER)", "system_seed": "System Seed (RANDOM_SEED)", "seed": "Seed Offset", "minimum": "Minimum", "maximum": "Maximum", "value": "Random Value"}.get(p.name, p.name)
-		result.append({"name": p.name, "label": label, "type": p.type if p.type in FUNCTION_TYPES else value_type(p.type)})
+		result.append({"name": p.name, "label": label, "type": p.type if p.type in FUNCTION_TYPES else value_type(p.type), "shader_type": "" if p.type in FUNCTION_TYPES else p.type})
 	return result
 
 func get_input_defs() -> Array:

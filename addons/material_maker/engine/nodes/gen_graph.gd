@@ -411,7 +411,7 @@ func check_input_connects(node) -> void:
 				continue
 			var input_type = node.get_input_defs()[c.to_port].type
 			var output_type = get_node(NodePath(c.from)).get_output_defs()[c.from_port].type
-			if mm_io_types.types[input_type].slot_type != mm_io_types.types[output_type].slot_type and mm_io_types.types[output_type].slot_type != 42 and not mm_io_types.is_particle_function_connection(mm_io_types.types[output_type].slot_type, mm_io_types.types[input_type].slot_type):
+			if mm_io_types.types[input_type].slot_type != mm_io_types.types[output_type].slot_type and mm_io_types.types[output_type].slot_type != 42:
 				removed_connections.push_back(c.duplicate(true))
 				continue
 		new_connections.push_back(c)
@@ -474,8 +474,10 @@ func create_subgraph(gens : Array) -> MMGenGraph:
 			if port_index == -1:
 				port_index = outputs.size()
 				outputs.push_back(src_name)
-				var type = new_graph.get_node(NodePath(c.from)).get_output_defs()[c.from_port].type
-				gen_outputs.ports.push_back( { name="port"+str(port_index), type=type } )
+				var definition = new_graph.get_node(NodePath(c.from)).get_output_defs()[c.from_port]
+				var port = { name="port"+str(port_index), type=definition.type }
+				if definition.has("shader_type"): port.shader_type = definition.shader_type
+				gen_outputs.ports.push_back(port)
 			my_new_connections.push_back( { from=new_graph.name, from_port=port_index, to=c.to, to_port=c.to_port } )
 			new_graph_connections.push_back( { from=c.from, from_port=c.from_port, to="gen_outputs", to_port=port_index } )
 		elif names.find(c.to) != -1:
@@ -483,8 +485,10 @@ func create_subgraph(gens : Array) -> MMGenGraph:
 			if port_index == -1:
 				port_index = inputs.size()
 				inputs.push_back(src_name)
-				var type = get_node(NodePath(c.from)).get_output_defs()[c.from_port].type
-				gen_inputs.ports.push_back( { name="port"+str(port_index), type=type } )
+				var definition = get_node(NodePath(c.from)).get_output_defs()[c.from_port]
+				var port = { name="port"+str(port_index), type=definition.type }
+				if definition.has("shader_type"): port.shader_type = definition.shader_type
+				gen_inputs.ports.push_back(port)
 			my_new_connections.push_back( { from=c.from, from_port=c.from_port, to=new_graph.name, to_port=port_index } )
 			new_graph_connections.push_back( { from="gen_inputs", from_port=port_index, to=c.to, to_port=c.to_port } )
 		else:

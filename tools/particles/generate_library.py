@@ -31,8 +31,8 @@ def main():
         add('Tools/' + kind.replace('_', ' ').title(), {'kind': kind, 'data_type': data_type})
     entries.append({'name': 'particle_custom', 'type': 'shader', 'tree_item': 'Particles/Tools/Custom Shader',
                     'shader_model': {'name': 'Particle Custom Shader', 'parameters': [],
-                                     'inputs': [{'name': 'value', 'type': 'particle_float', 'default': '0.0', 'label': 'Value'}],
-                                     'outputs': [{'type': 'particle_float', 'particle_float': '$value($uv)'}],
+                                     'inputs': [{'name': 'value', 'type': 'f', 'default': '0.0', 'label': 'Value'}],
+                                     'outputs': [{'type': 'f', 'f': '$value($uv)'}],
                                      'code': '', 'instance': '', 'global': ''}})
     (ROOT / 'addons/material_maker/particles/library.json').write_text(
         json.dumps({'name': 'Particles', 'lib': entries}, indent=2) + '\n', encoding='utf-8')

@@ -55,8 +55,8 @@ func run() -> void:
 	created = await editor.create_nodes(item.item, Vector2(0, 0))
 	node = created[0]
 	assert(node.generator.model_data().data_type == "vec3")
-	assert(editor.is_valid_connection_type(mm_io_types.types.particle_vec3.slot_type, mm_io_types.types.rgb.slot_type))
-	assert(not editor.is_valid_connection_type(mm_io_types.types.rgb.slot_type, mm_io_types.types.particle_vec3.slot_type))
+	assert(mm_io_types.types.particle_vec3.slot_type == mm_io_types.types.rgb.slot_type)
+	assert(MMGenParticle.value_type("vec3") == "rgb")
 	var popup = editor.node_popup
 	popup.qc_slot_type = mm_io_types.types.particle_vec3.slot_type
 	popup.qc_is_output = false

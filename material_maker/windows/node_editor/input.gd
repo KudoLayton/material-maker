@@ -1,5 +1,7 @@
 extends HBoxContainer
 
+var original_type := ""
+
 func _ready():
 	$Type.clear()
 	for tn in mm_io_types.type_names:
@@ -19,7 +21,8 @@ func set_model_data(data, remaining_group_size = 0) -> int:
 	$Description.short_description = data.shortdesc if data.has("shortdesc") else ""
 	$Description.long_description = data.longdesc if data.has("longdesc") else ""
 	$Description.update_tooltip()
-	$Type.selected = mm_io_types.type_names.find(data.type)
+	original_type = data.type
+	$Type.selected = mm_io_types.type_names.find(mm_io_types.canonical_type(data.type))
 	$Default.text = data.default
 	$Function.button_pressed = data.has("function") and data.function
 	if data.has("group_size") and data.group_size > 1:
@@ -32,6 +35,7 @@ func set_model_data(data, remaining_group_size = 0) -> int:
 func get_model_data() -> Dictionary:
 	var data = { name=$Name.text, label=$Label.text, default=$Default.text }
 	data.type = mm_io_types.type_names[$Type.selected]
+	if mm_io_types.canonical_type(original_type) == data.type: data.type = original_type
 	if $Description.short_description != "":
 		data.shortdesc = $Description.short_description
 	if $Description.long_description != "":

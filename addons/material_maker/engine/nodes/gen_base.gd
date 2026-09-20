@@ -596,15 +596,7 @@ func get_shader_code(uv : String, output_index : int, context : MMGenContext) ->
 		if found:
 			var declaration : String = mm_renderer.get_global_parameter_declaration(v)+";\n"
 			rv.add_global(declaration, "global_parameters_declaration", 0)
-	if mm_io_types.types.has(rv.output_type):
-		if mm_io_types.types[rv.output_type].has("convert"):
-			for c in mm_io_types.types[rv.output_type].convert:
-				if ! rv.output_values.has(c.type):
-					var expr = c.expr.replace("$(value)", rv.output_values[rv.output_type])
-					rv.output_values[c.type] = expr
-	else:
-		print("Missing type for node ")
-		print(rv)
+	mm_io_types.complete_output_values(rv.output_type, rv.output_values)
 	return rv
 
 func get_output_attributes(output_index : int) -> Dictionary:

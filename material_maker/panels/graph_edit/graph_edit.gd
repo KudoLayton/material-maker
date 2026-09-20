@@ -80,8 +80,6 @@ func _ready() -> void:
 	for t in range(41):
 		add_valid_connection_type(t, 42)
 		add_valid_connection_type(42, t)
-	for type in ["particle_float", "particle_vec3", "particle_vec4"]:
-		add_valid_connection_type(mm_io_types.types[type].slot_type, mm_io_types.types.rgb.slot_type)
 	node_popup.about_to_popup.connect(func(): valid_drag_cut_entry = false)
 
 func _exit_tree():

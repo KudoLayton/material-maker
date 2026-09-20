@@ -26,7 +26,7 @@ func particle_ports() -> Dictionary:
 func get_input_defs() -> Array:
 	var result: Array = []
 	for port in particle_ports().inputs:
-		result.append({"name": port.name, "label": port.name, "type": MMGenParticle.value_type(port.type)})
+		result.append({"name": port.name, "label": port.name, "type": MMGenParticle.value_type(port.type), "shader_type": port.type})
 	return result
 
 func get_output_defs(_show_hidden: bool = false) -> Array:

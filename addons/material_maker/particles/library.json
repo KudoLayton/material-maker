@@ -623,15 +623,15 @@
         "inputs": [
           {
             "name": "value",
-            "type": "particle_float",
+            "type": "f",
             "default": "0.0",
             "label": "Value"
           }
         ],
         "outputs": [
           {
-            "type": "particle_float",
-            "particle_float": "$value($uv)"
+            "type": "f",
+            "f": "$value($uv)"
           }
         ],
         "code": "",

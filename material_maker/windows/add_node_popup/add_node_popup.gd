@@ -42,14 +42,14 @@ func add_node(node_data) -> void:
 				if qc_is_output:
 					for new_slot in node.get_output_port_count():
 						var slot_type : int = node.get_output_port_type(new_slot)
-						if qc_slot_type == slot_type or slot_type == 42 or qc_slot_type == 42 or mm_io_types.is_particle_function_connection(slot_type, qc_slot_type):
+						if qc_slot_type == slot_type or slot_type == 42 or qc_slot_type == 42:
 							current_graph.on_connect_node(node.name, new_slot, qc_node, qc_slot)
 							port_position = node.get_output_port_position(new_slot)
 							break
 				else:
 					for new_slot in node.get_input_port_count():
 						var slot_type : int = node.get_input_port_type(new_slot)
-						if qc_slot_type == slot_type or slot_type == 42 or qc_slot_type == 42 or mm_io_types.is_particle_function_connection(qc_slot_type, slot_type):
+						if qc_slot_type == slot_type or slot_type == 42 or qc_slot_type == 42:
 							current_graph.on_connect_node(qc_node, qc_slot, node.name, new_slot)
 							port_position = node.get_input_port_position(new_slot)
 							break
@@ -103,7 +103,7 @@ func check_quick_connect(obj : Dictionary) -> bool:
 			else:
 				var found : bool = false
 				for outputs in ref_obj.shader_model.outputs.size():
-					if qc_slot_type == 42 or mm_io_types.types[ref_obj.shader_model.outputs[outputs].type].slot_type == qc_slot_type or mm_io_types.is_particle_function_connection(mm_io_types.types[ref_obj.shader_model.outputs[outputs].type].slot_type, qc_slot_type):
+					if qc_slot_type == 42 or mm_io_types.types[ref_obj.shader_model.outputs[outputs].type].slot_type == qc_slot_type:
 						found = true
 						break
 				if !found:
@@ -117,12 +117,12 @@ func check_quick_connect(obj : Dictionary) -> bool:
 					break
 			var found : bool = false
 			for outputs in output_ports.size():
-				if qc_slot_type == 42 or mm_io_types.types[output_ports[outputs].type].slot_type == qc_slot_type or mm_io_types.is_particle_function_connection(mm_io_types.types[output_ports[outputs].type].slot_type, qc_slot_type):
+				if qc_slot_type == 42 or mm_io_types.types[output_ports[outputs].type].slot_type == qc_slot_type:
 					found = true
 					break
 			if !found:
 				return false
-			if output_ports.is_empty() or mm_io_types.types[output_ports[0].type].slot_type != qc_slot_type and qc_slot_type != 42 and not mm_io_types.is_particle_function_connection(mm_io_types.types[output_ports[0].type].slot_type, qc_slot_type):
+			if output_ports.is_empty() or mm_io_types.types[output_ports[0].type].slot_type != qc_slot_type and qc_slot_type != 42:
 				return false
 		elif (ref_obj.type == "image" or ref_obj.type == "text" or ref_obj.type == "buffer" or ref_obj.type == "iterate_buffer") and qc_slot_type != 0 and qc_slot_type != 42:
 			return false
@@ -135,7 +135,7 @@ func check_quick_connect(obj : Dictionary) -> bool:
 			else:
 				var found : bool = false
 				for input in ref_obj.shader_model.inputs.size():
-					if qc_slot_type == 42 or mm_io_types.types[ref_obj.shader_model.inputs[input].type].slot_type == qc_slot_type or mm_io_types.is_particle_function_connection(qc_slot_type, mm_io_types.types[ref_obj.shader_model.inputs[input].type].slot_type):
+					if qc_slot_type == 42 or mm_io_types.types[ref_obj.shader_model.inputs[input].type].slot_type == qc_slot_type:
 						found = true
 						break
 				if !found:
@@ -149,12 +149,12 @@ func check_quick_connect(obj : Dictionary) -> bool:
 					break
 			var found : bool = false
 			for input in input_ports.size():
-				if qc_slot_type == 42 or mm_io_types.types[input_ports[input].type].slot_type == qc_slot_type or mm_io_types.is_particle_function_connection(qc_slot_type, mm_io_types.types[input_ports[input].type].slot_type):
+				if qc_slot_type == 42 or mm_io_types.types[input_ports[input].type].slot_type == qc_slot_type:
 					found = true
 					break
 			if !found:
 				return false
-			if input_ports.is_empty() or mm_io_types.types[input_ports[0].type].slot_type != qc_slot_type and qc_slot_type != 42 and not mm_io_types.is_particle_function_connection(qc_slot_type, mm_io_types.types[input_ports[0].type].slot_type):
+			if input_ports.is_empty() or mm_io_types.types[input_ports[0].type].slot_type != qc_slot_type and qc_slot_type != 42:
 				return false
 		elif ref_obj.type == "image" or ref_obj.type == "text" or ref_obj.type == "sdf" or ref_obj.type == "meshmap" or (ref_obj.type == "portal" and ref_obj.io == MMGenPortal.Portal.OUT):
 			return false
