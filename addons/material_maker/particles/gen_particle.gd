@@ -68,7 +68,7 @@ func accept_float_expressions() -> bool:
 
 func get_description() -> String:
 	if settings.kind == "output":
-		return "Particle stage output. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Evaluate Function can override coordinates for a branch."
+		return "Particle stage output. Unconnected attributes retain their current values; Process does not initialize particle state. Sampling UV defaults to (0, 0) and is evaluated once at stage entry. Evaluate Function can override coordinates for a branch."
 	if settings.kind == "random":
 		return "Deterministic per-particle random values. Particle ID defaults to Godot NUMBER; System Seed defaults to Godot RANDOM_SEED. Seed Offset is an additional node-specific offset, not a Godot built-in. Input default controls apply only while the corresponding input is unconnected. Random Value is the only output."
 	var descriptions := {

@@ -146,6 +146,7 @@
         "collision_use_scale": true,
         "disable_force": false,
         "disable_velocity": false,
+        "initialize_particle": true,
         "keep_data": false,
         "target_project": ""
       },

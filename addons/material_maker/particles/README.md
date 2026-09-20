@@ -7,7 +7,7 @@
 1. 확장 빌드의 `material_maker.exe`에서 **File → New Particle Shader**를 선택합니다.
 2. 같은 캔버스의 **Start Output**은 초기화, **Process Output**은 매 프레임 처리입니다.
 3. 기존 Library의 **Uniform / Grayscale Uniform**, **Math / Vec3 Math**, **Combine / Decompose**, Noise 등으로 계산을 구성합니다. 필요한 상태만 **Particles → Read**로 가져옵니다.
-4. 원하는 계산을 출력의 COLOR, VELOCITY, MASS, TRANSFORM 등에 연결합니다. 연결하지 않은 상태는 바꾸지 않습니다.
+4. 원하는 계산을 출력의 COLOR, VELOCITY, MASS, TRANSFORM 등에 연결합니다. Start는 아래 기본 초기화 이후 연결한 값을 기록합니다. Process는 연결하지 않은 상태를 바꾸지 않습니다.
 5. 노드들을 선택하고 기존 **Create subgraph**를 사용합니다. 입력·출력·파라미터를 노출하고 기존 방식으로 라이브러리에 저장할 수 있습니다. 출력 두 개는 최상위에 남습니다.
 6. 기존 Export 메뉴에서 **Godot 4/Particles**를 선택합니다. `.gdshader`, `.tres`, 필요한 `_texture_N.res`를 함께 보관합니다. Godot에서는 `.tres`를 사용합니다.
 
@@ -102,7 +102,21 @@ Godot 4.7의 단계별 내장 변수와 쓰기 권한, USERDATA1~6, 행렬, rend
 
 출력에 연결된 값들은 같은 시점의 상태에서 계산한 뒤 기록합니다. 순차적인 상태 기록이나 방출은 해당 단계의 **Entry → Write / Emit → Output** 실행 연결로 표현합니다. Enabled로 조건부 실행을 지정하며, Emit의 Success는 방출 실행 이후에 사용합니다. 실행 연결도 서브그래프로 묶을 수 있습니다.
 
-`CUSTOM`이나 `USERDATA`에 숨겨진 나이·수명 상태를 예약하지 않습니다. 위치 초기화에는 필요한 경우 `EMISSION_TRANSFORM`을 명시적으로 연결합니다. 속도 적분과 어트랙터는 Godot의 기본 동작 및 Start Output의 render mode 설정을 따릅니다.
+Start Output의 **Initialize Particle**은 기본적으로 켜져 있으며, 기존 `.ptex`에도 적용됩니다. `start()` 진입 시 아래 초기화를 한 번 수행한 뒤 Read 상태와 Sampling UV를 계산하고 그래프를 실행합니다. 명시적으로 연결한 Output 값이나 Write는 초기값보다 우선합니다.
+
+| 속성 | 해당 RESTART 플래그가 켜진 경우의 초기값 |
+|---|---|
+| TRANSFORM 위치 | `EMISSION_TRANSFORM[3]` |
+| TRANSFORM 회전·스케일 | `EMISSION_TRANSFORM[0..2]` |
+| VELOCITY | `(0, 0, 0)` |
+| COLOR | `(1, 1, 1, 1)` |
+| CUSTOM | `(0, 0, 0, 0)` |
+
+위치와 회전·스케일은 각각 `RESTART_POSITION`, `RESTART_ROT_SCALE`로 처리합니다. 서브파티클에서 상속한 속성은 해당 플래그가 꺼져 있으므로 보존합니다. MASS는 Godot 기본값 1을 유지하고 ACTIVE와 USERDATA는 초기화하지 않습니다. Sampling UV의 미연결 기본값은 `(0, 0)`입니다.
+
+이전 동작이 필요하면 **Initialize Particle**을 끕니다. `keep_data`를 켜도 자동 초기화를 생략합니다. 이 설정은 그래프에 저장되며 Godot Inspector의 uniform으로 노출되지 않습니다. Process에는 자동 초기화가 없습니다. 연결한 TRANSFORM과 VELOCITY에는 좌표 변환을 추가하지 않으며, 그래프가 지정한 값을 그대로 기록합니다.
+
+Godot의 [파티클 셰이더 RESTART 규칙](https://docs.godotengine.org/en/4.7/tutorials/shaders/shader_reference/particle_shader.html)을 따르는 기본 상태 정책입니다. ParticleProcessMaterial의 중력·수명 로직 전체를 복제하지 않으며 `CUSTOM`이나 `USERDATA`에 숨겨진 나이·수명 상태를 예약하지 않습니다. 속도 적분과 어트랙터는 Godot의 기본 동작 및 Start Output의 render mode 설정을 따릅니다.
 
 ## Uniform·미리보기·호환성
 
