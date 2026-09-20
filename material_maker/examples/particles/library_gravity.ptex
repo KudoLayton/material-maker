@@ -169,12 +169,11 @@
         "y": 960
       },
       "parameters": {
-        "array_size": 0,
+        "array_size": 1,
         "default_json": "5.0",
         "hint": "",
-        "resource": "",
-        "resources": "[]",
-        "uniform_name": "launch_speed"
+        "uniform_name": "launch_speed",
+        "is_array": false
       },
       "seed": 21988.0,
       "settings": {
@@ -337,12 +336,11 @@
         "y": 3360
       },
       "parameters": {
-        "array_size": 0,
+        "array_size": 1,
         "default_json": "[0.0,-9.8,0.0]",
         "hint": "",
-        "resource": "",
-        "resources": "[]",
-        "uniform_name": "gravity"
+        "uniform_name": "gravity",
+        "is_array": false
       },
       "seed": 51610.0,
       "settings": {

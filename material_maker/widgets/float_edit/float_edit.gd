@@ -28,6 +28,7 @@ var float_value: float = 0.5
 var _step_decimals := 2
 
 @export var float_only: bool = false
+@export var integer_only: bool = false
 
 var start_position: float
 var last_position: float
@@ -71,7 +72,7 @@ var editable := true:
 
 func get_value() -> Variant:
 	if $Edit.text.is_valid_float():
-		return float($Edit.text)
+		return int($Edit.text.to_float()) if integer_only else float($Edit.text)
 	elif float_only:
 		return 0
 	else:
@@ -79,6 +80,9 @@ func get_value() -> Variant:
 
 
 func set_value(v: Variant, notify := false, merge_undos := false) -> void:
+	if integer_only and v is String and not v.is_valid_float():
+		$Edit.text = str(int(float_value))
+		return
 	if v is int or (v is String and v.is_valid_float()):
 		v = float(v)
 
@@ -86,8 +90,13 @@ func set_value(v: Variant, notify := false, merge_undos := false) -> void:
 		v = min_value
 
 	if v is float:
+		if integer_only and (not is_finite(v) or v != floor(v) or v < min_value or v > max_value):
+			$Edit.text = str(int(float_value))
+			return
 		float_value = v
-		if get_decimal_places(v) < _step_decimals:
+		if integer_only:
+			$Edit.text = str(int(v))
+		elif get_decimal_places(v) < _step_decimals:
 			$Edit.text = str(v).pad_decimals(_step_decimals)
 		else:
 			$Edit.text = str(v)
@@ -96,8 +105,8 @@ func set_value(v: Variant, notify := false, merge_undos := false) -> void:
 		else:
 			$Slider.value = min_value
 		if notify:
-			emit_signal("value_changed", float_value)
-			emit_signal("value_changed_undo", float_value, merge_undos)
+			emit_signal("value_changed", int(float_value) if integer_only else float_value)
+			emit_signal("value_changed_undo", int(float_value) if integer_only else float_value, merge_undos)
 
 	elif v is String:
 		$Slider.value = min_value
@@ -197,6 +206,7 @@ func _gui_input(event: InputEvent) -> void:
 
 				var v: float = start_value + delta / (size.x / abs(max_value - min_value))
 
+				if integer_only: current_step = maxf(1.0, roundf(current_step))
 				if current_step != 0:
 					v = snappedf(v, current_step)
 
@@ -268,6 +278,11 @@ func _on_edit_text_submitted(new_text: String) -> void:
 	var self_reference := RegEx.new()
 	self_reference.compile("\\$\\b%s\\b" % name)
 
+	if integer_only:
+		var candidate := new_text.to_float()
+		if not new_text.is_valid_float() or not is_finite(candidate) or candidate != floor(candidate) or candidate < min_value or candidate > max_value:
+			set_value(float_value)
+			return
 	if new_text.is_valid_float():
 		var new_value: float = new_text.to_float()
 		if abs(float_value-new_value) > 0.00001:

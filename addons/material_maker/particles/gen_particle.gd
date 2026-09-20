@@ -131,7 +131,7 @@ func model_data() -> Dictionary:
 		n["value"] = value
 	if n.kind == "uniform":
 		n["uniform"] = parameters.get("uniform_name", n.get("uniform", "parameter"))
-		n["array_size"] = int(parameters.get("array_size", 0))
+		n["array_size"] = int(parameters.get("array_size", 1)) if parameters.get("is_array", false) else 0
 	return n
 
 func constant_component(key: String, fallback, type: String):
@@ -147,7 +147,7 @@ func uniform_definition() -> Dictionary:
 	var json := JSON.new()
 	json.parse(str(parameters.get("default_json", JSON.stringify(default_parameter_value(n)))))
 	var value = json.data
-	return {"name": n.uniform, "type": type, "array_size": int(parameters.get("array_size", 0)),
+	return {"name": n.uniform, "type": type, "array_size": n.array_size,
 		"value": value, "hint": parameters.get("hint", ""), "resource": parameters.get("resource", ""),
 		"resources": JSON.parse_string(str(parameters.get("resources", "[]")))}
 
@@ -242,9 +242,10 @@ func get_parameter_defs() -> Array:
 	if n.kind == "array_get": result.append(number_parameter("array_size", settings.get("array_size", 1), true))
 	if n.kind == "uniform":
 		result.append({"name": "uniform_name", "label": "Name", "type": "string", "commit_on_submit": true, "default": settings.get("uniform", "parameter")})
-		result.append(number_parameter("array_size", 0, true))
-		result[-1].min = 0
-		result[-1].max = 1024
+		result.append({"name": "is_array", "label": "Is Array", "type": "boolean", "default": false})
+		if parameters.get("is_array", false):
+			result.append(number_parameter("array_size", 1, true))
+			result[-1].merge({"min": 1, "max": 1024, "integer": true, "longdesc": "Fixed number of array elements (1..1024)."}, true)
 		if n.data_type.begins_with("sampler"):
 			var key := "resources" if n.get("array_size", 0) > 0 else "resource"
 			result.append({"name": key, "label": "Paths (JSON)" if key == "resources" else "Resource", "type": "string", "default": "[]" if key == "resources" else ""})
@@ -286,6 +287,7 @@ func get_parameter(key: String):
 	return super.get_parameter(key)
 
 func set_parameter(key: String, value) -> void:
+	if key == "is_array" and not loading_parameters and value == parameters.get("is_array", false): return
 	if is_parameter_component(key):
 		var edited = parameter_editor_value()
 		var type: String = model_data().data_type
@@ -300,8 +302,13 @@ func set_parameter(key: String, value) -> void:
 		parameter_changed.emit(key, value)
 		if is_inside_tree(): all_sources_changed.call_deferred()
 		return
-	var change_default: bool = not loading_parameters and settings.kind == "uniform" and key in ["data_type", "array_size"]
+	if settings.kind == "uniform" and key == "array_size":
+		if not loading_parameters and (not (value is int or value is float) or not is_finite(float(value)) or value != floor(float(value)) or value < 1 or value > 1024): return
+		value = int(value)
+	var previous_default = null
+	var change_default: bool = not loading_parameters and settings.kind == "uniform" and key in ["data_type", "array_size", "is_array"]
 	if change_default:
+		previous_default = uniform_definition().value
 		var n := model_data()
 		defaults_by_type[n.data_type + ":" + str(n.get("array_size", 0))] = parameters.get("default_json", JSON.stringify(default_parameter_value(n)))
 	var remap_operation: bool = not loading_parameters and key == "data_type" and settings.kind == "operator" and settings.has("editor_profile")
@@ -310,12 +317,23 @@ func set_parameter(key: String, value) -> void:
 	super.set_parameter(key, value)
 	if change_default:
 		var n := model_data()
-		super.set_parameter("default_json", defaults_by_type.get(n.data_type + ":" + str(n.get("array_size", 0)), JSON.stringify(default_parameter_value(n))))
+		var initial_default = default_parameter_value(n)
+		if key == "is_array" and not n.data_type.begins_with("sampler"):
+			if value:
+				for i in initial_default.size(): initial_default[i] = previous_default
+			elif previous_default is Array and not previous_default.is_empty(): initial_default = previous_default[0]
+		super.set_parameter("default_json", defaults_by_type.get(n.data_type + ":" + str(n.get("array_size", 0)), JSON.stringify(initial_default)))
+		if key == "is_array" and n.data_type.begins_with("sampler"):
+			var paths = uniform_definition().resources
+			if value and paths is Array and paths.is_empty() and not str(parameters.get("resource", "")).is_empty():
+				super.set_parameter("resources", JSON.stringify([parameters.get("resource", "")]))
+			elif not value and str(parameters.get("resource", "")).is_empty() and paths is Array and not paths.is_empty():
+				super.set_parameter("resource", paths[0])
 	if remap_operation:
 		var options := option_values("operation", model_data().data_type)
 		super.set_parameter("operation", maxi(0, options.find(operations_by_type.get(model_data().data_type, previous_operation))))
 	if is_inside_tree(): all_sources_changed.call_deferred()
-	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "sampler_type"]:
+	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "is_array", "sampler_type"]:
 		parameter_changed.emit.call_deferred("__update_all__", null)
 
 func _get_shader_code(uv: String, output_index: int, context: MMGenContext) -> ShaderCode:
@@ -331,7 +349,7 @@ func _serialize(data: Dictionary) -> Dictionary:
 	if settings.kind == "uniform":
 		for key in data.parameters.keys():
 			if is_parameter_component(key): data.parameters.erase(key)
-		for key in ["default_json", "hint", "resource", "resources"]:
+		for key in ["default_json", "hint", "resource", "resources", "array_size"]:
 			if parameters.has(key): data.parameters[key] = parameters[key]
 		if not data.parameters.has("default_json"):
 			data.parameters.default_json = JSON.stringify(default_parameter_value(model_data()))
@@ -346,5 +364,13 @@ func deserialize(data: Dictionary) -> void:
 	loading_parameters = true
 	operations_by_type.clear()
 	defaults_by_type.clear()
+	if data.get("settings", {}).get("kind") == "uniform":
+		data = data.duplicate(true)
+		var values: Dictionary = data.get("parameters", {})
+		if not values.has("is_array"):
+			var count := int(values.get("array_size", 0))
+			values["is_array"] = count > 0
+			values["array_size"] = count if count > 0 else 1
+		data["parameters"] = values
 	await super.deserialize(data)
 	loading_parameters = false

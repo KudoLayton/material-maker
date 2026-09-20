@@ -27,6 +27,7 @@ func run():
 	var item = window.get_node("NodeLibraryManager").get_item("Miscellaneous/Typed Parameter")
 	var created = await editor.create_nodes(item.item, Vector2.ZERO)
 	var node = created[0]
+	for frame in 5: await get_tree().process_frame
 	var input: LineEdit = node.controls.uniform_name
 	editor_viewport = input.get_viewport()
 	editor_viewport.gui_disable_input = false

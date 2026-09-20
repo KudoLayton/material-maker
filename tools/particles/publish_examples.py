@@ -38,6 +38,11 @@ def use_stock_nodes(graph):
             continue
         settings = node['settings']
         kind, data_type = settings['kind'], settings.get('data_type')
+        if kind == 'uniform':
+            parameters = node.setdefault('parameters', {})
+            count = int(parameters.get('array_size', 0))
+            parameters.setdefault('is_array', count > 0)
+            parameters['array_size'] = count if count > 0 else 1
         if kind != 'constant' or data_type not in ['float', 'vec3', 'vec4']:
             if kind in ['constant', 'operator', 'compose', 'split', 'convert', 'transform',
                         'select', 'uniform', 'array_get', 'sample', 'evaluate', 'bridge']:

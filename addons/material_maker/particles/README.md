@@ -66,7 +66,7 @@ Remote와 기존 노드의 숫자·색상 설정은 Material Maker 내부 편집
 
 Godot에서 실행 중 조절할 값은 **Miscellaneous → Typed Parameter**로 만듭니다. `Name`에 `velocity`처럼 유효한 셰이더 식별자를 입력하고 노드 출력을 계산에 연결합니다. Name은 Enter 또는 입력칸에서 포커스를 옮길 때 확정되며 한 번의 Undo로 되돌릴 수 있습니다. Godot Inspector에는 `Velocity`처럼 Godot의 기본 이름 표시 규칙으로 나타납니다. 이번 구현에는 Typed Parameter를 `$이름`으로 참조하는 기능이 없으며, Remote의 기존 `$이름` 동작은 유지합니다.
 
-Typed Parameter는 float(Grayscale), vec3(Color), vec4(RGBA)와 bool·정수·vec2·불리언/정수 벡터·행렬·배열·sampler를 지원합니다. 단일 값은 타입별 입력란에서, 배열 기본값은 JSON으로 편집합니다. vec3/vec4의 각 성분은 음수와 1보다 큰 값도 입력할 수 있습니다. 텍스처는 Resource 또는 Paths(JSON)에 경로를 입력합니다. Parameter는 항상 외부 uniform으로 내보내므로 Export 체크박스가 없습니다.
+Typed Parameter는 float(Grayscale), vec3(Color), vec4(RGBA)와 bool·정수·vec2·불리언/정수 벡터·행렬·배열·sampler를 지원합니다. 기본은 단일 값이며 타입별 입력란에서 편집합니다. **Is Array**를 켜면 고정 길이 배열이 되고, 그때만 **Array Size**(정수 1~1024, 기본 1)와 배열 기본값 JSON 입력이 나타납니다. 길이가 1인 배열도 단일 값과 구분합니다. Array Size에는 소수 값·범위 밖 값·표현식을 입력할 수 없습니다. vec3/vec4의 각 성분은 음수와 1보다 큰 값도 입력할 수 있습니다. 텍스처는 Resource 또는 Paths(JSON)에 경로를 입력합니다. Parameter는 항상 외부 uniform으로 내보내므로 Export 체크박스가 없습니다.
 
 같은 이름과 같은 정의는 Start·Process·서브그래프에서 하나의 파라미터를 공유합니다. 이름이 같지만 타입·기본값·힌트·리소스 정의가 다르면 오류를 표시합니다. 이름의 범위는 전체 셰이더이므로 라이브러리 모듈을 여러 번 사용할 때도 이 규칙을 따릅니다. 외부 값에 따라 변하는 계산은 정적 Buffer로 베이크할 수 없습니다.
 
@@ -112,7 +112,7 @@ Typed Parameter의 단일 수치 기본값은 셰이더 uniform 선언에 포함
 
 파티클 시뮬레이션 미리보기는 없습니다. 상태에 의존하지 않는 기존 이미지 노드는 기존 미리보기를 사용할 수 있습니다. 파티클 값은 이미지 미리보기에서 평가하지 않습니다. 개수·수명·Draw Pass·충돌체·Sub Emitter 연결은 Godot에서 설정합니다.
 
-이전 Typed Uniform은 저장 형식과 명시적 이름을 유지한 채 Typed Parameter로 열립니다. 이전 내보내기의 자동 생성된 내부 숫자 파라미터 이름은 제거됩니다. Godot에서 그 이름에 override를 설정했다면 Typed Parameter를 만들고 새 이름으로 옮겨야 합니다.
+이전 Typed Uniform은 명시적 이름을 유지한 채 Typed Parameter로 열립니다. Is Array가 없는 이전 파일은 `array_size=0`을 단일 값, 양수를 배열로 읽습니다. 저장 시 배열 여부를 명시적으로 기록합니다. 단일 값/배열 전환 시 각 기본값을 편집 세션 동안 기억하고, 저장·재로드 시에는 활성 모드의 기본값을 보존합니다. 이전 내보내기의 자동 생성된 내부 숫자 파라미터 이름은 제거됩니다. Godot에서 그 이름에 override를 설정했다면 Typed Parameter를 만들고 새 이름으로 옮겨야 합니다.
 
 이전 통합 그래프의 노드·타입 선택·연산·포트 연결은 유지합니다. 신규 메뉴에서 제외한 노드도 기존 파일과 사용자 라이브러리에서 계속 읽고 편집할 수 있으며, 자동으로 다른 노드로 교체하지 않습니다. 사용자 지정 이름과 셰이더 코드는 유지합니다.
 
