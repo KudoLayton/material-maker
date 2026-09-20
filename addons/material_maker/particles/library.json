@@ -575,9 +575,9 @@
       }
     },
     {
-      "name": "Miscellaneous_Typed_Uniform",
+      "name": "Miscellaneous_Typed_Parameter",
       "type": "particle_node",
-      "tree_item": "Miscellaneous/Typed Uniform",
+      "tree_item": "Miscellaneous/Typed Parameter",
       "settings": {
         "kind": "uniform",
         "data_type": "float",

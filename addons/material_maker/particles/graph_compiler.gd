@@ -22,6 +22,7 @@ func compile_graph(graph: MMGenGraph) -> Dictionary:
 	if material != null and material.has_method("particle_configuration"):
 		data.merge(material.particle_configuration(), true)
 	var uniforms: Dictionary = {}
+	var uniform_owners: Dictionary = {}
 	for current_stage in ["start", "process"]:
 		var models: Dictionary = {}
 		for child in graph.get_children():
@@ -36,11 +37,14 @@ func compile_graph(graph: MMGenGraph) -> Dictionary:
 					# Preserve both declarations so the common validator reports the conflict.
 					data.uniforms.append(u)
 				uniforms[u.name] = u
+				uniform_owners[u.name] = model.id
 			if model.kind == "emit": state_fields["result_" + model.id] = {"type": "bool"}
 		graph_models[current_stage] = models
 	if not collection_errors.is_empty():
 		return {"code": "", "errors": collection_errors, "source_map": {}}
 	data.uniforms.append_array(uniforms.values())
+	for uniform in data.uniforms:
+		uniform["source_node"] = uniform_owners[uniform.name]
 	var result := compile(data)
 	result["uniforms"] = data.uniforms
 	result["target_project"] = data.get("target_project", "")

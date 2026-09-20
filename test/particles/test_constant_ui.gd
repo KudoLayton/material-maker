@@ -121,16 +121,52 @@ func run() -> void:
 	editor.get_node("node_Material").position_offset = Vector2(0, 1100)
 	editor.get_node("node_Process").position_offset = Vector2(650, 1100)
 	node.position_offset = Vector2(0, 380)
-	for pair in [["Simple/Constant/Typed", Vector2(0, 0)], ["Filter/Math/Typed", Vector2(310, 0)], ["Miscellaneous/Typed Uniform", Vector2(650, 0)]]:
+	for pair in [["Simple/Constant/Typed", Vector2(0, 0)], ["Filter/Math/Typed", Vector2(310, 0)], ["Miscellaneous/Typed Parameter", Vector2(650, 0)]]:
 		item = window.get_node("NodeLibraryManager").get_item(pair[0])
 		created = await editor.create_nodes(item.item, pair[1])
 		created[0].position_offset = pair[1]
+		if pair[0] == "Miscellaneous/Typed Parameter":
+			var parameter = created[0]
+			parameter.set_generator_parameter("uniform_name", "velocity")
+			parameter.set_generator_parameter("value", 10.0)
+			assert(parameter.generator.uniform_definition().value == 10.0)
+			var type_index: int = parameter.generator.option_values("data_type").find("vec3")
+			parameter.controls.data_type.select(type_index)
+			parameter.controls.data_type.item_selected.emit(type_index)
+			for frame in 3: await get_tree().process_frame
+			for i in 3: parameter.set_generator_parameter("v%d" % i, [-1.0, 2.0, 3.0][i])
+			type_index = parameter.generator.option_values("data_type").find("bvec3")
+			parameter.controls.data_type.select(type_index)
+			parameter.controls.data_type.item_selected.emit(type_index)
+			for frame in 3: await get_tree().process_frame
+			assert(parameter.controls.v0 is CheckBox)
+			parameter.controls.v0.button_pressed = true
+			assert(parameter.generator.uniform_definition().value == [true, false, false])
+			editor.undoredo.undo()
+			for frame in 3: await get_tree().process_frame
+			assert(parameter.generator.uniform_definition().value == [false, false, false])
+			editor.undoredo.undo()
+			for frame in 3: await get_tree().process_frame
+			assert(parameter.generator.uniform_definition().value == [-1.0, 2.0, 3.0])
+			editor.undoredo.redo()
+			for frame in 3: await get_tree().process_frame
+			assert(parameter.generator.model_data().data_type == "bvec3")
+			editor.undoredo.undo()
+			for frame in 3: await get_tree().process_frame
+			assert(await editor.save_file("res://app_parameter.ptex"))
+			print("PARTICLE_PARAMETER_UI: typed defaults and undo/redo passed")
 	editor.zoom = 0.85
 	editor.scroll_offset = Vector2(-30, -30)
 	for frame in 15: await get_tree().process_frame
 	window.modulate = Color.WHITE
 	await RenderingServer.frame_post_draw
 	get_tree().root.get_texture().get_image().save_png("res://app_supplemental_ui.png")
+	assert(await window.do_load_project("res://app_parameter.ptex"))
+	for frame in 5: await get_tree().process_frame
+	var saved_parameters = window.get_current_graph_edit().top_generator.get_children().filter(func(g): return g is MMGenParticle and g.settings.kind == "uniform")
+	assert(saved_parameters.size() == 1)
+	assert(saved_parameters[0].uniform_definition().name == "velocity")
+	assert(saved_parameters[0].uniform_definition().value == [-1.0, 2.0, 3.0])
 	print("PARTICLE_CONSTANT_UI: passed")
 	mm_globals.set_config("confirm_quit", false)
 	mm_globals.set_config("confirm_close_project", false)

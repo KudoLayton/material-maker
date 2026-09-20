@@ -28,36 +28,37 @@ func compile(data: Dictionary) -> Dictionary:
 	var declarations: Array = []
 	var uniform_names: Dictionary = {}
 	for uniform in data.get("uniforms", []):
+		var owner: String = uniform.get("source_node", "")
 		var name: String = uniform.get("name", "")
 		var type: String = uniform.get("type", "")
 		if not identifier(name) or name in Interface.BUILTINS.start or name in Interface.BUILTINS.process or name in uniform_names:
-			fail("", "Invalid, reserved or duplicate uniform: " + name)
+			fail(owner, "Invalid, reserved or duplicate uniform: " + name)
 			continue
 		uniform_names[name] = true
 		if type not in Interface.TYPES:
-			fail("", "Unknown uniform type: " + type)
+			fail(owner, "Unknown uniform type: " + type)
 			continue
 		var count := int(uniform.get("array_size", 0))
 		if count < 0 or count > 1024:
-			fail("", "Uniform array size must be 0..1024: " + name)
+			fail(owner, "Uniform array size must be 0..1024: " + name)
 			continue
 		var declaration: String = "uniform " + type + " " + name + ("[%d]" % count if count else "")
 		var hint: String = uniform.get("hint", "")
 		if ";" in hint or "\n" in hint or "{" in hint or "}" in hint:
-			fail("", "Invalid uniform hint: " + name)
+			fail(owner, "Invalid uniform hint: " + name)
 		elif not hint.is_empty():
 			declaration += " : " + hint
 		if not type.begins_with("sampler"):
 			if count:
 				var values = uniform.get("value", [])
 				if not values is Array or values.size() != count:
-					fail("", "Uniform array default size mismatch: " + name)
+					fail(owner, "Uniform array default size mismatch: " + name)
 				else:
 					for value in values:
-						literal(type, value, name)
+						literal(type, value, owner)
 			else:
-				declaration += " = " + literal(type, uniform.get("value", Interface.default_value(type)), name)
-		declarations.append(declaration + ";")
+				declaration += " = " + literal(type, uniform.get("value", Interface.default_value(type)), owner)
+		declarations.append({"text": declaration + ";", "node": owner})
 	var modes: Array[String] = []
 	for mode in data.get("render_modes", []):
 		if mode not in Interface.MODES or mode in modes:
@@ -73,7 +74,8 @@ func compile(data: Dictionary) -> Dictionary:
 	if not modes.is_empty():
 		lines.append("render_mode " + ", ".join(modes) + ";")
 	for declaration in declarations:
-		lines.append(declaration)
+		lines.append(declaration.text)
+		source_map[lines.size()] = {"stage": "", "node": declaration.node}
 	for function in functions.values():
 		for line in function.lines:
 			lines.append(line)
@@ -301,6 +303,7 @@ func literal(type: String, value, node: String) -> String:
 	if type == "bool":
 		if not value is bool:
 			fail(node, "Expected a boolean literal")
+			return "false"
 		return "true" if value == true else "false"
 	if type in ["float", "int", "uint"]:
 		if not (value is int or value is float) or not is_finite(float(value)):

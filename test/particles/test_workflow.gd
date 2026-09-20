@@ -8,7 +8,7 @@ func run():
 		"Filter/Math/Compare": "Compare", "Filter/Combine/Typed": "Typed Combine",
 		"Filter/Decompose/Typed": "Typed Decompose", "Filter/Math/Type Cast": "Type Cast",
 		"Filter/Math/Matrix Transform": "Matrix Transform", "Filter/Math/Select": "Select",
-		"Miscellaneous/Typed Uniform": "Typed Uniform", "Miscellaneous/Array Element": "Array Element",
+		"Miscellaneous/Typed Parameter": "Typed Parameter", "Miscellaneous/Array Element": "Array Element",
 		"Miscellaneous/Texture Sample": "Texture Sample", "Miscellaneous/Evaluate Function": "Evaluate Function",
 		"Miscellaneous/Value to Function": "Value to Function", "Particles/Execution/Start Entry": "Start Entry",
 		"Particles/Execution/Process Entry": "Process Entry", "Particles/Random": "Particle Random",

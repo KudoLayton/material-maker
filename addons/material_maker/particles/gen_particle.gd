@@ -8,6 +8,7 @@ const FUNCTION_TYPES = ["f", "rgb", "rgba", "sdf2d", "sdf3d", "sdf3dc", "tex3d_g
 var settings: Dictionary = {"kind": "constant", "data_type": "float"}
 var loading_parameters := false
 var operations_by_type: Dictionary = {}
+var defaults_by_type: Dictionary = {}
 
 static func value_type(type: String) -> String:
 	if type in ["float", "vec3", "vec4"]: return {"float": "f", "vec3": "rgb", "vec4": "rgba"}[type]
@@ -55,7 +56,7 @@ func get_type_name() -> String:
 		"operator": return "Compare" if settings.get("editor_profile") == "compare_v1" else "Typed Math"
 	return {"constant": "Typed Constant", "compose": "Typed Combine", "split": "Typed Decompose",
 		"convert": "Type Cast", "transform": "Matrix Transform", "select": "Select",
-		"uniform": "Typed Uniform", "array_get": "Array Element", "sample": "Texture Sample",
+		"uniform": "Typed Parameter", "array_get": "Array Element", "sample": "Texture Sample",
 		"evaluate": "Evaluate Function", "bridge": "Value to Function", "random": "Particle Random",
 		"emit": "Emit Subparticle"}.get(n.kind, str(n.kind).capitalize())
 
@@ -82,7 +83,7 @@ func get_description() -> String:
 		"convert": "Explicit shader type constructor. Unlike Material Maker color conversion, casting a vector to float selects its first component instead of averaging RGB.",
 		"transform": "Multiply a mat4 matrix by a vec4 vector. This does not remap image UV coordinates.",
 		"select": "Choose a value using a runtime bool condition. The existing Switch chooses a graph input through an editor setting.",
-		"uniform": "Declare an explicitly named shader uniform, including additional types, arrays and Godot hints. Use Remote for ordinary graph parameters. Currently supported by particle shader export only.",
+		"uniform": "An externally editable parameter with a named, typed output. Use Remote for internal graph controls and Typed Constant for fixed values. Supports arrays and Godot hints. Currently supported by particle shader export only.",
 		"array_get": "Read an element of a shader array by index.",
 		"sample": "Sample a shader texture resource with explicit coordinates and LOD. Use Image for ordinary 2D images. Currently supported by particle shader export only.",
 		"evaluate": "Evaluate a function at explicit coordinates. Ordinary numeric connections need no adapter. Currently supported by particle shader export only.",
@@ -130,6 +131,7 @@ func model_data() -> Dictionary:
 		n["value"] = value
 	if n.kind == "uniform":
 		n["uniform"] = parameters.get("uniform_name", n.get("uniform", "parameter"))
+		n["array_size"] = int(parameters.get("array_size", 0))
 	return n
 
 func constant_component(key: String, fallback, type: String):
@@ -142,7 +144,9 @@ func constant_component(key: String, fallback, type: String):
 func uniform_definition() -> Dictionary:
 	var n := model_data()
 	var type: String = n.get("data_type", "float")
-	var value = JSON.parse_string(str(parameters.get("default_json", JSON.stringify(Interface.default_value(type)))))
+	var json := JSON.new()
+	json.parse(str(parameters.get("default_json", JSON.stringify(default_parameter_value(n)))))
+	var value = json.data
 	return {"name": n.uniform, "type": type, "array_size": int(parameters.get("array_size", 0)),
 		"value": value, "hint": parameters.get("hint", ""), "resource": parameters.get("resource", ""),
 		"resources": JSON.parse_string(str(parameters.get("resources", "[]")))}
@@ -237,16 +241,76 @@ func get_parameter_defs() -> Array:
 		else: result.append(number_parameter("value", value, integer))
 	if n.kind == "array_get": result.append(number_parameter("array_size", settings.get("array_size", 1), true))
 	if n.kind == "uniform":
-		for pair in [["uniform_name", settings.get("uniform", "parameter")], ["default_json", JSON.stringify(Interface.default_value(n.get("data_type", "float")))], ["hint", ""], ["resource", ""], ["resources", "[]"]]:
-			result.append({"name": pair[0], "label": {"uniform_name": "Name", "default_json": "Default (JSON)", "hint": "Hint", "resource": "Resource", "resources": "Paths (JSON)"}[pair[0]], "type": "string", "default": pair[1]})
+		result.append({"name": "uniform_name", "label": "Name", "type": "string", "default": settings.get("uniform", "parameter")})
 		result.append(number_parameter("array_size", 0, true))
+		result[-1].min = 0
+		result[-1].max = 1024
+		if n.data_type.begins_with("sampler"):
+			var key := "resources" if n.get("array_size", 0) > 0 else "resource"
+			result.append({"name": key, "label": "Paths (JSON)" if key == "resources" else "Resource", "type": "string", "default": "[]" if key == "resources" else ""})
+		elif n.get("array_size", 0) > 0:
+			result.append({"name": "default_json", "label": "Default (JSON)", "type": "string", "default": JSON.stringify(default_parameter_value(n))})
+		else:
+			var value = parameter_editor_value()
+			var integer: bool = n.data_type in ["int", "uint"] or Interface.scalar_type(n.data_type) in ["int", "uint"]
+			if value is Array:
+				for i in value.size():
+					if value[i] is Array:
+						for j in value[i].size(): result.append(number_parameter("v%d_%d" % [i, j], value[i][j]))
+					else: result.append(number_parameter("v%d" % i, value[i], integer))
+			else: result.append(number_parameter("value", value, integer))
+		result.append({"name": "hint", "label": "Hint", "type": "string", "default": ""})
 	return result
 
+static func default_parameter_value(n: Dictionary):
+	var value = Interface.default_value(n.data_type)
+	if n.get("array_size", 0) > 0:
+		var values: Array = []
+		for i in clampi(n.array_size, 0, 1024): values.append(value.duplicate(true) if value is Array else value)
+		return values
+	return value
+
+func parameter_editor_value():
+	var n := model_data()
+	var value = uniform_definition().value
+	var validator = preload("compiler.gd").new()
+	validator.literal(n.data_type, value, "")
+	return value if validator.errors.is_empty() else Interface.default_value(n.data_type)
+
+func is_parameter_component(key: String) -> bool:
+	return settings.kind == "uniform" and (key == "value" or RegEx.create_from_string("^v[0-3](_[0-3])?$").search(key) != null)
+
+func get_parameter(key: String):
+	if is_parameter_component(key):
+		return get_parameter_def(key).get("default")
+	return super.get_parameter(key)
+
 func set_parameter(key: String, value) -> void:
+	if is_parameter_component(key):
+		var edited = parameter_editor_value()
+		var type: String = model_data().data_type
+		var scalar: String = type if type in ["bool", "int", "uint", "float"] else Interface.scalar_type(type)
+		value = bool(value) if scalar == "bool" else (int(value) if scalar in ["int", "uint"] else float(value))
+		if key == "value": edited = value
+		else:
+			var indices := key.substr(1).split("_")
+			if indices.size() == 2: edited[int(indices[0])][int(indices[1])] = value
+			else: edited[int(indices[0])] = value
+		super.set_parameter("default_json", JSON.stringify(edited))
+		parameter_changed.emit(key, value)
+		if is_inside_tree(): all_sources_changed.call_deferred()
+		return
+	var change_default: bool = not loading_parameters and settings.kind == "uniform" and key in ["data_type", "array_size"]
+	if change_default:
+		var n := model_data()
+		defaults_by_type[n.data_type + ":" + str(n.get("array_size", 0))] = parameters.get("default_json", JSON.stringify(default_parameter_value(n)))
 	var remap_operation: bool = not loading_parameters and key == "data_type" and settings.kind == "operator" and settings.has("editor_profile")
 	var previous_operation: String = model_data().get("operation", "add") if remap_operation else ""
 	if remap_operation: operations_by_type[model_data().data_type] = previous_operation
 	super.set_parameter(key, value)
+	if change_default:
+		var n := model_data()
+		super.set_parameter("default_json", defaults_by_type.get(n.data_type + ":" + str(n.get("array_size", 0)), JSON.stringify(default_parameter_value(n))))
 	if remap_operation:
 		var options := option_values("operation", model_data().data_type)
 		super.set_parameter("operation", maxi(0, options.find(operations_by_type.get(model_data().data_type, previous_operation))))
@@ -264,6 +328,13 @@ func _get_shader_code(uv: String, output_index: int, context: MMGenContext) -> S
 	return result
 
 func _serialize(data: Dictionary) -> Dictionary:
+	if settings.kind == "uniform":
+		for key in data.parameters.keys():
+			if is_parameter_component(key): data.parameters.erase(key)
+		for key in ["default_json", "hint", "resource", "resources"]:
+			if parameters.has(key): data.parameters[key] = parameters[key]
+		if not data.parameters.has("default_json"):
+			data.parameters.default_json = JSON.stringify(default_parameter_value(model_data()))
 	data.type = get_type()
 	data.settings = settings.duplicate(true)
 	return data
@@ -274,5 +345,6 @@ func _deserialize(data: Dictionary) -> void:
 func deserialize(data: Dictionary) -> void:
 	loading_parameters = true
 	operations_by_type.clear()
+	defaults_by_type.clear()
 	await super.deserialize(data)
 	loading_parameters = false

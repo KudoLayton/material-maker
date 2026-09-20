@@ -32,7 +32,7 @@ def main():
         ('Filter/Math/Type Cast', 'convert', 'vec2'),
         ('Filter/Math/Matrix Transform', 'transform', 'vec4'),
         ('Filter/Math/Select', 'select', 'float'),
-        ('Miscellaneous/Typed Uniform', 'uniform', 'float'),
+        ('Miscellaneous/Typed Parameter', 'uniform', 'float'),
         ('Miscellaneous/Array Element', 'array_get', 'float'),
         ('Miscellaneous/Texture Sample', 'sample', 'vec4'),
     ]

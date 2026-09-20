@@ -21,7 +21,7 @@ def main():
     text = run(engine, project, 'integration.log',
                ['test/particles/test_integration.tscn', '--position', '-32000,-32000', '--max-fps', '60'], 180)
     print(text)
-    for name in ['gpu', 'runtime', 'app', 'constant_ui', 'port_ui', 'random', 'unified', 'sampling', 'profiles', 'workflow', 'examples', 'internal', 'textures']:
+    for name in ['gpu', 'runtime', 'app', 'constant_ui', 'port_ui', 'random', 'unified', 'sampling', 'profiles', 'workflow', 'examples', 'internal', 'textures', 'parameters']:
         output = run(engine, project, name + '.log', ['test/particles/test_' + name + '.tscn', '--position', '-32000,-32000', '--max-fps', '60'], 180)
         print('\n'.join(line for line in output.splitlines() if 'PARTICLE_' in line))
     if 'PARTICLE_INTEGRATION: passed' not in text:
