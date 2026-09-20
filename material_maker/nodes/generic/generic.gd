@@ -188,7 +188,14 @@ static func initialize_controls_from_generator(control_list, gen, object) -> voi
 		if o is FloatEdit:
 			o.connect("value_changed_undo",Callable(object,"_on_float_value_changed").bind( o.name ))
 		elif o is LineEdit:
-			o.connect("text_changed",Callable(object,"_on_text_changed").bind( o.name ))
+			if gen.get_parameter_def(c).get("commit_on_submit", false):
+				var commit = func(_text = null):
+					if is_instance_valid(gen) and o.text != str(gen.get_parameter(c)):
+						object._on_text_changed(o.text, c)
+				o.text_submitted.connect(commit)
+				o.focus_exited.connect(commit)
+			else:
+				o.connect("text_changed",Callable(object,"_on_text_changed").bind( o.name ))
 		elif o is SizeOptionButton:
 			o.connect("size_value_changed",Callable(object,"_on_value_changed").bind( o.name ))
 		elif o is OptionButton:

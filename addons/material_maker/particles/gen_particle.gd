@@ -241,7 +241,7 @@ func get_parameter_defs() -> Array:
 		else: result.append(number_parameter("value", value, integer))
 	if n.kind == "array_get": result.append(number_parameter("array_size", settings.get("array_size", 1), true))
 	if n.kind == "uniform":
-		result.append({"name": "uniform_name", "label": "Name", "type": "string", "default": settings.get("uniform", "parameter")})
+		result.append({"name": "uniform_name", "label": "Name", "type": "string", "commit_on_submit": true, "default": settings.get("uniform", "parameter")})
 		result.append(number_parameter("array_size", 0, true))
 		result[-1].min = 0
 		result[-1].max = 1024
@@ -315,7 +315,7 @@ func set_parameter(key: String, value) -> void:
 		var options := option_values("operation", model_data().data_type)
 		super.set_parameter("operation", maxi(0, options.find(operations_by_type.get(model_data().data_type, previous_operation))))
 	if is_inside_tree(): all_sources_changed.call_deferred()
-	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "uniform_name", "sampler_type"]:
+	if key in ["data_type", "source_type", "function_type", "operation", "array_size", "sampler_type"]:
 		parameter_changed.emit.call_deferred("__update_all__", null)
 
 func _get_shader_code(uv: String, output_index: int, context: MMGenContext) -> ShaderCode:

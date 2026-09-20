@@ -64,7 +64,7 @@ Particles에는 Read, Write, Random, Execution의 Start Entry / Process Entry / 
 
 Remote와 기존 노드의 숫자·색상 설정은 Material Maker 내부 편집용입니다. 편집 중에는 기존 uniform 갱신 방식을 유지하고, 파티클 내보내기에서는 현재 값을 `const`로 고정합니다. Godot Inspector에 내부 설정이 나타나지 않으며 값을 변경하면 다시 내보내야 합니다.
 
-Godot에서 실행 중 조절할 값은 **Miscellaneous → Typed Parameter**로 만듭니다. `Name`에 `velocity`처럼 유효한 셰이더 식별자를 입력하고 노드 출력을 계산에 연결합니다. Godot Inspector에는 `Velocity`처럼 Godot의 기본 이름 표시 규칙으로 나타납니다. 이번 구현에는 Typed Parameter를 `$이름`으로 참조하는 기능이 없으며, Remote의 기존 `$이름` 동작은 유지합니다.
+Godot에서 실행 중 조절할 값은 **Miscellaneous → Typed Parameter**로 만듭니다. `Name`에 `velocity`처럼 유효한 셰이더 식별자를 입력하고 노드 출력을 계산에 연결합니다. Name은 Enter 또는 입력칸에서 포커스를 옮길 때 확정되며 한 번의 Undo로 되돌릴 수 있습니다. Godot Inspector에는 `Velocity`처럼 Godot의 기본 이름 표시 규칙으로 나타납니다. 이번 구현에는 Typed Parameter를 `$이름`으로 참조하는 기능이 없으며, Remote의 기존 `$이름` 동작은 유지합니다.
 
 Typed Parameter는 float(Grayscale), vec3(Color), vec4(RGBA)와 bool·정수·vec2·불리언/정수 벡터·행렬·배열·sampler를 지원합니다. 단일 값은 타입별 입력란에서, 배열 기본값은 JSON으로 편집합니다. vec3/vec4의 각 성분은 음수와 1보다 큰 값도 입력할 수 있습니다. 텍스처는 Resource 또는 Paths(JSON)에 경로를 입력합니다. Parameter는 항상 외부 uniform으로 내보내므로 Export 체크박스가 없습니다.
 
