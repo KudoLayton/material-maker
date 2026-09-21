@@ -1,1 +1,10 @@
 *.gd linguist-language=GDScript
+
+# Preserve reproducible particle source and generated example bytes on Windows.
+addons/material_maker/particles/modular/** text eol=lf
+material_maker/panels/modular_particles/** text eol=lf
+material_maker/examples/modular_particles/** text eol=lf
+test/modular_particles/** text eol=lf
+tools/modular_particles/** text eol=lf
+# The oracle fixture is hashed as the user's original bytes, without conversion.
+test/modular_particles/fixtures/mmtest_reference.ptex -text

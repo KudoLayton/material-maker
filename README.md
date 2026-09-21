@@ -8,6 +8,24 @@ described as interconnected nodes.
 
 ![Screenshot](material_maker/doc/images/screenshot.png)
 
+## Modular GPU Particles (this fork)
+
+This fork targets **Godot 4.7.2 stable / Forward+ / Vulkan** for modular particles.
+Source builds require access to the **private** runtime repository and its pinned
+submodule; the addon source is not published in this public repository.
+
+```powershell
+git clone --recurse-submodules git@github.com:KudoLayton/material-maker.git
+# For an existing checkout:
+git submodule update --init --recursive
+```
+
+The runtime is mounted at `addons/mm_gpu_particles` from
+`git@github.com:KudoLayton/godot-modular-gpu-particles.git`.
+See [MODULAR_PARTICLES.md](MODULAR_PARTICLES.md) for authoring/build instructions
+and [GODOT_PARTICLES_PLUGIN.md](GODOT_PARTICLES_PLUGIN.md) for game integration.
+The upstream downloads below do **not** contain this fork's modular editor.
+
 ## Download
 
 - **[itch.io](https://rodzilla.itch.io/material-maker)**
