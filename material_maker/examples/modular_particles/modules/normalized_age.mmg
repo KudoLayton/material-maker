@@ -1,0 +1,110 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Age",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "age",
+        "data_type": "float",
+        "label": "age"
+      },
+      "node_position": {
+        "x": -500,
+        "y": 0
+      }
+    },
+    {
+      "name": "Lifetime",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "lifetime",
+        "data_type": "float",
+        "label": "lifetime"
+      },
+      "node_position": {
+        "x": -200,
+        "y": 0
+      }
+    },
+    {
+      "name": "Divide",
+      "type": "math",
+      "parameters": {
+        "op": 3.0,
+        "clamp": false
+      },
+      "node_position": {
+        "x": 100,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "normalized_age",
+            "name": "normalized_age",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 850,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Divide",
+      "from": "Age"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Divide",
+      "from": "Lifetime"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Output",
+      "from": "Divide"
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "normalized_age",
+    "definition": {
+      "name": "Normalized Age",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "age",
+        "lifetime"
+      ],
+      "writes": [
+        "normalized_age"
+      ],
+      "revision": 1
+    }
+  }
+}

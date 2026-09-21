@@ -1,0 +1,770 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Position",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": -500,
+        "y": 0
+      }
+    },
+    {
+      "name": "Velocity",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "velocity",
+        "data_type": "vec3",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": -200,
+        "y": 0
+      }
+    },
+    {
+      "name": "Frequency",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_parameter",
+        "id": "curl_frequency",
+        "data_type": "float",
+        "label": "curl_frequency"
+      },
+      "node_position": {
+        "x": 100,
+        "y": 0
+      }
+    },
+    {
+      "name": "Strength",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_parameter",
+        "id": "curl_strength",
+        "data_type": "float",
+        "label": "curl_strength"
+      },
+      "node_position": {
+        "x": 400,
+        "y": 0
+      }
+    },
+    {
+      "name": "Curl_Coordinates",
+      "node_position": {
+        "x": -500,
+        "y": 180
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 0.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 2.0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "connections": [
+        {
+          "from": "decompose",
+          "from_port": 0,
+          "to": "Filter_Combine_Typed",
+          "to_port": 0
+        },
+        {
+          "from": "decompose",
+          "from_port": 1,
+          "to": "Filter_Combine_Typed",
+          "to_port": 1
+        },
+        {
+          "from": "Filter_Combine_Typed",
+          "from_port": 0,
+          "to": "Filter_Math_Typed",
+          "to_port": 0
+        },
+        {
+          "from": "Simple_Constant_Typed",
+          "from_port": 0,
+          "to": "Filter_Math_Typed",
+          "to_port": 1
+        },
+        {
+          "from": "Filter_Combine_Typed",
+          "from_port": 0,
+          "to": "Filter_Math_Typed_2",
+          "to_port": 0
+        },
+        {
+          "from": "Simple_Constant_Typed",
+          "from_port": 0,
+          "to": "Filter_Math_Typed_2",
+          "to_port": 1
+        },
+        {
+          "from": "Simple_Constant_Typed_2",
+          "from_port": 0,
+          "to": "Filter_Math_Typed_3",
+          "to_port": 1
+        },
+        {
+          "from": "Filter_Combine_Typed",
+          "from_port": 0,
+          "to": "Filter_Math_Typed_3",
+          "to_port": 0
+        },
+        {
+          "from": "Simple_Constant_Typed_2",
+          "from_port": 0,
+          "to": "Filter_Math_Typed_4",
+          "to_port": 1
+        },
+        {
+          "from": "Filter_Combine_Typed",
+          "from_port": 0,
+          "to": "Filter_Math_Typed_4",
+          "to_port": 0
+        },
+        {
+          "from": "Filter_Math_Typed",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function",
+          "to_port": 1
+        },
+        {
+          "from": "fbm4",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function",
+          "to_port": 0
+        },
+        {
+          "from": "fbm4",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function_2",
+          "to_port": 0
+        },
+        {
+          "from": "Filter_Math_Typed_2",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function_2",
+          "to_port": 1
+        },
+        {
+          "from": "Filter_Math_Typed_3",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function_3",
+          "to_port": 1
+        },
+        {
+          "from": "fbm4",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function_3",
+          "to_port": 0
+        },
+        {
+          "from": "fbm4",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function_4",
+          "to_port": 0
+        },
+        {
+          "from": "Filter_Math_Typed_4",
+          "from_port": 0,
+          "to": "Miscellaneous_Evaluate_Function_4",
+          "to_port": 1
+        },
+        {
+          "from": "Miscellaneous_Evaluate_Function",
+          "from_port": 0,
+          "to": "math",
+          "to_port": 0
+        },
+        {
+          "from": "Miscellaneous_Evaluate_Function_2",
+          "from_port": 0,
+          "to": "math",
+          "to_port": 1
+        },
+        {
+          "from": "math",
+          "from_port": 0,
+          "to": "math_2",
+          "to_port": 0
+        },
+        {
+          "from": "math_3",
+          "from_port": 0,
+          "to": "math_4",
+          "to_port": 0
+        },
+        {
+          "from": "Miscellaneous_Evaluate_Function_3",
+          "from_port": 0,
+          "to": "math_3",
+          "to_port": 0
+        },
+        {
+          "from": "Miscellaneous_Evaluate_Function_4",
+          "from_port": 0,
+          "to": "math_3",
+          "to_port": 1
+        },
+        {
+          "from": "math_2",
+          "from_port": 0,
+          "to": "combine_2",
+          "to_port": 1
+        },
+        {
+          "from": "math_4",
+          "from_port": 0,
+          "to": "combine_2",
+          "to_port": 0
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "decompose",
+          "to_port": 0
+        },
+        {
+          "from": "combine_2",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        }
+      ],
+      "label": "Curl Noise XY",
+      "longdesc": "입력 Position의 XY에서 동일한 Perlin FBM을 네 번 평가합니다. 중앙 차분 간격은 0.0001입니다. 출력은 (dN/dy, -dN/dx, 0)입니다.",
+      "name": "Curl_Noise_XY",
+      "node_position": {
+        "x": -200,
+        "y": 180
+      },
+      "nodes": [
+        {
+          "name": "fbm4",
+          "node_position": {
+            "x": 200.0,
+            "y": -300.0
+          },
+          "parameters": {
+            "folds": 0.0,
+            "iterations": 3.0,
+            "lacunarity": 2.0,
+            "noise": 1.0,
+            "offset": 0.0,
+            "persistence": 0.5,
+            "scale_x": 2.0,
+            "scale_y": 2.0
+          },
+          "seed_int": 0,
+          "type": "fbm4"
+        },
+        {
+          "name": "decompose",
+          "node_position": {
+            "x": -395.441589355469,
+            "y": 258.303588867188
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "decompose"
+        },
+        {
+          "name": "Simple_Constant_Typed",
+          "node_position": {
+            "x": -220.530746459961,
+            "y": -44.1061515808105
+          },
+          "parameters": {
+            "data_type": 12.0,
+            "v0": 0.0001,
+            "v1": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "vec2",
+            "editor_profile": "supplemental_v1",
+            "kind": "constant"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Simple_Constant_Typed_2",
+          "node_position": {
+            "x": -271.422454833984,
+            "y": 499.556274414063
+          },
+          "parameters": {
+            "data_type": 12.0,
+            "v0": 0.0,
+            "v1": 0.0001
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "vec2",
+            "editor_profile": "supplemental_v1",
+            "kind": "constant"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Filter_Combine_Typed",
+          "node_position": {
+            "x": -161.157089233398,
+            "y": 268.48193359375
+          },
+          "parameters": {
+            "data_type": 9.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "vec2",
+            "editor_profile": "supplemental_v1",
+            "kind": "compose"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Filter_Math_Typed",
+          "node_position": {
+            "x": 240.0,
+            "y": 0.0
+          },
+          "parameters": {
+            "data_type": 9.0,
+            "operation": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "int",
+            "editor_profile": "supplemental_v1",
+            "kind": "operator"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Filter_Math_Typed_2",
+          "node_position": {
+            "x": 240.0,
+            "y": 190.0
+          },
+          "parameters": {
+            "data_type": 9.0,
+            "operation": 1.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "int",
+            "editor_profile": "supplemental_v1",
+            "kind": "operator"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Filter_Math_Typed_3",
+          "node_position": {
+            "x": 240.0,
+            "y": 380.0
+          },
+          "parameters": {
+            "data_type": 9.0,
+            "operation": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "int",
+            "editor_profile": "supplemental_v1",
+            "kind": "operator"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Filter_Math_Typed_4",
+          "node_position": {
+            "x": 240.0,
+            "y": 570.0
+          },
+          "parameters": {
+            "data_type": 9.0,
+            "operation": 1.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "data_type": "int",
+            "editor_profile": "supplemental_v1",
+            "kind": "operator"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Miscellaneous_Evaluate_Function",
+          "node_position": {
+            "x": 786.154968261719,
+            "y": -110.26537322998
+          },
+          "parameters": {
+            "function_type": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "editor_profile": "supplemental_v1",
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Miscellaneous_Evaluate_Function_2",
+          "node_position": {
+            "x": 782.76220703125,
+            "y": 232.409774780273
+          },
+          "parameters": {
+            "function_type": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "editor_profile": "supplemental_v1",
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Miscellaneous_Evaluate_Function_3",
+          "node_position": {
+            "x": 784.458557128906,
+            "y": 383.392791748047
+          },
+          "parameters": {
+            "function_type": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "editor_profile": "supplemental_v1",
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "Miscellaneous_Evaluate_Function_4",
+          "node_position": {
+            "x": 796.333312988281,
+            "y": 710.800415039063
+          },
+          "parameters": {
+            "function_type": 0.0
+          },
+          "seed_int": 0,
+          "settings": {
+            "editor_profile": "supplemental_v1",
+            "function_type": "rgba",
+            "kind": "evaluate"
+          },
+          "type": "particle_node"
+        },
+        {
+          "name": "math",
+          "node_position": {
+            "x": 1355.880859375,
+            "y": 17.7685832977295
+          },
+          "parameters": {
+            "clamp": false,
+            "default_in1": 0.0,
+            "default_in2": 0.0,
+            "op": 1.0
+          },
+          "seed_int": 0,
+          "type": "math"
+        },
+        {
+          "name": "math_2",
+          "node_position": {
+            "x": 1584.54125976563,
+            "y": 31.3397064208984
+          },
+          "parameters": {
+            "clamp": false,
+            "default_in1": 0.0,
+            "default_in2": -0.0002,
+            "op": 3.0
+          },
+          "seed_int": 0,
+          "type": "math"
+        },
+        {
+          "name": "math_3",
+          "node_position": {
+            "x": 1359.27368164063,
+            "y": 531.4267578125
+          },
+          "parameters": {
+            "clamp": false,
+            "default_in1": 0.0,
+            "default_in2": 0.0,
+            "op": 1.0
+          },
+          "seed_int": 0,
+          "type": "math"
+        },
+        {
+          "name": "math_4",
+          "node_position": {
+            "x": 1613.3798828125,
+            "y": 499.195343017578
+          },
+          "parameters": {
+            "clamp": false,
+            "default_in1": 0.0,
+            "default_in2": 0.0002,
+            "op": 3.0
+          },
+          "seed_int": 0,
+          "type": "math"
+        },
+        {
+          "name": "combine_2",
+          "node_position": {
+            "x": 1794.54125976563,
+            "y": 231.339691162109
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "combine"
+        },
+        {
+          "name": "gen_inputs",
+          "node_position": {
+            "x": -807.938354492188,
+            "y": 227.768569946289
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "position",
+              "shortdesc": "Position (XY)",
+              "type": "rgb"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_outputs",
+          "node_position": {
+            "x": 1994.54138183594,
+            "y": 231.339691162109
+          },
+          "parameters": {},
+          "ports": [
+            {
+              "name": "curl_velocity",
+              "shortdesc": "Curl velocity (XY)",
+              "type": "rgb"
+            }
+          ],
+          "seed_int": 0,
+          "type": "ios"
+        },
+        {
+          "name": "gen_parameters",
+          "node_position": {
+            "x": -450.0,
+            "y": -220.0
+          },
+          "parameters": {},
+          "seed_int": 0,
+          "type": "remote",
+          "widgets": []
+        }
+      ],
+      "parameters": {},
+      "scroll_offset": {
+        "x": -695.124145507813,
+        "y": -267.505249023438
+      },
+      "seed_int": 0,
+      "shortdesc": "2D curl: (dN/dy, -dN/dx, 0)",
+      "type": "graph"
+    },
+    {
+      "name": "Curl_Amplitude",
+      "node_position": {
+        "x": 100,
+        "y": 180
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 0.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 2.0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "name": "Curl_Velocity",
+      "node_position": {
+        "x": 400,
+        "y": 180
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 0.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 0.0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "velocity",
+            "name": "velocity",
+            "type": "vec3"
+          },
+          {
+            "id": "curl_velocity",
+            "name": "curl_velocity",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 850,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Curl_Coordinates",
+      "from": "Position"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Curl_Coordinates",
+      "from": "Frequency"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Curl_Noise_XY",
+      "from": "Curl_Coordinates"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Curl_Amplitude",
+      "from": "Curl_Noise_XY"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Curl_Amplitude",
+      "from": "Strength"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Curl_Velocity",
+      "from": "Velocity"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Curl_Velocity",
+      "from": "Curl_Amplitude"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Output",
+      "from": "Curl_Velocity"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Output",
+      "from": "Curl_Amplitude"
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "curl",
+    "definition": {
+      "name": "Curl Noise XY",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "curl_frequency",
+          "name": "curl_frequency",
+          "type": "float",
+          "default": 0.25
+        },
+        {
+          "id": "curl_strength",
+          "name": "curl_strength",
+          "type": "float",
+          "default": 2.0
+        }
+      ],
+      "reads": [
+        "position",
+        "velocity"
+      ],
+      "writes": [
+        "velocity",
+        "curl_velocity"
+      ],
+      "revision": 1
+    }
+  }
+}

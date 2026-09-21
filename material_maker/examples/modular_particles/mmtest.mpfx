@@ -1,0 +1,2011 @@
+{
+  "type": "mm_particle_effect",
+  "version": 1,
+  "target": "4.7.2",
+  "preview_capacity": 128,
+  "attributes": [
+    {
+      "id": "direction",
+      "name": "direction",
+      "type": "vec3",
+      "default": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "initial_velocity",
+      "name": "initial_velocity",
+      "type": "vec3",
+      "default": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "initial_scale",
+      "name": "initial_scale",
+      "type": "vec3",
+      "default": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "spherical_uv",
+      "name": "spherical_uv",
+      "type": "vec2",
+      "default": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "normalized_age",
+      "name": "normalized_age",
+      "type": "float",
+      "default": 0.0
+    },
+    {
+      "id": "curve_value",
+      "name": "curve_value",
+      "type": "float",
+      "default": 1.0
+    },
+    {
+      "id": "curl_velocity",
+      "name": "curl_velocity",
+      "type": "vec3",
+      "default": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "modules": {
+    "initialize": {
+      "name": "Initialize Particle",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [
+        {
+          "id": "velocity",
+          "name": "velocity",
+          "type": "float",
+          "default": 10.0
+        },
+        {
+          "id": "particle_scale",
+          "name": "particle_scale",
+          "type": "vec3",
+          "default": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "reads": [],
+      "writes": [
+        "velocity",
+        "initial_velocity",
+        "direction",
+        "scale",
+        "initial_scale"
+      ],
+      "revision": 1,
+      "mm_graph": {
+        "type": "graph",
+        "name": "Module",
+        "seed_int": 0,
+        "nodes": [
+          {
+            "name": "Particles_Random",
+            "node_position": {
+              "x": -500,
+              "y": 0
+            },
+            "parameters": {
+              "data_type": 2.0,
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "seed": 0.0
+            },
+            "seed_int": 0,
+            "settings": {
+              "data_type": "vec3",
+              "kind": "random"
+            },
+            "type": "particle_node"
+          },
+          {
+            "name": "uniform_greyscale_2",
+            "node_position": {
+              "x": -200,
+              "y": 0
+            },
+            "parameters": {
+              "color": 1.0
+            },
+            "seed_int": 0,
+            "type": "uniform_greyscale"
+          },
+          {
+            "name": "uniform_greyscale_3",
+            "node_position": {
+              "x": 100,
+              "y": 0
+            },
+            "parameters": {
+              "color": -1.0
+            },
+            "seed_int": 0,
+            "type": "uniform_greyscale"
+          },
+          {
+            "name": "math_v3",
+            "node_position": {
+              "x": 400,
+              "y": 0
+            },
+            "parameters": {
+              "clamp": false,
+              "d_in1_x": 0.0,
+              "d_in1_y": 0.0,
+              "d_in1_z": 0.0,
+              "d_in2_x": 0.0,
+              "d_in2_y": 0.0,
+              "d_in2_z": 0.0,
+              "op": 2.0
+            },
+            "seed_int": 0,
+            "type": "math_v3"
+          },
+          {
+            "name": "Speed",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_parameter",
+              "id": "velocity",
+              "data_type": "float",
+              "label": "velocity"
+            },
+            "node_position": {
+              "x": -500,
+              "y": 180
+            }
+          },
+          {
+            "name": "Scale",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_parameter",
+              "id": "particle_scale",
+              "data_type": "vec3",
+              "label": "particle_scale"
+            },
+            "node_position": {
+              "x": -200,
+              "y": 180
+            }
+          },
+          {
+            "name": "Output",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_output",
+              "fields": [
+                {
+                  "id": "velocity",
+                  "name": "velocity",
+                  "type": "vec3"
+                },
+                {
+                  "id": "initial_velocity",
+                  "name": "initial_velocity",
+                  "type": "vec3"
+                },
+                {
+                  "id": "direction",
+                  "name": "direction",
+                  "type": "vec3"
+                },
+                {
+                  "id": "scale",
+                  "name": "scale",
+                  "type": "vec3"
+                },
+                {
+                  "id": "initial_scale",
+                  "name": "initial_scale",
+                  "type": "vec3"
+                }
+              ]
+            },
+            "node_position": {
+              "x": 850,
+              "y": 0
+            }
+          }
+        ],
+        "connections": [
+          {
+            "from_port": 0,
+            "to_port": 3,
+            "to": "Particles_Random",
+            "from": "uniform_greyscale_3"
+          },
+          {
+            "from_port": 0,
+            "to_port": 4,
+            "to": "Particles_Random",
+            "from": "uniform_greyscale_2"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "math_v3",
+            "from": "Particles_Random"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "math_v3",
+            "from": "Speed"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Output",
+            "from": "math_v3"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Output",
+            "from": "math_v3"
+          },
+          {
+            "from_port": 0,
+            "to_port": 2,
+            "to": "Output",
+            "from": "Particles_Random"
+          },
+          {
+            "from_port": 0,
+            "to_port": 3,
+            "to": "Output",
+            "from": "Scale"
+          },
+          {
+            "from_port": 0,
+            "to_port": 4,
+            "to": "Output",
+            "from": "Scale"
+          }
+        ]
+      }
+    },
+    "spherical": {
+      "name": "Spherical UV",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [],
+      "reads": [
+        "direction"
+      ],
+      "writes": [
+        "spherical_uv"
+      ],
+      "revision": 1,
+      "mm_graph": {
+        "type": "graph",
+        "name": "Module",
+        "seed_int": 0,
+        "nodes": [
+          {
+            "name": "Direction",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "direction",
+              "data_type": "vec3",
+              "label": "direction"
+            },
+            "node_position": {
+              "x": -500,
+              "y": 0
+            }
+          },
+          {
+            "connections": [
+              {
+                "from": "gen_inputs",
+                "from_port": 0,
+                "to": "decompose",
+                "to_port": 0
+              },
+              {
+                "from": "decompose",
+                "from_port": 1,
+                "to": "math",
+                "to_port": 0
+              },
+              {
+                "from": "decompose",
+                "from_port": 0,
+                "to": "math",
+                "to_port": 1
+              },
+              {
+                "from": "Particles_Read_PI",
+                "from_port": 0,
+                "to": "math_2",
+                "to_port": 0
+              },
+              {
+                "from": "math",
+                "from_port": 0,
+                "to": "math_3",
+                "to_port": 0
+              },
+              {
+                "from": "math_2",
+                "from_port": 0,
+                "to": "math_3",
+                "to_port": 1
+              },
+              {
+                "from": "math_3",
+                "from_port": 0,
+                "to": "math_4",
+                "to_port": 0
+              },
+              {
+                "from": "decompose",
+                "from_port": 2,
+                "to": "math_5",
+                "to_port": 0
+              },
+              {
+                "from": "math_5",
+                "from_port": 0,
+                "to": "math_6",
+                "to_port": 0
+              },
+              {
+                "from": "Particles_Read_PI",
+                "from_port": 0,
+                "to": "math_6",
+                "to_port": 1
+              },
+              {
+                "from": "math_4",
+                "from_port": 0,
+                "to": "Filter_Combine_Typed",
+                "to_port": 0
+              },
+              {
+                "from": "math_6",
+                "from_port": 0,
+                "to": "Filter_Combine_Typed",
+                "to_port": 1
+              },
+              {
+                "from": "Filter_Combine_Typed",
+                "from_port": 0,
+                "to": "gen_outputs",
+                "to_port": 0
+              }
+            ],
+            "label": "SpericalUV",
+            "longdesc": "",
+            "name": "graph_2",
+            "node_position": {
+              "x": -200,
+              "y": 0
+            },
+            "nodes": [
+              {
+                "name": "decompose",
+                "node_position": {
+                  "x": -36.1769180297852,
+                  "y": -590.120788574219
+                },
+                "parameters": {},
+                "seed_int": 0,
+                "type": "decompose"
+              },
+              {
+                "name": "math",
+                "node_position": {
+                  "x": 229.557327270508,
+                  "y": -718.961730957031
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0,
+                  "op": 24.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_4",
+                "node_position": {
+                  "x": 577.427612304688,
+                  "y": -710.103881835938
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.5,
+                  "default_in2": 0.0,
+                  "op": 0.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_5",
+                "node_position": {
+                  "x": 424.30029296875,
+                  "y": -494.416229248047
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0,
+                  "op": 26.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_6",
+                "node_position": {
+                  "x": 622.030700683594,
+                  "y": -424.09326171875
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0,
+                  "op": 3.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "Particles_Read_PI",
+                "node_position": {
+                  "x": 154.571929931641,
+                  "y": -343.897979736328
+                },
+                "parameters": {
+                  "value": 3.141592653589793
+                },
+                "seed_int": 0,
+                "settings": {
+                  "kind": "constant",
+                  "data_type": "float"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "math_2",
+                "node_position": {
+                  "x": 301.7822265625,
+                  "y": -564.405822753906
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 2.0,
+                  "op": 2.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_3",
+                "node_position": {
+                  "x": 440.534240722656,
+                  "y": -716.5458984375
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0,
+                  "op": 3.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "Filter_Combine_Typed",
+                "node_position": {
+                  "x": 795.65185546875,
+                  "y": -577.236755371094
+                },
+                "parameters": {
+                  "data_type": 9.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "vec2",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "compose"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "gen_inputs",
+                "node_position": {
+                  "x": -463.993041992188,
+                  "y": -589.0048828125
+                },
+                "parameters": {},
+                "ports": [
+                  {
+                    "name": "position",
+                    "shader_type": "vec3",
+                    "type": "rgb"
+                  }
+                ],
+                "seed_int": 0,
+                "type": "ios"
+              },
+              {
+                "name": "gen_outputs",
+                "node_position": {
+                  "x": 1167.83569335938,
+                  "y": -589.0048828125
+                },
+                "parameters": {},
+                "ports": [
+                  {
+                    "name": "uv",
+                    "type": "particle_vec2"
+                  }
+                ],
+                "seed_int": 0,
+                "type": "ios"
+              },
+              {
+                "name": "gen_parameters",
+                "node_position": {
+                  "x": 252.296417236328,
+                  "y": -1017.39251708984
+                },
+                "parameters": {},
+                "seed_int": 0,
+                "type": "remote",
+                "widgets": []
+              }
+            ],
+            "parameters": {},
+            "scroll_offset": {
+              "x": -198.215454101563,
+              "y": -1025.32727050781
+            },
+            "seed_int": 0,
+            "shortdesc": "",
+            "type": "graph"
+          },
+          {
+            "name": "Output",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_output",
+              "fields": [
+                {
+                  "id": "spherical_uv",
+                  "name": "spherical_uv",
+                  "type": "vec2"
+                }
+              ]
+            },
+            "node_position": {
+              "x": 850,
+              "y": 0
+            }
+          }
+        ],
+        "connections": [
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "graph_2",
+            "from": "Direction"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Output",
+            "from": "graph_2"
+          }
+        ]
+      }
+    },
+    "integrate": {
+      "name": "Integrate Previous Velocity",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "position",
+        "velocity"
+      ],
+      "writes": [
+        "position"
+      ],
+      "revision": 1,
+      "mm_graph": {
+        "type": "graph",
+        "name": "Module",
+        "seed_int": 0,
+        "nodes": [
+          {
+            "name": "Position",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "position",
+              "data_type": "vec3",
+              "label": "position"
+            },
+            "node_position": {
+              "x": -500,
+              "y": 0
+            }
+          },
+          {
+            "name": "Velocity",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "velocity",
+              "data_type": "vec3",
+              "label": "velocity"
+            },
+            "node_position": {
+              "x": -200,
+              "y": 0
+            }
+          },
+          {
+            "name": "Delta",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_context",
+              "id": "delta",
+              "data_type": "float",
+              "label": "delta"
+            },
+            "node_position": {
+              "x": 100,
+              "y": 0
+            }
+          },
+          {
+            "name": "New",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_context",
+              "id": "just_spawned",
+              "data_type": "bool",
+              "label": "just_spawned"
+            },
+            "node_position": {
+              "x": 400,
+              "y": 0
+            }
+          },
+          {
+            "name": "Multiply",
+            "type": "math_v3",
+            "parameters": {
+              "op": 2.0,
+              "clamp": false
+            },
+            "node_position": {
+              "x": -500,
+              "y": 180
+            }
+          },
+          {
+            "name": "Add",
+            "type": "math_v3",
+            "parameters": {
+              "op": 0.0,
+              "clamp": false
+            },
+            "node_position": {
+              "x": -200,
+              "y": 180
+            }
+          },
+          {
+            "name": "Select",
+            "type": "particle_node",
+            "settings": {
+              "kind": "select",
+              "data_type": "vec3"
+            },
+            "parameters": {},
+            "node_position": {
+              "x": 100,
+              "y": 180
+            }
+          },
+          {
+            "name": "Output",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_output",
+              "fields": [
+                {
+                  "id": "position",
+                  "name": "position",
+                  "type": "vec3"
+                }
+              ]
+            },
+            "node_position": {
+              "x": 850,
+              "y": 0
+            }
+          }
+        ],
+        "connections": [
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Multiply",
+            "from": "Velocity"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Multiply",
+            "from": "Delta"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Add",
+            "from": "Position"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Add",
+            "from": "Multiply"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Select",
+            "from": "New"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Select",
+            "from": "Position"
+          },
+          {
+            "from_port": 0,
+            "to_port": 2,
+            "to": "Select",
+            "from": "Add"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Output",
+            "from": "Select"
+          }
+        ]
+      }
+    },
+    "normalized_age": {
+      "name": "Normalized Age",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "age",
+        "lifetime"
+      ],
+      "writes": [
+        "normalized_age"
+      ],
+      "revision": 1,
+      "mm_graph": {
+        "type": "graph",
+        "name": "Module",
+        "seed_int": 0,
+        "nodes": [
+          {
+            "name": "Age",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "age",
+              "data_type": "float",
+              "label": "age"
+            },
+            "node_position": {
+              "x": -500,
+              "y": 0
+            }
+          },
+          {
+            "name": "Lifetime",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "lifetime",
+              "data_type": "float",
+              "label": "lifetime"
+            },
+            "node_position": {
+              "x": -200,
+              "y": 0
+            }
+          },
+          {
+            "name": "Divide",
+            "type": "math",
+            "parameters": {
+              "op": 3.0,
+              "clamp": false
+            },
+            "node_position": {
+              "x": 100,
+              "y": 0
+            }
+          },
+          {
+            "name": "Output",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_output",
+              "fields": [
+                {
+                  "id": "normalized_age",
+                  "name": "normalized_age",
+                  "type": "float"
+                }
+              ]
+            },
+            "node_position": {
+              "x": 850,
+              "y": 0
+            }
+          }
+        ],
+        "connections": [
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Divide",
+            "from": "Age"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Divide",
+            "from": "Lifetime"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Output",
+            "from": "Divide"
+          }
+        ]
+      }
+    },
+    "over_life": {
+      "name": "Velocity and Scale over Life",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "normalized_age",
+        "initial_velocity",
+        "initial_scale"
+      ],
+      "writes": [
+        "velocity",
+        "scale",
+        "curve_value"
+      ],
+      "revision": 1,
+      "mm_graph": {
+        "type": "graph",
+        "name": "Module",
+        "seed_int": 0,
+        "nodes": [
+          {
+            "name": "Age",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "normalized_age",
+              "data_type": "float",
+              "label": "normalized_age"
+            },
+            "node_position": {
+              "x": -500,
+              "y": 0
+            }
+          },
+          {
+            "generic_size": 1,
+            "name": "tonality",
+            "node_position": {
+              "x": -200,
+              "y": 0
+            },
+            "parameters": {
+              "curve": {
+                "points": [
+                  {
+                    "ls": -0.436656669255233,
+                    "rs": -0.436656669255233,
+                    "x": 0.0,
+                    "y": 1.0
+                  },
+                  {
+                    "ls": -0.857819047278233,
+                    "rs": -0.857819047278233,
+                    "x": 0.193133041262627,
+                    "y": 0.929347813129425
+                  },
+                  {
+                    "ls": -1.80204853590242,
+                    "rs": -1.80204853590242,
+                    "x": 0.40128755569458,
+                    "y": 0.342391312122345
+                  },
+                  {
+                    "ls": -0.0469001655238946,
+                    "rs": -0.0469001655238946,
+                    "x": 1.0,
+                    "y": 0.0
+                  }
+                ],
+                "type": "Curve"
+              }
+            },
+            "seed_int": 0,
+            "type": "tonality"
+          },
+          {
+            "name": "InitialVelocity",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "initial_velocity",
+              "data_type": "vec3",
+              "label": "initial_velocity"
+            },
+            "node_position": {
+              "x": 100,
+              "y": 0
+            }
+          },
+          {
+            "name": "InitialScale",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "initial_scale",
+              "data_type": "vec3",
+              "label": "initial_scale"
+            },
+            "node_position": {
+              "x": 400,
+              "y": 0
+            }
+          },
+          {
+            "name": "math_v3_3",
+            "node_position": {
+              "x": -500,
+              "y": 180
+            },
+            "parameters": {
+              "clamp": false,
+              "d_in1_x": 0.0,
+              "d_in1_y": 0.0,
+              "d_in1_z": 0.0,
+              "d_in2_x": 0.0,
+              "d_in2_y": 0.0,
+              "d_in2_z": 0.0,
+              "op": 2.0
+            },
+            "seed_int": 0,
+            "type": "math_v3"
+          },
+          {
+            "name": "math_v3_2",
+            "node_position": {
+              "x": -200,
+              "y": 180
+            },
+            "parameters": {
+              "clamp": false,
+              "d_in1_x": 0.0,
+              "d_in1_y": 0.0,
+              "d_in1_z": 0.0,
+              "d_in2_x": 0.0,
+              "d_in2_y": 0.0,
+              "d_in2_z": 0.0,
+              "op": 2.0
+            },
+            "seed_int": 0,
+            "type": "math_v3"
+          },
+          {
+            "name": "Output",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_output",
+              "fields": [
+                {
+                  "id": "velocity",
+                  "name": "velocity",
+                  "type": "vec3"
+                },
+                {
+                  "id": "scale",
+                  "name": "scale",
+                  "type": "vec3"
+                },
+                {
+                  "id": "curve_value",
+                  "name": "curve_value",
+                  "type": "float"
+                }
+              ]
+            },
+            "node_position": {
+              "x": 850,
+              "y": 0
+            }
+          }
+        ],
+        "connections": [
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "tonality",
+            "from": "Age"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "math_v3_3",
+            "from": "InitialVelocity"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "math_v3_3",
+            "from": "tonality"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "math_v3_2",
+            "from": "InitialScale"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "math_v3_2",
+            "from": "tonality"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Output",
+            "from": "math_v3_3"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Output",
+            "from": "math_v3_2"
+          },
+          {
+            "from_port": 0,
+            "to_port": 2,
+            "to": "Output",
+            "from": "tonality"
+          }
+        ]
+      }
+    },
+    "curl": {
+      "name": "Curl Noise XY",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "curl_frequency",
+          "name": "curl_frequency",
+          "type": "float",
+          "default": 0.25
+        },
+        {
+          "id": "curl_strength",
+          "name": "curl_strength",
+          "type": "float",
+          "default": 2.0
+        }
+      ],
+      "reads": [
+        "position",
+        "velocity"
+      ],
+      "writes": [
+        "velocity",
+        "curl_velocity"
+      ],
+      "revision": 1,
+      "mm_graph": {
+        "type": "graph",
+        "name": "Module",
+        "seed_int": 0,
+        "nodes": [
+          {
+            "name": "Position",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "position",
+              "data_type": "vec3",
+              "label": "position"
+            },
+            "node_position": {
+              "x": -500,
+              "y": 0
+            }
+          },
+          {
+            "name": "Velocity",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_read",
+              "id": "velocity",
+              "data_type": "vec3",
+              "label": "velocity"
+            },
+            "node_position": {
+              "x": -200,
+              "y": 0
+            }
+          },
+          {
+            "name": "Frequency",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_parameter",
+              "id": "curl_frequency",
+              "data_type": "float",
+              "label": "curl_frequency"
+            },
+            "node_position": {
+              "x": 100,
+              "y": 0
+            }
+          },
+          {
+            "name": "Strength",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_parameter",
+              "id": "curl_strength",
+              "data_type": "float",
+              "label": "curl_strength"
+            },
+            "node_position": {
+              "x": 400,
+              "y": 0
+            }
+          },
+          {
+            "name": "Curl_Coordinates",
+            "node_position": {
+              "x": -500,
+              "y": 180
+            },
+            "parameters": {
+              "clamp": false,
+              "d_in1_x": 0.0,
+              "d_in1_y": 0.0,
+              "d_in1_z": 0.0,
+              "d_in2_x": 0.0,
+              "d_in2_y": 0.0,
+              "d_in2_z": 0.0,
+              "op": 2.0
+            },
+            "seed_int": 0,
+            "type": "math_v3"
+          },
+          {
+            "connections": [
+              {
+                "from": "decompose",
+                "from_port": 0,
+                "to": "Filter_Combine_Typed",
+                "to_port": 0
+              },
+              {
+                "from": "decompose",
+                "from_port": 1,
+                "to": "Filter_Combine_Typed",
+                "to_port": 1
+              },
+              {
+                "from": "Filter_Combine_Typed",
+                "from_port": 0,
+                "to": "Filter_Math_Typed",
+                "to_port": 0
+              },
+              {
+                "from": "Simple_Constant_Typed",
+                "from_port": 0,
+                "to": "Filter_Math_Typed",
+                "to_port": 1
+              },
+              {
+                "from": "Filter_Combine_Typed",
+                "from_port": 0,
+                "to": "Filter_Math_Typed_2",
+                "to_port": 0
+              },
+              {
+                "from": "Simple_Constant_Typed",
+                "from_port": 0,
+                "to": "Filter_Math_Typed_2",
+                "to_port": 1
+              },
+              {
+                "from": "Simple_Constant_Typed_2",
+                "from_port": 0,
+                "to": "Filter_Math_Typed_3",
+                "to_port": 1
+              },
+              {
+                "from": "Filter_Combine_Typed",
+                "from_port": 0,
+                "to": "Filter_Math_Typed_3",
+                "to_port": 0
+              },
+              {
+                "from": "Simple_Constant_Typed_2",
+                "from_port": 0,
+                "to": "Filter_Math_Typed_4",
+                "to_port": 1
+              },
+              {
+                "from": "Filter_Combine_Typed",
+                "from_port": 0,
+                "to": "Filter_Math_Typed_4",
+                "to_port": 0
+              },
+              {
+                "from": "Filter_Math_Typed",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function",
+                "to_port": 1
+              },
+              {
+                "from": "fbm4",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function",
+                "to_port": 0
+              },
+              {
+                "from": "fbm4",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function_2",
+                "to_port": 0
+              },
+              {
+                "from": "Filter_Math_Typed_2",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function_2",
+                "to_port": 1
+              },
+              {
+                "from": "Filter_Math_Typed_3",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function_3",
+                "to_port": 1
+              },
+              {
+                "from": "fbm4",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function_3",
+                "to_port": 0
+              },
+              {
+                "from": "fbm4",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function_4",
+                "to_port": 0
+              },
+              {
+                "from": "Filter_Math_Typed_4",
+                "from_port": 0,
+                "to": "Miscellaneous_Evaluate_Function_4",
+                "to_port": 1
+              },
+              {
+                "from": "Miscellaneous_Evaluate_Function",
+                "from_port": 0,
+                "to": "math",
+                "to_port": 0
+              },
+              {
+                "from": "Miscellaneous_Evaluate_Function_2",
+                "from_port": 0,
+                "to": "math",
+                "to_port": 1
+              },
+              {
+                "from": "math",
+                "from_port": 0,
+                "to": "math_2",
+                "to_port": 0
+              },
+              {
+                "from": "math_3",
+                "from_port": 0,
+                "to": "math_4",
+                "to_port": 0
+              },
+              {
+                "from": "Miscellaneous_Evaluate_Function_3",
+                "from_port": 0,
+                "to": "math_3",
+                "to_port": 0
+              },
+              {
+                "from": "Miscellaneous_Evaluate_Function_4",
+                "from_port": 0,
+                "to": "math_3",
+                "to_port": 1
+              },
+              {
+                "from": "math_2",
+                "from_port": 0,
+                "to": "combine_2",
+                "to_port": 1
+              },
+              {
+                "from": "math_4",
+                "from_port": 0,
+                "to": "combine_2",
+                "to_port": 0
+              },
+              {
+                "from": "gen_inputs",
+                "from_port": 0,
+                "to": "decompose",
+                "to_port": 0
+              },
+              {
+                "from": "combine_2",
+                "from_port": 0,
+                "to": "gen_outputs",
+                "to_port": 0
+              }
+            ],
+            "label": "Curl Noise XY",
+            "longdesc": "입력 Position의 XY에서 동일한 Perlin FBM을 네 번 평가합니다. 중앙 차분 간격은 0.0001입니다. 출력은 (dN/dy, -dN/dx, 0)입니다.",
+            "name": "Curl_Noise_XY",
+            "node_position": {
+              "x": -200,
+              "y": 180
+            },
+            "nodes": [
+              {
+                "name": "fbm4",
+                "node_position": {
+                  "x": 200.0,
+                  "y": -300.0
+                },
+                "parameters": {
+                  "folds": 0.0,
+                  "iterations": 3.0,
+                  "lacunarity": 2.0,
+                  "noise": 1.0,
+                  "offset": 0.0,
+                  "persistence": 0.5,
+                  "scale_x": 2.0,
+                  "scale_y": 2.0
+                },
+                "seed_int": 0,
+                "type": "fbm4"
+              },
+              {
+                "name": "decompose",
+                "node_position": {
+                  "x": -395.441589355469,
+                  "y": 258.303588867188
+                },
+                "parameters": {},
+                "seed_int": 0,
+                "type": "decompose"
+              },
+              {
+                "name": "Simple_Constant_Typed",
+                "node_position": {
+                  "x": -220.530746459961,
+                  "y": -44.1061515808105
+                },
+                "parameters": {
+                  "data_type": 12.0,
+                  "v0": 0.0001,
+                  "v1": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "vec2",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "constant"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Simple_Constant_Typed_2",
+                "node_position": {
+                  "x": -271.422454833984,
+                  "y": 499.556274414063
+                },
+                "parameters": {
+                  "data_type": 12.0,
+                  "v0": 0.0,
+                  "v1": 0.0001
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "vec2",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "constant"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Filter_Combine_Typed",
+                "node_position": {
+                  "x": -161.157089233398,
+                  "y": 268.48193359375
+                },
+                "parameters": {
+                  "data_type": 9.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "vec2",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "compose"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Filter_Math_Typed",
+                "node_position": {
+                  "x": 240.0,
+                  "y": 0.0
+                },
+                "parameters": {
+                  "data_type": 9.0,
+                  "operation": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "int",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "operator"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Filter_Math_Typed_2",
+                "node_position": {
+                  "x": 240.0,
+                  "y": 190.0
+                },
+                "parameters": {
+                  "data_type": 9.0,
+                  "operation": 1.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "int",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "operator"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Filter_Math_Typed_3",
+                "node_position": {
+                  "x": 240.0,
+                  "y": 380.0
+                },
+                "parameters": {
+                  "data_type": 9.0,
+                  "operation": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "int",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "operator"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Filter_Math_Typed_4",
+                "node_position": {
+                  "x": 240.0,
+                  "y": 570.0
+                },
+                "parameters": {
+                  "data_type": 9.0,
+                  "operation": 1.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "data_type": "int",
+                  "editor_profile": "supplemental_v1",
+                  "kind": "operator"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Miscellaneous_Evaluate_Function",
+                "node_position": {
+                  "x": 786.154968261719,
+                  "y": -110.26537322998
+                },
+                "parameters": {
+                  "function_type": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "editor_profile": "supplemental_v1",
+                  "function_type": "rgba",
+                  "kind": "evaluate"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Miscellaneous_Evaluate_Function_2",
+                "node_position": {
+                  "x": 782.76220703125,
+                  "y": 232.409774780273
+                },
+                "parameters": {
+                  "function_type": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "editor_profile": "supplemental_v1",
+                  "function_type": "rgba",
+                  "kind": "evaluate"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Miscellaneous_Evaluate_Function_3",
+                "node_position": {
+                  "x": 784.458557128906,
+                  "y": 383.392791748047
+                },
+                "parameters": {
+                  "function_type": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "editor_profile": "supplemental_v1",
+                  "function_type": "rgba",
+                  "kind": "evaluate"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "Miscellaneous_Evaluate_Function_4",
+                "node_position": {
+                  "x": 796.333312988281,
+                  "y": 710.800415039063
+                },
+                "parameters": {
+                  "function_type": 0.0
+                },
+                "seed_int": 0,
+                "settings": {
+                  "editor_profile": "supplemental_v1",
+                  "function_type": "rgba",
+                  "kind": "evaluate"
+                },
+                "type": "particle_node"
+              },
+              {
+                "name": "math",
+                "node_position": {
+                  "x": 1355.880859375,
+                  "y": 17.7685832977295
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0,
+                  "op": 1.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_2",
+                "node_position": {
+                  "x": 1584.54125976563,
+                  "y": 31.3397064208984
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": -0.0002,
+                  "op": 3.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_3",
+                "node_position": {
+                  "x": 1359.27368164063,
+                  "y": 531.4267578125
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0,
+                  "op": 1.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "math_4",
+                "node_position": {
+                  "x": 1613.3798828125,
+                  "y": 499.195343017578
+                },
+                "parameters": {
+                  "clamp": false,
+                  "default_in1": 0.0,
+                  "default_in2": 0.0002,
+                  "op": 3.0
+                },
+                "seed_int": 0,
+                "type": "math"
+              },
+              {
+                "name": "combine_2",
+                "node_position": {
+                  "x": 1794.54125976563,
+                  "y": 231.339691162109
+                },
+                "parameters": {},
+                "seed_int": 0,
+                "type": "combine"
+              },
+              {
+                "name": "gen_inputs",
+                "node_position": {
+                  "x": -807.938354492188,
+                  "y": 227.768569946289
+                },
+                "parameters": {},
+                "ports": [
+                  {
+                    "name": "position",
+                    "shortdesc": "Position (XY)",
+                    "type": "rgb"
+                  }
+                ],
+                "seed_int": 0,
+                "type": "ios"
+              },
+              {
+                "name": "gen_outputs",
+                "node_position": {
+                  "x": 1994.54138183594,
+                  "y": 231.339691162109
+                },
+                "parameters": {},
+                "ports": [
+                  {
+                    "name": "curl_velocity",
+                    "shortdesc": "Curl velocity (XY)",
+                    "type": "rgb"
+                  }
+                ],
+                "seed_int": 0,
+                "type": "ios"
+              },
+              {
+                "name": "gen_parameters",
+                "node_position": {
+                  "x": -450.0,
+                  "y": -220.0
+                },
+                "parameters": {},
+                "seed_int": 0,
+                "type": "remote",
+                "widgets": []
+              }
+            ],
+            "parameters": {},
+            "scroll_offset": {
+              "x": -695.124145507813,
+              "y": -267.505249023438
+            },
+            "seed_int": 0,
+            "shortdesc": "2D curl: (dN/dy, -dN/dx, 0)",
+            "type": "graph"
+          },
+          {
+            "name": "Curl_Amplitude",
+            "node_position": {
+              "x": 100,
+              "y": 180
+            },
+            "parameters": {
+              "clamp": false,
+              "d_in1_x": 0.0,
+              "d_in1_y": 0.0,
+              "d_in1_z": 0.0,
+              "d_in2_x": 0.0,
+              "d_in2_y": 0.0,
+              "d_in2_z": 0.0,
+              "op": 2.0
+            },
+            "seed_int": 0,
+            "type": "math_v3"
+          },
+          {
+            "name": "Curl_Velocity",
+            "node_position": {
+              "x": 400,
+              "y": 180
+            },
+            "parameters": {
+              "clamp": false,
+              "d_in1_x": 0.0,
+              "d_in1_y": 0.0,
+              "d_in1_z": 0.0,
+              "d_in2_x": 0.0,
+              "d_in2_y": 0.0,
+              "d_in2_z": 0.0,
+              "op": 0.0
+            },
+            "seed_int": 0,
+            "type": "math_v3"
+          },
+          {
+            "name": "Output",
+            "type": "modular_particle",
+            "parameters": {},
+            "seed_int": 0,
+            "settings": {
+              "kind": "module_output",
+              "fields": [
+                {
+                  "id": "velocity",
+                  "name": "velocity",
+                  "type": "vec3"
+                },
+                {
+                  "id": "curl_velocity",
+                  "name": "curl_velocity",
+                  "type": "vec3"
+                }
+              ]
+            },
+            "node_position": {
+              "x": 850,
+              "y": 0
+            }
+          }
+        ],
+        "connections": [
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Curl_Coordinates",
+            "from": "Position"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Curl_Coordinates",
+            "from": "Frequency"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Curl_Noise_XY",
+            "from": "Curl_Coordinates"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Curl_Amplitude",
+            "from": "Curl_Noise_XY"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Curl_Amplitude",
+            "from": "Strength"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Curl_Velocity",
+            "from": "Velocity"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Curl_Velocity",
+            "from": "Curl_Amplitude"
+          },
+          {
+            "from_port": 0,
+            "to_port": 0,
+            "to": "Output",
+            "from": "Curl_Velocity"
+          },
+          {
+            "from_port": 0,
+            "to_port": 1,
+            "to": "Output",
+            "from": "Curl_Amplitude"
+          }
+        ]
+      }
+    }
+  },
+  "stages": {
+    "spawn": [
+      {
+        "id": "mmtest_initialize",
+        "module": "initialize",
+        "parameters": {},
+        "enabled": true
+      },
+      {
+        "id": "mmtest_spherical",
+        "module": "spherical",
+        "parameters": {},
+        "enabled": true
+      }
+    ],
+    "update": [
+      {
+        "id": "mmtest_integrate",
+        "module": "integrate",
+        "parameters": {},
+        "enabled": true
+      },
+      {
+        "id": "mmtest_normalized_age",
+        "module": "normalized_age",
+        "parameters": {},
+        "enabled": true
+      },
+      {
+        "id": "mmtest_over_life",
+        "module": "over_life",
+        "parameters": {},
+        "enabled": true
+      },
+      {
+        "id": "mmtest_curl",
+        "module": "curl",
+        "parameters": {},
+        "enabled": true
+      }
+    ]
+  },
+  "emitter": {
+    "rate": 0.0,
+    "duration": 0.7,
+    "loop": true,
+    "bursts": [
+      {
+        "time": 0.0,
+        "count": 128
+      }
+    ],
+    "lifetime": 0.7
+  },
+  "renderer": {
+    "mode": "additive",
+    "billboard": true,
+    "quad_size": 0.1,
+    "round_quad": true,
+    "custom_attribute": "custom"
+  },
+  "reference": {
+    "file": "mmtest.ptex",
+    "sha256": "4822ae43ec54de6f73d55b8f5c359f66df653a95c13e5b4e90079f3222b60932",
+    "note": "Explicit module recreation, not automatic legacy import."
+  }
+}

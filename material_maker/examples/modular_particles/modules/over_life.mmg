@@ -1,0 +1,236 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Age",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "normalized_age",
+        "data_type": "float",
+        "label": "normalized_age"
+      },
+      "node_position": {
+        "x": -500,
+        "y": 0
+      }
+    },
+    {
+      "generic_size": 1,
+      "name": "tonality",
+      "node_position": {
+        "x": -200,
+        "y": 0
+      },
+      "parameters": {
+        "curve": {
+          "points": [
+            {
+              "ls": -0.436656669255233,
+              "rs": -0.436656669255233,
+              "x": 0.0,
+              "y": 1.0
+            },
+            {
+              "ls": -0.857819047278233,
+              "rs": -0.857819047278233,
+              "x": 0.193133041262627,
+              "y": 0.929347813129425
+            },
+            {
+              "ls": -1.80204853590242,
+              "rs": -1.80204853590242,
+              "x": 0.40128755569458,
+              "y": 0.342391312122345
+            },
+            {
+              "ls": -0.0469001655238946,
+              "rs": -0.0469001655238946,
+              "x": 1.0,
+              "y": 0.0
+            }
+          ],
+          "type": "Curve"
+        }
+      },
+      "seed_int": 0,
+      "type": "tonality"
+    },
+    {
+      "name": "InitialVelocity",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "initial_velocity",
+        "data_type": "vec3",
+        "label": "initial_velocity"
+      },
+      "node_position": {
+        "x": 100,
+        "y": 0
+      }
+    },
+    {
+      "name": "InitialScale",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "initial_scale",
+        "data_type": "vec3",
+        "label": "initial_scale"
+      },
+      "node_position": {
+        "x": 400,
+        "y": 0
+      }
+    },
+    {
+      "name": "math_v3_3",
+      "node_position": {
+        "x": -500,
+        "y": 180
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 0.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 2.0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "name": "math_v3_2",
+      "node_position": {
+        "x": -200,
+        "y": 180
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 0.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 2.0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "velocity",
+            "name": "velocity",
+            "type": "vec3"
+          },
+          {
+            "id": "scale",
+            "name": "scale",
+            "type": "vec3"
+          },
+          {
+            "id": "curve_value",
+            "name": "curve_value",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 850,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "tonality",
+      "from": "Age"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "math_v3_3",
+      "from": "InitialVelocity"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "math_v3_3",
+      "from": "tonality"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "math_v3_2",
+      "from": "InitialScale"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "math_v3_2",
+      "from": "tonality"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Output",
+      "from": "math_v3_3"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Output",
+      "from": "math_v3_2"
+    },
+    {
+      "from_port": 0,
+      "to_port": 2,
+      "to": "Output",
+      "from": "tonality"
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "over_life",
+    "definition": {
+      "name": "Velocity and Scale over Life",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "normalized_age",
+        "initial_velocity",
+        "initial_scale"
+      ],
+      "writes": [
+        "velocity",
+        "scale",
+        "curve_value"
+      ],
+      "revision": 1
+    }
+  }
+}

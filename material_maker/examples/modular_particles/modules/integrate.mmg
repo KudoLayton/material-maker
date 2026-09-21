@@ -1,0 +1,197 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Position",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": -500,
+        "y": 0
+      }
+    },
+    {
+      "name": "Velocity",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_read",
+        "id": "velocity",
+        "data_type": "vec3",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": -200,
+        "y": 0
+      }
+    },
+    {
+      "name": "Delta",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_context",
+        "id": "delta",
+        "data_type": "float",
+        "label": "delta"
+      },
+      "node_position": {
+        "x": 100,
+        "y": 0
+      }
+    },
+    {
+      "name": "New",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_context",
+        "id": "just_spawned",
+        "data_type": "bool",
+        "label": "just_spawned"
+      },
+      "node_position": {
+        "x": 400,
+        "y": 0
+      }
+    },
+    {
+      "name": "Multiply",
+      "type": "math_v3",
+      "parameters": {
+        "op": 2.0,
+        "clamp": false
+      },
+      "node_position": {
+        "x": -500,
+        "y": 180
+      }
+    },
+    {
+      "name": "Add",
+      "type": "math_v3",
+      "parameters": {
+        "op": 0.0,
+        "clamp": false
+      },
+      "node_position": {
+        "x": -200,
+        "y": 180
+      }
+    },
+    {
+      "name": "Select",
+      "type": "particle_node",
+      "settings": {
+        "kind": "select",
+        "data_type": "vec3"
+      },
+      "parameters": {},
+      "node_position": {
+        "x": 100,
+        "y": 180
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "position",
+            "name": "position",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 850,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Multiply",
+      "from": "Velocity"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Multiply",
+      "from": "Delta"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Add",
+      "from": "Position"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Add",
+      "from": "Multiply"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Select",
+      "from": "New"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Select",
+      "from": "Position"
+    },
+    {
+      "from_port": 0,
+      "to_port": 2,
+      "to": "Select",
+      "from": "Add"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Output",
+      "from": "Select"
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "integrate",
+    "definition": {
+      "name": "Integrate Previous Velocity",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "position",
+        "velocity"
+      ],
+      "writes": [
+        "position"
+      ],
+      "revision": 1
+    }
+  }
+}

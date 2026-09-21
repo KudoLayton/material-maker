@@ -1,0 +1,1670 @@
+{
+	"connections": [
+		{
+			"from": "uniform_greyscale_3",
+			"from_port": 0,
+			"to": "Particles_Random",
+			"to_port": 3
+		},
+		{
+			"from": "uniform_greyscale_2",
+			"from_port": 0,
+			"to": "Particles_Random",
+			"to_port": 4
+		},
+		{
+			"from": "Miscellaneous_Typed_Parameter",
+			"from_port": 0,
+			"to": "math_v3",
+			"to_port": 1
+		},
+		{
+			"from": "Particles_Random",
+			"from_port": 0,
+			"to": "math_v3",
+			"to_port": 0
+		},
+		{
+			"from": "math_v3",
+			"from_port": 0,
+			"to": "Material",
+			"to_port": 2
+		},
+		{
+			"from": "Miscellaneous_Typed_Parameter_2",
+			"from_port": 0,
+			"to": "Material",
+			"to_port": 14
+		},
+		{
+			"from": "Miscellaneous_Typed_Parameter_2",
+			"from_port": 0,
+			"to": "math_v3_2",
+			"to_port": 0
+		},
+		{
+			"from": "graph",
+			"from_port": 0,
+			"to": "Process",
+			"to_port": 6
+		},
+		{
+			"from": "math_v3_2",
+			"from_port": 0,
+			"to": "Process",
+			"to_port": 14
+		},
+		{
+			"from": "uniform",
+			"from_port": 0,
+			"to": "Material",
+			"to_port": 6
+		},
+		{
+			"from": "graph",
+			"from_port": 1,
+			"to": "tonality",
+			"to_port": 0
+		},
+		{
+			"from": "tonality",
+			"from_port": 0,
+			"to": "math_v3_2",
+			"to_port": 1
+		},
+		{
+			"from": "tonality",
+			"from_port": 0,
+			"to": "math_v3_3",
+			"to_port": 1
+		},
+		{
+			"from": "Particles_Read_USERDATA2",
+			"from_port": 0,
+			"to": "math_v3_3",
+			"to_port": 0
+		},
+		{
+			"from": "math_v3",
+			"from_port": 0,
+			"to": "Material",
+			"to_port": 7
+		},
+		{
+			"from": "Particles_Random",
+			"from_port": 0,
+			"to": "graph_2",
+			"to_port": 0
+		},
+		{
+			"from": "graph_2",
+			"from_port": 0,
+			"to": "Filter_Decompose_Typed",
+			"to_port": 0
+		},
+		{
+			"from": "Filter_Decompose_Typed",
+			"from_port": 0,
+			"to": "combine",
+			"to_port": 0
+		},
+		{
+			"from": "Filter_Decompose_Typed",
+			"from_port": 1,
+			"to": "combine",
+			"to_port": 1
+		},
+		{
+			"from": "combine",
+			"from_port": 0,
+			"to": "Material",
+			"to_port": 8
+		},
+		{
+			"from": "Curl_Position",
+			"from_port": 0,
+			"to": "Curl_Coordinates",
+			"to_port": 0
+		},
+		{
+			"from": "Curl_Frequency",
+			"from_port": 0,
+			"to": "Curl_Coordinates",
+			"to_port": 1
+		},
+		{
+			"from": "Curl_Coordinates",
+			"from_port": 0,
+			"to": "Curl_Noise_XY",
+			"to_port": 0
+		},
+		{
+			"from": "Curl_Noise_XY",
+			"from_port": 0,
+			"to": "Curl_Amplitude",
+			"to_port": 0
+		},
+		{
+			"from": "Curl_Strength",
+			"from_port": 0,
+			"to": "Curl_Amplitude",
+			"to_port": 1
+		},
+		{
+			"from": "math_v3_3",
+			"from_port": 0,
+			"to": "Curl_Velocity",
+			"to_port": 0
+		},
+		{
+			"from": "Curl_Amplitude",
+			"from_port": 0,
+			"to": "Curl_Velocity",
+			"to_port": 1
+		},
+		{
+			"from": "Curl_Velocity",
+			"from_port": 0,
+			"to": "Process",
+			"to_port": 2
+		}
+	],
+	"label": "Graph",
+	"longdesc": "",
+	"name": "_Node_2561",
+	"node_position": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"nodes": [
+		{
+			"export": {
+				"last_target": "",
+				"paths": {}
+			},
+			"export_paths": {},
+			"name": "Material",
+			"node_position": {
+				"x": 597.0,
+				"y": -286.0
+			},
+			"parameters": {
+				"collision_use_scale": false,
+				"disable_force": false,
+				"disable_velocity": false,
+				"initialize_particle": true,
+				"keep_data": false,
+				"target_project": "",
+				"transform_mode": 0
+			},
+			"particle_defaults": {},
+			"particle_preview": {
+				"amount": 128,
+				"emission": 1,
+				"lifetime": 0.7,
+				"quad_size": 0.1,
+				"shape": 1
+			},
+			"seed_int": 0,
+			"type": "particle_export"
+		},
+		{
+			"name": "Process",
+			"node_position": {
+				"x": 900.0,
+				"y": 180.0
+			},
+			"parameters": {
+				"transform_mode": 0
+			},
+			"seed": 1206.0,
+			"settings": {
+				"kind": "output",
+				"stage": "process"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "Particles_Random",
+			"node_position": {
+				"x": -527.467712402344,
+				"y": -338.830505371094
+			},
+			"parameters": {
+				"data_type": 2.0,
+				"maximum": 1.0,
+				"minimum": 0.0,
+				"seed": 0.0
+			},
+			"seed_int": 0,
+			"settings": {
+				"data_type": "vec3",
+				"kind": "random"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "math_v3",
+			"node_position": {
+				"x": 23.5567169189453,
+				"y": -238.681442260742
+			},
+			"parameters": {
+				"clamp": false,
+				"d_in1_x": 0.0,
+				"d_in1_y": 0.0,
+				"d_in1_z": 0.0,
+				"d_in2_x": 0.0,
+				"d_in2_y": 0.0,
+				"d_in2_z": 0.0,
+				"op": 2.0
+			},
+			"seed_int": 0,
+			"type": "math_v3"
+		},
+		{
+			"name": "uniform_greyscale_2",
+			"node_position": {
+				"x": -755.864379882813,
+				"y": -241.977935791016
+			},
+			"parameters": {
+				"color": 1.0
+			},
+			"seed_int": 0,
+			"type": "uniform_greyscale"
+		},
+		{
+			"name": "uniform_greyscale_3",
+			"node_position": {
+				"x": -755.203369140625,
+				"y": -313.547027587891
+			},
+			"parameters": {
+				"color": -1.0
+			},
+			"seed_int": 0,
+			"type": "uniform_greyscale"
+		},
+		{
+			"name": "Miscellaneous_Typed_Parameter",
+			"node_position": {
+				"x": -308.644622802734,
+				"y": -147.526611328125
+			},
+			"parameters": {
+				"array_size": 1,
+				"data_type": 3.0,
+				"default_json": "10.0",
+				"hint": "",
+				"is_array": false,
+				"uniform_name": "velocity"
+			},
+			"seed_int": 0,
+			"settings": {
+				"data_type": "float",
+				"editor_profile": "supplemental_v1",
+				"kind": "uniform"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "Miscellaneous_Typed_Parameter_2",
+			"node_position": {
+				"x": -348.381225585938,
+				"y": 92.0895156860352
+			},
+			"parameters": {
+				"array_size": 1,
+				"data_type": 14.0,
+				"default_json": "[1.0,1.0,1.0]",
+				"hint": "",
+				"is_array": false,
+				"uniform_name": "particle_scale"
+			},
+			"seed_int": 0,
+			"settings": {
+				"data_type": "float",
+				"editor_profile": "supplemental_v1",
+				"kind": "uniform"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "math_v3_2",
+			"node_position": {
+				"x": 210.019577026367,
+				"y": 733.045227050781
+			},
+			"parameters": {
+				"clamp": false,
+				"d_in1_x": 0.0,
+				"d_in1_y": 0.0,
+				"d_in1_z": 0.0,
+				"d_in2_x": 0.0,
+				"d_in2_y": 0.0,
+				"d_in2_z": 0.0,
+				"op": 2.0
+			},
+			"seed_int": 0,
+			"type": "math_v3"
+		},
+		{
+			"name": "uniform",
+			"node_position": {
+				"x": 450.179992675781,
+				"y": -159.740798950195
+			},
+			"parameters": {
+				"color": {
+					"a": 0.0,
+					"b": 0.0,
+					"g": 0.0,
+					"r": 0.0,
+					"type": "Color"
+				}
+			},
+			"seed_int": 0,
+			"type": "uniform"
+		},
+		{
+			"connections": [
+				{
+					"from": "Particles_Read_LIFETIME",
+					"from_port": 0,
+					"to": "math",
+					"to_port": 1
+				},
+				{
+					"from": "Particles_Read_USERDATA1",
+					"from_port": 0,
+					"to": "decompose",
+					"to_port": 0
+				},
+				{
+					"from": "decompose",
+					"from_port": 0,
+					"to": "math_2",
+					"to_port": 0
+				},
+				{
+					"from": "Particles_Read_DELTA",
+					"from_port": 0,
+					"to": "math_2",
+					"to_port": 1
+				},
+				{
+					"from": "math_2",
+					"from_port": 0,
+					"to": "combine",
+					"to_port": 0
+				},
+				{
+					"from": "combine",
+					"from_port": 0,
+					"to": "gen_outputs",
+					"to_port": 0
+				},
+				{
+					"from": "math_2",
+					"from_port": 0,
+					"to": "math",
+					"to_port": 0
+				},
+				{
+					"from": "math",
+					"from_port": 0,
+					"to": "gen_outputs",
+					"to_port": 1
+				}
+			],
+			"label": "time",
+			"longdesc": "",
+			"name": "graph",
+			"node_position": {
+				"x": -311.778076171875,
+				"y": 363.677856445313
+			},
+			"nodes": [
+				{
+					"name": "Particles_Read_LIFETIME",
+					"node_position": {
+						"x": -634.704162597656,
+						"y": 687.075012207031
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"settings": {
+						"builtin": "LIFETIME",
+						"kind": "input"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Particles_Read_USERDATA1",
+					"node_position": {
+						"x": -884.140014648438,
+						"y": 444.459716796875
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"settings": {
+						"builtin": "USERDATA1",
+						"kind": "input"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "math",
+					"node_position": {
+						"x": -283.934997558594,
+						"y": 629.587951660156
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 3.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_2",
+					"node_position": {
+						"x": -401.832427978516,
+						"y": 521.434020996094
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 0.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "Particles_Read_DELTA",
+					"node_position": {
+						"x": -636.652893066406,
+						"y": 614.972473144531
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"settings": {
+						"builtin": "DELTA",
+						"kind": "input"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "decompose",
+					"node_position": {
+						"x": -643.473449707031,
+						"y": 447.382781982422
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "decompose"
+				},
+				{
+					"name": "combine",
+					"node_position": {
+						"x": -182.601699829102,
+						"y": 466.869934082031
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "combine"
+				},
+				{
+					"name": "gen_inputs",
+					"node_position": {
+						"x": -1384.14001464844,
+						"y": 569.871520996094
+					},
+					"parameters": {},
+					"ports": [],
+					"seed_int": 0,
+					"type": "ios"
+				},
+				{
+					"name": "gen_outputs",
+					"node_position": {
+						"x": 344.013610839844,
+						"y": 569.871520996094
+					},
+					"parameters": {},
+					"ports": [
+						{
+							"name": "elapsed_time",
+							"type": "rgba"
+						},
+						{
+							"name": "normalized_lifetime",
+							"type": "f"
+						}
+					],
+					"seed_int": 0,
+					"type": "ios"
+				},
+				{
+					"name": "gen_parameters",
+					"node_position": {
+						"x": -652.915771484375,
+						"y": 144.459716796875
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "remote",
+					"widgets": []
+				}
+			],
+			"parameters": {},
+			"scroll_offset": {
+				"x": -651.930725097656,
+				"y": -32.20751953125
+			},
+			"seed_int": 0,
+			"shortdesc": "",
+			"type": "graph"
+		},
+		{
+			"generic_size": 1,
+			"name": "tonality",
+			"node_position": {
+				"x": -54.9239845275879,
+				"y": 595.216186523438
+			},
+			"parameters": {
+				"curve": {
+					"points": [
+						{
+							"ls": -0.436656669255233,
+							"rs": -0.436656669255233,
+							"x": 0.0,
+							"y": 1.0
+						},
+						{
+							"ls": -0.857819047278233,
+							"rs": -0.857819047278233,
+							"x": 0.193133041262627,
+							"y": 0.929347813129425
+						},
+						{
+							"ls": -1.80204853590242,
+							"rs": -1.80204853590242,
+							"x": 0.40128755569458,
+							"y": 0.342391312122345
+						},
+						{
+							"ls": -0.0469001655238946,
+							"rs": -0.0469001655238946,
+							"x": 1.0,
+							"y": 0.0
+						}
+					],
+					"type": "Curve"
+				}
+			},
+			"seed_int": 0,
+			"type": "tonality"
+		},
+		{
+			"name": "math_v3_3",
+			"node_position": {
+				"x": 159.738403320313,
+				"y": 511.781280517578
+			},
+			"parameters": {
+				"clamp": false,
+				"d_in1_x": 0.0,
+				"d_in1_y": 0.0,
+				"d_in1_z": 0.0,
+				"d_in2_x": 0.0,
+				"d_in2_y": 0.0,
+				"d_in2_z": 0.0,
+				"op": 2.0
+			},
+			"seed_int": 0,
+			"type": "math_v3"
+		},
+		{
+			"name": "Particles_Read_USERDATA2",
+			"node_position": {
+				"x": -70.5055236816406,
+				"y": 506.680236816406
+			},
+			"parameters": {},
+			"seed_int": 0,
+			"settings": {
+				"builtin": "USERDATA2",
+				"kind": "input"
+			},
+			"type": "particle_node"
+		},
+		{
+			"color": {
+				"a": 1.0,
+				"b": 0.0,
+				"g": 0.0,
+				"r": 0.0,
+				"type": "Color"
+			},
+			"name": "comment",
+			"node_position": {
+				"x": -109.766891479492,
+				"y": 439.781311035156
+			},
+			"parameters": {},
+			"seed_int": 0,
+			"size": {
+				"x": 810.0,
+				"y": 270.0
+			},
+			"text": "",
+			"title": "velocity update",
+			"type": "comment"
+		},
+		{
+			"color": {
+				"a": 1.0,
+				"b": 0.0,
+				"g": 0.0,
+				"r": 0.0,
+				"type": "Color"
+			},
+			"name": "comment_2",
+			"node_position": {
+				"x": -777.864379882813,
+				"y": -410.830474853516
+			},
+			"parameters": {},
+			"seed_int": 0,
+			"size": {
+				"x": 1039.42126464844,
+				"y": 454.303894042969
+			},
+			"text": "",
+			"title": "Initial Velocity",
+			"type": "comment"
+		},
+		{
+			"connections": [
+				{
+					"from": "gen_inputs",
+					"from_port": 0,
+					"to": "decompose",
+					"to_port": 0
+				},
+				{
+					"from": "decompose",
+					"from_port": 1,
+					"to": "math",
+					"to_port": 0
+				},
+				{
+					"from": "decompose",
+					"from_port": 0,
+					"to": "math",
+					"to_port": 1
+				},
+				{
+					"from": "Particles_Read_PI",
+					"from_port": 0,
+					"to": "math_2",
+					"to_port": 0
+				},
+				{
+					"from": "math",
+					"from_port": 0,
+					"to": "math_3",
+					"to_port": 0
+				},
+				{
+					"from": "math_2",
+					"from_port": 0,
+					"to": "math_3",
+					"to_port": 1
+				},
+				{
+					"from": "math_3",
+					"from_port": 0,
+					"to": "math_4",
+					"to_port": 0
+				},
+				{
+					"from": "decompose",
+					"from_port": 2,
+					"to": "math_5",
+					"to_port": 0
+				},
+				{
+					"from": "math_5",
+					"from_port": 0,
+					"to": "math_6",
+					"to_port": 0
+				},
+				{
+					"from": "Particles_Read_PI",
+					"from_port": 0,
+					"to": "math_6",
+					"to_port": 1
+				},
+				{
+					"from": "math_4",
+					"from_port": 0,
+					"to": "Filter_Combine_Typed",
+					"to_port": 0
+				},
+				{
+					"from": "math_6",
+					"from_port": 0,
+					"to": "Filter_Combine_Typed",
+					"to_port": 1
+				},
+				{
+					"from": "Filter_Combine_Typed",
+					"from_port": 0,
+					"to": "gen_outputs",
+					"to_port": 0
+				}
+			],
+			"label": "SpericalUV",
+			"longdesc": "",
+			"name": "graph_2",
+			"node_position": {
+				"x": 53.7836151123047,
+				"y": -335.671539306641
+			},
+			"nodes": [
+				{
+					"name": "decompose",
+					"node_position": {
+						"x": -36.1769180297852,
+						"y": -590.120788574219
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "decompose"
+				},
+				{
+					"name": "math",
+					"node_position": {
+						"x": 229.557327270508,
+						"y": -718.961730957031
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 24.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_4",
+					"node_position": {
+						"x": 577.427612304688,
+						"y": -710.103881835938
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.5,
+						"default_in2": 0.0,
+						"op": 0.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_5",
+					"node_position": {
+						"x": 424.30029296875,
+						"y": -494.416229248047
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 26.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_6",
+					"node_position": {
+						"x": 622.030700683594,
+						"y": -424.09326171875
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 3.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "Particles_Read_PI",
+					"node_position": {
+						"x": 154.571929931641,
+						"y": -343.897979736328
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"settings": {
+						"builtin": "PI",
+						"kind": "input"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "math_2",
+					"node_position": {
+						"x": 301.7822265625,
+						"y": -564.405822753906
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 2.0,
+						"op": 2.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_3",
+					"node_position": {
+						"x": 440.534240722656,
+						"y": -716.5458984375
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 3.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "Filter_Combine_Typed",
+					"node_position": {
+						"x": 795.65185546875,
+						"y": -577.236755371094
+					},
+					"parameters": {
+						"data_type": 9.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "vec2",
+						"editor_profile": "supplemental_v1",
+						"kind": "compose"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "gen_inputs",
+					"node_position": {
+						"x": -463.993041992188,
+						"y": -589.0048828125
+					},
+					"parameters": {},
+					"ports": [
+						{
+							"name": "position",
+							"shader_type": "vec3",
+							"type": "rgb"
+						}
+					],
+					"seed_int": 0,
+					"type": "ios"
+				},
+				{
+					"name": "gen_outputs",
+					"node_position": {
+						"x": 1167.83569335938,
+						"y": -589.0048828125
+					},
+					"parameters": {},
+					"ports": [
+						{
+							"name": "uv",
+							"type": "particle_vec2"
+						}
+					],
+					"seed_int": 0,
+					"type": "ios"
+				},
+				{
+					"name": "gen_parameters",
+					"node_position": {
+						"x": 252.296417236328,
+						"y": -1017.39251708984
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "remote",
+					"widgets": []
+				}
+			],
+			"parameters": {},
+			"scroll_offset": {
+				"x": -198.215454101563,
+				"y": -1025.32727050781
+			},
+			"seed_int": 0,
+			"shortdesc": "",
+			"type": "graph"
+		},
+		{
+			"name": "Filter_Decompose_Typed",
+			"node_position": {
+				"x": 46.9510307312012,
+				"y": -515.217529296875
+			},
+			"parameters": {
+				"data_type": 9.0
+			},
+			"seed_int": 0,
+			"settings": {
+				"data_type": "vec2",
+				"editor_profile": "supplemental_v1",
+				"kind": "split"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "combine",
+			"node_position": {
+				"x": 379.207427978516,
+				"y": -434.345733642578
+			},
+			"parameters": {},
+			"seed_int": 0,
+			"type": "combine"
+		},
+		{
+			"connections": [
+				{
+					"from": "decompose",
+					"from_port": 0,
+					"to": "Filter_Combine_Typed",
+					"to_port": 0
+				},
+				{
+					"from": "decompose",
+					"from_port": 1,
+					"to": "Filter_Combine_Typed",
+					"to_port": 1
+				},
+				{
+					"from": "Filter_Combine_Typed",
+					"from_port": 0,
+					"to": "Filter_Math_Typed",
+					"to_port": 0
+				},
+				{
+					"from": "Simple_Constant_Typed",
+					"from_port": 0,
+					"to": "Filter_Math_Typed",
+					"to_port": 1
+				},
+				{
+					"from": "Filter_Combine_Typed",
+					"from_port": 0,
+					"to": "Filter_Math_Typed_2",
+					"to_port": 0
+				},
+				{
+					"from": "Simple_Constant_Typed",
+					"from_port": 0,
+					"to": "Filter_Math_Typed_2",
+					"to_port": 1
+				},
+				{
+					"from": "Simple_Constant_Typed_2",
+					"from_port": 0,
+					"to": "Filter_Math_Typed_3",
+					"to_port": 1
+				},
+				{
+					"from": "Filter_Combine_Typed",
+					"from_port": 0,
+					"to": "Filter_Math_Typed_3",
+					"to_port": 0
+				},
+				{
+					"from": "Simple_Constant_Typed_2",
+					"from_port": 0,
+					"to": "Filter_Math_Typed_4",
+					"to_port": 1
+				},
+				{
+					"from": "Filter_Combine_Typed",
+					"from_port": 0,
+					"to": "Filter_Math_Typed_4",
+					"to_port": 0
+				},
+				{
+					"from": "Filter_Math_Typed",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function",
+					"to_port": 1
+				},
+				{
+					"from": "fbm4",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function",
+					"to_port": 0
+				},
+				{
+					"from": "fbm4",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function_2",
+					"to_port": 0
+				},
+				{
+					"from": "Filter_Math_Typed_2",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function_2",
+					"to_port": 1
+				},
+				{
+					"from": "Filter_Math_Typed_3",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function_3",
+					"to_port": 1
+				},
+				{
+					"from": "fbm4",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function_3",
+					"to_port": 0
+				},
+				{
+					"from": "fbm4",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function_4",
+					"to_port": 0
+				},
+				{
+					"from": "Filter_Math_Typed_4",
+					"from_port": 0,
+					"to": "Miscellaneous_Evaluate_Function_4",
+					"to_port": 1
+				},
+				{
+					"from": "Miscellaneous_Evaluate_Function",
+					"from_port": 0,
+					"to": "math",
+					"to_port": 0
+				},
+				{
+					"from": "Miscellaneous_Evaluate_Function_2",
+					"from_port": 0,
+					"to": "math",
+					"to_port": 1
+				},
+				{
+					"from": "math",
+					"from_port": 0,
+					"to": "math_2",
+					"to_port": 0
+				},
+				{
+					"from": "math_3",
+					"from_port": 0,
+					"to": "math_4",
+					"to_port": 0
+				},
+				{
+					"from": "Miscellaneous_Evaluate_Function_3",
+					"from_port": 0,
+					"to": "math_3",
+					"to_port": 0
+				},
+				{
+					"from": "Miscellaneous_Evaluate_Function_4",
+					"from_port": 0,
+					"to": "math_3",
+					"to_port": 1
+				},
+				{
+					"from": "math_2",
+					"from_port": 0,
+					"to": "combine_2",
+					"to_port": 1
+				},
+				{
+					"from": "math_4",
+					"from_port": 0,
+					"to": "combine_2",
+					"to_port": 0
+				},
+				{
+					"from": "gen_inputs",
+					"from_port": 0,
+					"to": "decompose",
+					"to_port": 0
+				},
+				{
+					"from": "combine_2",
+					"from_port": 0,
+					"to": "gen_outputs",
+					"to_port": 0
+				}
+			],
+			"label": "Curl Noise XY",
+			"longdesc": "입력 Position의 XY에서 동일한 Perlin FBM을 네 번 평가합니다. 중앙 차분 간격은 0.0001입니다. 출력은 (dN/dy, -dN/dx, 0)입니다.",
+			"name": "Curl_Noise_XY",
+			"node_position": {
+				"x": -270.0,
+				"y": 1120.0
+			},
+			"nodes": [
+				{
+					"name": "fbm4",
+					"node_position": {
+						"x": 200.0,
+						"y": -300.0
+					},
+					"parameters": {
+						"folds": 0.0,
+						"iterations": 3.0,
+						"lacunarity": 2.0,
+						"noise": 1.0,
+						"offset": 0.0,
+						"persistence": 0.5,
+						"scale_x": 2.0,
+						"scale_y": 2.0
+					},
+					"seed_int": 0,
+					"type": "fbm4"
+				},
+				{
+					"name": "decompose",
+					"node_position": {
+						"x": -395.441589355469,
+						"y": 258.303588867188
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "decompose"
+				},
+				{
+					"name": "Simple_Constant_Typed",
+					"node_position": {
+						"x": -220.530746459961,
+						"y": -44.1061515808105
+					},
+					"parameters": {
+						"data_type": 12.0,
+						"v0": 0.0001,
+						"v1": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "vec2",
+						"editor_profile": "supplemental_v1",
+						"kind": "constant"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Simple_Constant_Typed_2",
+					"node_position": {
+						"x": -271.422454833984,
+						"y": 499.556274414063
+					},
+					"parameters": {
+						"data_type": 12.0,
+						"v0": 0.0,
+						"v1": 0.0001
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "vec2",
+						"editor_profile": "supplemental_v1",
+						"kind": "constant"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Filter_Combine_Typed",
+					"node_position": {
+						"x": -161.157089233398,
+						"y": 268.48193359375
+					},
+					"parameters": {
+						"data_type": 9.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "vec2",
+						"editor_profile": "supplemental_v1",
+						"kind": "compose"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Filter_Math_Typed",
+					"node_position": {
+						"x": 240.0,
+						"y": 0.0
+					},
+					"parameters": {
+						"data_type": 9.0,
+						"operation": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "int",
+						"editor_profile": "supplemental_v1",
+						"kind": "operator"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Filter_Math_Typed_2",
+					"node_position": {
+						"x": 240.0,
+						"y": 190.0
+					},
+					"parameters": {
+						"data_type": 9.0,
+						"operation": 1.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "int",
+						"editor_profile": "supplemental_v1",
+						"kind": "operator"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Filter_Math_Typed_3",
+					"node_position": {
+						"x": 240.0,
+						"y": 380.0
+					},
+					"parameters": {
+						"data_type": 9.0,
+						"operation": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "int",
+						"editor_profile": "supplemental_v1",
+						"kind": "operator"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Filter_Math_Typed_4",
+					"node_position": {
+						"x": 240.0,
+						"y": 570.0
+					},
+					"parameters": {
+						"data_type": 9.0,
+						"operation": 1.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"data_type": "int",
+						"editor_profile": "supplemental_v1",
+						"kind": "operator"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Miscellaneous_Evaluate_Function",
+					"node_position": {
+						"x": 786.154968261719,
+						"y": -110.26537322998
+					},
+					"parameters": {
+						"function_type": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"editor_profile": "supplemental_v1",
+						"function_type": "rgba",
+						"kind": "evaluate"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Miscellaneous_Evaluate_Function_2",
+					"node_position": {
+						"x": 782.76220703125,
+						"y": 232.409774780273
+					},
+					"parameters": {
+						"function_type": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"editor_profile": "supplemental_v1",
+						"function_type": "rgba",
+						"kind": "evaluate"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Miscellaneous_Evaluate_Function_3",
+					"node_position": {
+						"x": 784.458557128906,
+						"y": 383.392791748047
+					},
+					"parameters": {
+						"function_type": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"editor_profile": "supplemental_v1",
+						"function_type": "rgba",
+						"kind": "evaluate"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "Miscellaneous_Evaluate_Function_4",
+					"node_position": {
+						"x": 796.333312988281,
+						"y": 710.800415039063
+					},
+					"parameters": {
+						"function_type": 0.0
+					},
+					"seed_int": 0,
+					"settings": {
+						"editor_profile": "supplemental_v1",
+						"function_type": "rgba",
+						"kind": "evaluate"
+					},
+					"type": "particle_node"
+				},
+				{
+					"name": "math",
+					"node_position": {
+						"x": 1355.880859375,
+						"y": 17.7685832977295
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 1.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_2",
+					"node_position": {
+						"x": 1584.54125976563,
+						"y": 31.3397064208984
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": -0.0002,
+						"op": 3.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_3",
+					"node_position": {
+						"x": 1359.27368164063,
+						"y": 531.4267578125
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0,
+						"op": 1.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "math_4",
+					"node_position": {
+						"x": 1613.3798828125,
+						"y": 499.195343017578
+					},
+					"parameters": {
+						"clamp": false,
+						"default_in1": 0.0,
+						"default_in2": 0.0002,
+						"op": 3.0
+					},
+					"seed_int": 0,
+					"type": "math"
+				},
+				{
+					"name": "combine_2",
+					"node_position": {
+						"x": 1794.54125976563,
+						"y": 231.339691162109
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "combine"
+				},
+				{
+					"name": "gen_inputs",
+					"node_position": {
+						"x": -807.938354492188,
+						"y": 227.768569946289
+					},
+					"parameters": {},
+					"ports": [
+						{
+							"name": "position",
+							"shortdesc": "Position (XY)",
+							"type": "rgb"
+						}
+					],
+					"seed_int": 0,
+					"type": "ios"
+				},
+				{
+					"name": "gen_outputs",
+					"node_position": {
+						"x": 1994.54138183594,
+						"y": 231.339691162109
+					},
+					"parameters": {},
+					"ports": [
+						{
+							"name": "curl_velocity",
+							"shortdesc": "Curl velocity (XY)",
+							"type": "rgb"
+						}
+					],
+					"seed_int": 0,
+					"type": "ios"
+				},
+				{
+					"name": "gen_parameters",
+					"node_position": {
+						"x": -450.0,
+						"y": -220.0
+					},
+					"parameters": {},
+					"seed_int": 0,
+					"type": "remote",
+					"widgets": []
+				}
+			],
+			"parameters": {},
+			"scroll_offset": {
+				"x": -695.124145507813,
+				"y": -267.505249023438
+			},
+			"seed_int": 0,
+			"shortdesc": "2D curl: (dN/dy, -dN/dx, 0)",
+			"type": "graph"
+		},
+		{
+			"name": "Curl_Position",
+			"node_position": {
+				"x": -1000.0,
+				"y": 1100.0
+			},
+			"parameters": {},
+			"seed_int": 0,
+			"settings": {
+				"component": "position",
+				"kind": "transform_read"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "Curl_Frequency",
+			"node_position": {
+				"x": -1000.0,
+				"y": 1260.0
+			},
+			"parameters": {
+				"array_size": 1,
+				"data_type": 3,
+				"default_json": "0.25",
+				"hint": "hint_range(0.01, 2.0, 0.01)",
+				"is_array": false,
+				"uniform_name": "curl_frequency"
+			},
+			"seed_int": 0,
+			"settings": {
+				"data_type": "float",
+				"editor_profile": "supplemental_v1",
+				"kind": "uniform"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "Curl_Strength",
+			"node_position": {
+				"x": -270.0,
+				"y": 1340.0
+			},
+			"parameters": {
+				"array_size": 1,
+				"data_type": 3,
+				"default_json": "2.0",
+				"hint": "hint_range(0.0, 10.0, 0.1)",
+				"is_array": false,
+				"uniform_name": "curl_strength"
+			},
+			"seed_int": 0,
+			"settings": {
+				"data_type": "float",
+				"editor_profile": "supplemental_v1",
+				"kind": "uniform"
+			},
+			"type": "particle_node"
+		},
+		{
+			"name": "Curl_Coordinates",
+			"node_position": {
+				"x": -640.0,
+				"y": 1100.0
+			},
+			"parameters": {
+				"clamp": false,
+				"d_in1_x": 0.0,
+				"d_in1_y": 0.0,
+				"d_in1_z": 0.0,
+				"d_in2_x": 0.0,
+				"d_in2_y": 0.0,
+				"d_in2_z": 0.0,
+				"op": 2.0
+			},
+			"seed_int": 0,
+			"type": "math_v3"
+		},
+		{
+			"name": "Curl_Amplitude",
+			"node_position": {
+				"x": 80.0,
+				"y": 1120.0
+			},
+			"parameters": {
+				"clamp": false,
+				"d_in1_x": 0.0,
+				"d_in1_y": 0.0,
+				"d_in1_z": 0.0,
+				"d_in2_x": 0.0,
+				"d_in2_y": 0.0,
+				"d_in2_z": 0.0,
+				"op": 2.0
+			},
+			"seed_int": 0,
+			"type": "math_v3"
+		},
+		{
+			"name": "Curl_Velocity",
+			"node_position": {
+				"x": 420.0,
+				"y": 520.0
+			},
+			"parameters": {
+				"clamp": false,
+				"d_in1_x": 0.0,
+				"d_in1_y": 0.0,
+				"d_in1_z": 0.0,
+				"d_in2_x": 0.0,
+				"d_in2_y": 0.0,
+				"d_in2_z": 0.0,
+				"op": 0.0
+			},
+			"seed_int": 0,
+			"type": "math_v3"
+		},
+		{
+			"color": {
+				"a": 1.0,
+				"b": 0.449999988079071,
+				"g": 0.25,
+				"r": 0.0799999982118607,
+				"type": "Color"
+			},
+			"name": "Curl_Comment",
+			"node_position": {
+				"x": -1040.0,
+				"y": 980.0
+			},
+			"parameters": {},
+			"seed_int": 0,
+			"size": {
+				"x": 1430.0,
+				"y": 620.0
+			},
+			"text": "현재 위치 XY → Curl Noise XY → 세기 조절 → 기존 방사형 속도에 더하기\nfrequency: 높을수록 작은 소용돌이 / strength: 0이면 원래 방사형 이동\nCurl Noise XY 내부에서 기존 FBM과 중앙 차분 그래프를 편집할 수 있습니다.",
+			"title": "Curl flow from current position",
+			"type": "comment"
+		}
+	],
+	"parameters": {},
+	"project_thumbnail": "UklGRsQEAABXRUJQVlA4WAoAAAAQAAAALwAALwAAQUxQSJQCAAANoCNteyJJevXrV9HAMpNX7Q9UrMd4gGEea5ksZmYGi3n3AG12ZIzVFT0X4BmrrOXdqqiUUlooyNIJImICmFOsBzh//bn89tcvAK6K1C9SVmbLdb1uM1Y0ZXysX6yVaIx1aRmvObyDqe3OZd3edRt/+PQkGmqR5K945gZIFWIwJFLELu3cv/LMWWPifFry8D0QxFomGoxAjK2Dj374ZtIwjxtd9BN4dcwrksL6lzZvGzg/mxtu+gavDeo0msLNn+xZdX4WN7z2PXyHuo36S5fvP+L8NB1teo/QZoEuNIv7VzVMkvKibwgtFqqhubxnIHFC4id8mwWrv/STbYn/q38Y32Hhzt+8+U0NIOUV96BkqLz04VmJSHwa38jB+PWPPCtRymtuQMlSObhyUmx1GN/Iw/jOvk+tNzuwZGrZ+UPJFlI2kpY2rnEdVTZU9rqCHln3+nSRfITusfObmHwMl43XR7LuyLkVJh9Du0n2vzXbyWSTzGj8l3TIeRh/GV+WTDbJDOBYN0o2UY5Bv0fOfSius/lYCljbuBQlk2iP/YErf9hZ2Uwq+z2u4tN9nWSySA3/FVXUkysHg2YR9HO0JPLsI+uTySA1xq8QIerZD18KmkHQx9ASCObNzTd7tzDfKY4az/9N2vbJpUEXFNo/34lJE6IO9iw3gy4ktKo70JLJwa3eXzS9W4BvV9fhRkz37sj9y5d6NTWl0Pn5DtyQWb1b3fPJzXg1NaTQ0OJO3JDZvQ62bX5pPUFkjhidjh87io6YN0h688NHD7ZIFWIwJFLEWgmfv4wxJfNH9OwzK/t3LlkmGozAse+/BPWJWoPIyU9/2Hhdr3tZp81oODjWL/4AjSV1xyi2XCv6x8bSZBz5v6tKZgdWUDggCgIAALAOAJ0BKjAAMAA+iTqWR6UjoiEuO/5goBEJZwC/e4CKsCvD+IGLL/4Hk1+gP+r7gv8k/pX/A62f7AewB+wAtl7dZLbR1/B/+cxO92GAYBRY3dYCBlv7FFGUdxSwj8XsqWTuk9AR/0kbq4DAOkRygUhOIHhTTg9BAna+QOAnYAD++90iKk0Vzz//GO6e9DI39HxFAMXAs6iHJ7hZ87CGjuL6L9DT7cslzdfHdZ55u5Gs5M2bPJSc/TcaXsaPLpBfcX8E5N/xzGnBAjv7e9pkWjJmWHZ0nGHcb8+s0u//AbFZ8c5C6REWZrrN+4nwclb834smEbSF36SOwFm1VCD97vzgTidhesxm035mKK47BGLsgv27Crk6i2swJHh97D6HUwZnzB34X4d9HxK3Z//11g0A40pedbxlB1CeiQzvIUI00Rkl0sBKcZo+7d9z8FoiqxYVN+6eH/iY//kOOEOXD/y8bH+Zr8fSPd7ISr3uXF4paM3rCrtZf/hmC1UfVwWr1+XITPZxV6leF2ImkYS1c/ZksXwDnSBc99n5nKYCk+BpffGRferD4KZ1OKG/voBcPsrLasYQ5VJdY97cEumT487XhTpn0L3fO3C8vHqf0rXObQ/FoVekzgRFEVRkcibzVcOSbnAdCjCRL+mqH8wLBVbKUAAhHoZnAbvlhFaB62kttUsHZO2sFcAAAA==",
+	"scroll_offset": {
+		"x": -695.124145507813,
+		"y": -267.505249023438
+	},
+	"seed_int": 0,
+	"shortdesc": "",
+	"type": "graph"
+}

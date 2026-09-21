@@ -1,0 +1,234 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Particles_Random",
+      "node_position": {
+        "x": -500,
+        "y": 0
+      },
+      "parameters": {
+        "data_type": 2.0,
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "seed": 0.0
+      },
+      "seed_int": 0,
+      "settings": {
+        "data_type": "vec3",
+        "kind": "random"
+      },
+      "type": "particle_node"
+    },
+    {
+      "name": "uniform_greyscale_2",
+      "node_position": {
+        "x": -200,
+        "y": 0
+      },
+      "parameters": {
+        "color": 1.0
+      },
+      "seed_int": 0,
+      "type": "uniform_greyscale"
+    },
+    {
+      "name": "uniform_greyscale_3",
+      "node_position": {
+        "x": 100,
+        "y": 0
+      },
+      "parameters": {
+        "color": -1.0
+      },
+      "seed_int": 0,
+      "type": "uniform_greyscale"
+    },
+    {
+      "name": "math_v3",
+      "node_position": {
+        "x": 400,
+        "y": 0
+      },
+      "parameters": {
+        "clamp": false,
+        "d_in1_x": 0.0,
+        "d_in1_y": 0.0,
+        "d_in1_z": 0.0,
+        "d_in2_x": 0.0,
+        "d_in2_y": 0.0,
+        "d_in2_z": 0.0,
+        "op": 2.0
+      },
+      "seed_int": 0,
+      "type": "math_v3"
+    },
+    {
+      "name": "Speed",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_parameter",
+        "id": "velocity",
+        "data_type": "float",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": -500,
+        "y": 180
+      }
+    },
+    {
+      "name": "Scale",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_parameter",
+        "id": "particle_scale",
+        "data_type": "vec3",
+        "label": "particle_scale"
+      },
+      "node_position": {
+        "x": -200,
+        "y": 180
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "velocity",
+            "name": "velocity",
+            "type": "vec3"
+          },
+          {
+            "id": "initial_velocity",
+            "name": "initial_velocity",
+            "type": "vec3"
+          },
+          {
+            "id": "direction",
+            "name": "direction",
+            "type": "vec3"
+          },
+          {
+            "id": "scale",
+            "name": "scale",
+            "type": "vec3"
+          },
+          {
+            "id": "initial_scale",
+            "name": "initial_scale",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 850,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from_port": 0,
+      "to_port": 3,
+      "to": "Particles_Random",
+      "from": "uniform_greyscale_3"
+    },
+    {
+      "from_port": 0,
+      "to_port": 4,
+      "to": "Particles_Random",
+      "from": "uniform_greyscale_2"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "math_v3",
+      "from": "Particles_Random"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "math_v3",
+      "from": "Speed"
+    },
+    {
+      "from_port": 0,
+      "to_port": 0,
+      "to": "Output",
+      "from": "math_v3"
+    },
+    {
+      "from_port": 0,
+      "to_port": 1,
+      "to": "Output",
+      "from": "math_v3"
+    },
+    {
+      "from_port": 0,
+      "to_port": 2,
+      "to": "Output",
+      "from": "Particles_Random"
+    },
+    {
+      "from_port": 0,
+      "to_port": 3,
+      "to": "Output",
+      "from": "Scale"
+    },
+    {
+      "from_port": 0,
+      "to_port": 4,
+      "to": "Output",
+      "from": "Scale"
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "initialize",
+    "definition": {
+      "name": "Initialize Particle",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [
+        {
+          "id": "velocity",
+          "name": "velocity",
+          "type": "float",
+          "default": 10.0
+        },
+        {
+          "id": "particle_scale",
+          "name": "particle_scale",
+          "type": "vec3",
+          "default": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "reads": [],
+      "writes": [
+        "velocity",
+        "initial_velocity",
+        "direction",
+        "scale",
+        "initial_scale"
+      ],
+      "revision": 1
+    }
+  }
+}
