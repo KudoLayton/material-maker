@@ -55,6 +55,7 @@ const THEMES = ["Default Dark", "Default Light", "Classic"]
 
 const MENU : Array[Dictionary] = [
 	{ menu="File/New Particle Shader", command="new_particle_shader" },
+	{ menu="File/New Modular GPU Particles", command="new_modular_particles", not_in_ports=["HTML5"] },
 	{ menu="File/New material", command="new_material", shortcut="Control+N" },
 	{ menu="File/New paint project (Experimental)", command="new_paint_project", shortcut="Control+Shift+N", not_in_ports=["HTML5"] },
 	{ menu="File/Load", command="load_project", shortcut="Control+O" },
@@ -206,7 +207,7 @@ func _ready() -> void:
 
 	var args : PackedStringArray = OS.get_cmdline_args()
 	for a in args:
-		if a.get_extension().to_lower() in [ "ptex", "mmpp" ]:
+		if a.get_extension().to_lower() in [ "ptex", "mpfx", "mmpp" ]:
 			do_load_project(get_file_absolute_path(a))
 		elif a.get_extension().to_lower() in [ "obj", "glb", "gltf", "fbx" ]:
 			var mesh_filename : String = get_file_absolute_path(a)
@@ -739,6 +740,13 @@ func new_graph_panel() -> GraphEdit:
 	projects_panel.get_projects().current_tab = graph_edit.get_index()
 	return graph_edit
 
+func new_modular_particles():
+	var panel = load("res://material_maker/panels/modular_particles/editor.gd").new()
+	projects_panel.get_projects().add_tab(panel)
+	projects_panel.get_projects().current_tab = panel.get_index()
+	panel.update_title()
+	return panel
+
 func new_particle_shader():
 	var graph = new_graph_panel()
 	await graph.new_material({"nodes": [
@@ -782,6 +790,7 @@ func load_project() -> void:
 		dialog.access = FileDialog.ACCESS_FILESYSTEM
 		dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
 		dialog.add_filter("*.ptex;Procedural Textures File")
+		dialog.add_filter("*.mpfx;Modular GPU Particle Effect")
 		dialog.add_filter("*.mmpp;Model Painting File")
 		dialog.current_dir = mm_globals.config.get_value("path", "project", mm_globals.get_home_directory())
 		var files = await dialog.select_files()
@@ -813,6 +822,10 @@ func do_load_projects(filenames) -> void:
 func do_load_project(file_name : String) -> bool:
 	var status : bool = false
 	match file_name.get_extension():
+		"mpfx":
+			var panel = new_modular_particles()
+			status = await panel.load_project(file_name)
+			if not status: projects_panel.get_projects().do_close_tab(panel.get_index())
 		"ptex":
 			status = await do_load_material(file_name, false)
 			hierarchy.update_from_graph_edit(get_current_graph_edit())
@@ -1366,7 +1379,7 @@ func _on_Projects_tab_changed(_tab) -> void:
 		else:
 			if new_tab.has_method("get_graph_edit"):
 				new_graph_edit = new_tab.get_graph_edit()
-			set_current_mode("paint")
+			set_current_mode("material" if new_tab.has_method("get_project_type") and new_tab.get_project_type() == "modular_particles" else "paint")
 		current_tab = new_tab
 		if new_graph_edit != null:
 			if ! new_graph_edit.is_connected("graph_changed", self.update_preview):
@@ -1494,6 +1507,8 @@ func on_files_dropped(files : PackedStringArray) -> void:
 			continue
 		f = file.get_path_absolute()
 		match f.get_extension().to_lower():
+			"mpfx":
+				await do_load_project(f)
 			"ptex":
 				var status : bool = await do_load_material(f)
 				if status:

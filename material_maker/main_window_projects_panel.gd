@@ -69,7 +69,8 @@ func _on_projects_no_more_tabs():
 func _on_projects_tab_changed(tab : int):
 	mm_globals.main_window._on_Projects_tab_changed(tab)
 
-	if mm_globals.main_window.current_mode == "paint":
+	var active_project = %Projects.get_current_tab_control()
+	if mm_globals.main_window.current_mode == "paint" or (active_project.has_method("get_project_type") and active_project.get_project_type() == "modular_particles"):
 		%PreviewsMenu.hide()
 		preview_2d_background.hide()
 		preview_3d_background.hide()
