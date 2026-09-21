@@ -16,6 +16,8 @@ var current_module := ""
 var stage_choice: OptionButton
 var stack: ItemList
 var module_choice: OptionButton
+var rename_button: Button
+var rename_dialog: ConfirmationDialog
 var attribute_choice: OptionButton
 var attributes_tree: Tree
 var input_box: VBoxContainer
@@ -63,6 +65,9 @@ func _ready() -> void:
 		load_selected())
 	stack = ItemList.new()
 	stack.custom_minimum_size.y = 160
+	stack.focus_mode = Control.FOCUS_ALL
+	stack.tooltip_text = "Select a module and press F2 to rename it."
+	stack.gui_input.connect(stack_input)
 	left.add_child(stack)
 	stack.item_selected.connect(func(index):
 		capture_graph()
@@ -77,6 +82,8 @@ func _ready() -> void:
 	left.add_child(actions)
 	button(actions,"On/Off",toggle_module)
 	button(actions,"Remove",remove_module)
+	rename_button = button(actions,"Rename",show_rename_dialog)
+	rename_button.tooltip_text = "Rename the shared module definition (F2 in the stack)."
 	module_choice = OptionButton.new()
 	left.add_child(module_choice)
 	actions = HBoxContainer.new()
@@ -179,6 +186,7 @@ func all_attributes() -> Array:
 
 func refresh_lists() -> void:
 	if stack == null: return
+	update_rename_button()
 	stack.clear()
 	for instance in document.stages[stage]:
 		stack.add_item(("" if instance.get("enabled",true) else "[off] ") + str(document.modules.get(instance.module,{}).get("name",instance.module)))
@@ -205,6 +213,7 @@ func refresh_lists() -> void:
 func load_selected() -> void:
 	if _loading: return
 	_loading = true
+	update_rename_button()
 	current_module = ""
 	for child in input_box.get_children(): child.queue_free()
 	if selected >= 0 and selected < document.stages[stage].size():
@@ -231,6 +240,7 @@ func load_selected() -> void:
 	await get_tree().process_frame
 	fit_graph()
 	_loading = false
+	update_rename_button()
 	schedule_preview()
 
 func fit_graph() -> void:
@@ -292,6 +302,74 @@ func new_module() -> void:
 	document.stages[stage].append({"id":Document.uid(),"module":id,"parameters":{},"enabled":true})
 	selected = document.stages[stage].size()-1
 	changed(before,true)
+
+func selected_module_id() -> String:
+	if _loading or selected < 0 or selected >= document.stages[stage].size(): return ""
+	var id: String = document.stages[stage][selected].module
+	return id if document.modules.has(id) and id == current_module else ""
+
+func update_rename_button() -> void:
+	if rename_button != null: rename_button.disabled = selected_module_id().is_empty()
+
+func stack_input(event: InputEvent) -> void:
+	# Do not take F2 from graph nodes, text inputs, dialogs or inactive tabs.
+	if not is_visible_in_tree() or not stack.has_focus() or selected_module_id().is_empty(): return
+	if event is InputEventKey and event.pressed and not event.echo and event.get_keycode_with_modifiers() == KEY_F2:
+		stack.accept_event()
+		show_rename_dialog()
+
+func show_rename_dialog() -> void:
+	var id := selected_module_id()
+	if id.is_empty() or not is_visible_in_tree(): return
+	if is_instance_valid(rename_dialog): return
+	var dialog := ConfirmationDialog.new()
+	rename_dialog = dialog
+	dialog.name = "RenameModuleDialog"
+	dialog.title = "Rename Module"
+	dialog.ok_button_text = "Rename"
+	dialog.dialog_hide_on_ok = false
+	var form := VBoxContainer.new()
+	form.name = "Form"
+	dialog.add_child(form)
+	var info := Label.new()
+	info.text = "All instances of this module in this effect share the name."
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size.x = 420
+	form.add_child(info)
+	var input := LineEdit.new()
+	input.name = "Name"
+	input.text = document.modules[id].name
+	form.add_child(input)
+	var warning := Label.new()
+	warning.text = "Name cannot be empty."
+	warning.visible = false
+	form.add_child(warning)
+	input.text_changed.connect(func(text: String):
+		var empty := text.strip_edges().is_empty()
+		dialog.get_ok_button().disabled = empty
+		warning.visible = empty)
+	dialog.get_ok_button().disabled = input.text.strip_edges().is_empty()
+	dialog.register_text_enter(input)
+	dialog.confirmed.connect(func():
+		if rename_module(id,input.text): dialog.queue_free())
+	dialog.canceled.connect(dialog.queue_free)
+	add_child(dialog)
+	dialog.popup_centered(Vector2i(460,150))
+	input.grab_focus()
+	input.select_all()
+
+func rename_module(id: String, new_name: String) -> bool:
+	var label := new_name.strip_edges()
+	if label.is_empty() or not document.modules.has(id): return false
+	if document.modules[id].name == label: return true
+	capture_graph()
+	var before := document.duplicate(true)
+	document.modules[id].name = label
+	undoredo.record(before,document)
+	need_save = true
+	refresh_lists()
+	# Display metadata only: do not rebuild the graph or restart the GPU preview.
+	return true
 
 func move_module(direction: int) -> void:
 	if selected < 0 or selected+direction < 0 or selected+direction >= document.stages[stage].size(): return
