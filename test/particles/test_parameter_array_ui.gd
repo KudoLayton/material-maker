@@ -83,5 +83,5 @@ func run():
 	print("PARTICLE_PARAMETER_ARRAY_UI: failures=" + str(failures))
 	mm_globals.set_config("confirm_quit", false)
 	mm_globals.set_config("confirm_close_project", false)
-	window.quit()
+	await window.quit()
 	get_tree().quit(0 if failures.is_empty() else 1)
