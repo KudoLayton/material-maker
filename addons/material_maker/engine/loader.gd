@@ -280,7 +280,9 @@ func create_gen(data : Dictionary, fix : bool = true) -> MMGenBase:
 		portal = MMGenPortal,
 	}
 	var generator = null
-	if data.get("type") == "particle_node":
+	if data.get("type") == "modular_particle":
+		generator = load("res://material_maker/panels/modular_particles/generator.gd").new()
+	elif data.get("type") == "particle_node":
 		generator = load("res://addons/material_maker/particles/gen_particle.gd").new()
 	elif data.get("type") == "particle_export":
 		generator = load("res://addons/material_maker/particles/gen_particle_material.gd").new()
