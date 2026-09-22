@@ -123,6 +123,7 @@ static func insert(document: Dictionary, data: Dictionary, stage: String, after:
 	if not merged.ok: return merged
 	var module: Dictionary = merged.document.modules[merged.module_id]
 	if stage not in module.stages: return failure("Module not allowed in " + stage)
+	module["catalog_snapshot"] = true
 	var stack: Array = merged.document.stages[stage]
 	var index := mini(after+1,stack.size()) if after >= 0 else stack.size()
 	stack.insert(index,{"id":Document.uid(),"module":merged.module_id,"parameters":{},"enabled":true})

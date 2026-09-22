@@ -1,5 +1,6 @@
 extends RefCounted
 const Document = preload("res://addons/material_maker/particles/modular/document.gd")
+const ModuleLibrary = preload("res://addons/material_maker/particles/modular/module_library.gd")
 
 static func binding(name: String, kind: String, id: String, type: String, position := Vector2.ZERO) -> Dictionary:
 	return {"name":name,"type":"modular_particle","parameters":{},"settings":{"kind":kind,"id":id,"data_type":type,"label":id},"node_position":{"x":position.x,"y":position.y}}
@@ -29,6 +30,24 @@ static func defaults() -> Dictionary:
 	])
 	integrate.mm_graph.connections = [connect_nodes("Velocity","Multiply",0),connect_nodes("Delta","Multiply",1),connect_nodes("Position","Add",0),connect_nodes("Multiply","Add",1),connect_nodes("Add","Output",0)]
 	return {"initialize_velocity":initialize,"integrate_velocity":integrate}
+
+static func catalog_entries() -> Array:
+	var entries := ModuleLibrary.catalog()
+	for id in defaults():
+		var module: Dictionary = defaults()[id]
+		entries.append({"id":"legacy_"+id,"name":module.name,"category":"Legacy","stages":module.stages,"description":"Original two-module workflow. Adds an independent editable copy.","inputs_help":"Velocity: m/s." if id == "initialize_velocity" else "Uses current Position, Velocity and Context.delta.","order":"Do not combine Integrate Velocity with Solve Motion unless double movement is intentional.","tags":"legacy original 기존"})
+	return entries
+
+static func catalog_payload(id: String) -> Dictionary:
+	if id.begins_with("legacy_"):
+		var key := id.trim_prefix("legacy_")
+		if not defaults().has(key): return {}
+		var module: Dictionary = defaults()[key]
+		var graph: Dictionary = module.mm_graph
+		module.erase("mm_graph")
+		graph.particle_module = {"version":1,"id":key,"definition":module}
+		return graph
+	return ModuleLibrary.payload(id)
 
 static func new_document() -> Dictionary:
 	var data := Document.create()

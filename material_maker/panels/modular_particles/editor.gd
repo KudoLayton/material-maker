@@ -20,6 +20,9 @@ var stack: ItemList
 var module_choice: OptionButton
 var rename_button: Button
 var rename_dialog: ConfirmationDialog
+var library_dialog: ConfirmationDialog
+var library_button: Button
+var compile_warnings: Array = []
 var attribute_choice: OptionButton
 var attributes_tree: Tree
 var binding_details: RichTextLabel
@@ -37,6 +40,7 @@ var last_compiled: MMParticleEffect
 var _loading := false
 var _building := false
 var _revision := 0
+var _display_graph_baseline: Dictionary = {}
 
 func _ready() -> void:
 	undoredo.owner_ref = weakref(self)
@@ -102,6 +106,9 @@ func _ready() -> void:
 	button(actions,"Add",func():
 		if module_choice.item_count: add_module(str(module_choice.get_item_metadata(module_choice.selected))))
 	button(actions,"New Module",new_module)
+	library_button = button(left,"Browse Library…",show_library)
+	library_button.name = "BrowseLibrary"
+	library_button.tooltip_text = "Search basic modules. Adds an independent graph copy and required Attributes, not prerequisite modules."
 	actions = HBoxContainer.new()
 	left.add_child(actions)
 	button(actions,"Import .mmg",import_module)
@@ -306,6 +313,7 @@ func load_selected() -> void:
 	_loading = true
 	update_rename_button()
 	current_module = ""
+	_display_graph_baseline = {}
 	for child in input_box.get_children(): child.queue_free()
 	if selected >= 0 and selected < document.stages[stage].size():
 		var instance: Dictionary = document.stages[stage][selected]
@@ -345,6 +353,11 @@ func load_selected() -> void:
 	# Fit the final qualified labels, not the temporary cached/ID fallback sizes.
 	await get_tree().process_frame
 	fit_graph()
+	if not current_module.is_empty() and (document.modules[current_module].has("standard_module") or document.modules[current_module].get("catalog_snapshot",false)):
+		# UI default controls and loader metadata are not user edits. Keep the
+		# authored snapshot intact until the graph actually changes; otherwise
+		# merely opening a catalog copy creates a second Undo transaction.
+		_display_graph_baseline = graph_edit.top_generator.serialize().duplicate(true)
 	_loading = false
 	update_rename_button()
 	schedule_preview()
@@ -377,6 +390,9 @@ func capture_graph() -> void:
 	if _loading or current_module.is_empty() or graph_edit.top_generator == null: return
 	var before := document.duplicate(true)
 	var graph: Dictionary = graph_edit.top_generator.serialize()
+	if not _display_graph_baseline.is_empty():
+		if graph == _display_graph_baseline: return
+		_display_graph_baseline = graph.duplicate(true)
 	document.modules[current_module].mm_graph = graph
 	document.modules[current_module].merge(Library.contracts(graph),true)
 	undoredo.record(before,document)
@@ -401,6 +417,30 @@ func add_module(id: String) -> void:
 	selected = document.stages[stage].size()-1
 	changed(before,true)
 
+func show_library() -> void:
+	if _loading or not is_visible_in_tree() or is_instance_valid(library_dialog): return
+	var dialog := preload("library_dialog.gd").new()
+	library_dialog = dialog
+	add_child(dialog)
+	dialog.setup(self)
+	dialog.popup_centered(Vector2i(920,610))
+	dialog.search.grab_focus()
+
+func add_library_module(catalog_id: String, expected_stage: String = "") -> bool:
+	if _loading or (not expected_stage.is_empty() and expected_stage != stage): return false
+	var payload := Library.catalog_payload(catalog_id)
+	var inserted := ModuleLibrary.insert(document,payload,stage,selected)
+	if not inserted.ok:
+		status.text = inserted.error
+		return false
+	capture_graph()
+	var before := document.duplicate(true)
+	inserted = ModuleLibrary.insert(document,payload,stage,selected)
+	document = inserted.document
+	selected = inserted.selected
+	changed(before,true)
+	return true
+
 func new_module() -> void:
 	capture_graph()
 	var before := document.duplicate(true)
@@ -417,6 +457,7 @@ func selected_module_id() -> String:
 
 func update_rename_button() -> void:
 	if rename_button != null: rename_button.disabled = selected_module_id().is_empty()
+	if library_button != null: library_button.disabled = _loading
 
 func stack_input(event: InputEvent) -> void:
 	# Do not take F2 from graph nodes, text inputs, dialogs or inactive tabs.
@@ -700,6 +741,11 @@ static func parameter_layout(effect: MMParticleEffect) -> Array:
 	# shader text. Defaults/names are not layout, so live value edits stay cheap.
 	return effect.parameters.map(func(parameter): return [parameter.id,parameter.type,parameter.offset])
 
+func ready_text(effect: MMParticleEffect) -> String:
+	var text := "Ready — Godot 4.7.2 / GPU / " + str(effect.component_count) + " components"
+	for warning in compile_warnings: text += "\nWarning / %s / %s: %s" % [warning.stage,warning.module,warning.message]
+	return text
+
 func refresh_preview() -> void:
 	if _building:
 		refresh_timer.start()
@@ -709,6 +755,7 @@ func refresh_preview() -> void:
 	var result := await compile_document()
 	_building = false
 	if revision != _revision or not is_inside_tree(): return
+	compile_warnings = result.get("warnings",[])
 	if not result.errors.is_empty():
 		var messages := PackedStringArray()
 		for error in result.errors: messages.append("%s / %s / %s: %s" % [error.stage,error.module,error.node,error.message])
@@ -717,7 +764,7 @@ func refresh_preview() -> void:
 	last_compiled = result.effect
 	if is_instance_valid(preview) and preview.effect.source_hash == result.effect.source_hash and parameter_layout(preview.effect) == parameter_layout(result.effect) and preview.effect.emitter == result.effect.emitter and preview.effect.render_settings == result.effect.render_settings and preview.capacity == int(document.get("preview_capacity",4096)):
 		for parameter in result.effect.parameters: preview.set_parameter(parameter.id,parameter.default)
-		status.text = "Ready — Godot 4.7.2 / GPU / " + str(result.effect.component_count) + " components"
+		status.text = ready_text(result.effect)
 		return
 	if is_instance_valid(candidate): candidate.queue_free()
 	candidate = Particles.new()
@@ -736,7 +783,7 @@ func refresh_preview() -> void:
 			preview = pending
 			candidate = null
 			preview.show()
-			status.text = "Ready — Godot 4.7.2 / GPU / " + str(result.effect.component_count) + " components")
+			status.text = ready_text(result.effect))
 	scene.add_child(pending)
 
 func save() -> bool:
