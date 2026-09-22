@@ -31,6 +31,27 @@ func run() -> void:
 	check(is_instance_valid(editor.preview) and editor.preview.ready_for_simulation,"new document GPU preview")
 	check(editor.stack.get_item_text(0) == "Initialize Particle" and editor.stack.get_item_text(1) == "Add Velocity in Cone","new stack UI labels")
 	check(editor.graph_edit.top_generator.get_node_or_null("Lifetime") != null,"initialization graph editable in existing canvas")
+	var output_node
+	for node in editor.graph_edit.get_children():
+		if node is MMGraphNodeGeneric and node.generator != null and node.generator.get("settings") is Dictionary and node.generator.settings.get("kind") == "module_output": output_node = node
+	check(output_node != null and editor.graph_edit.zoom>=0.5 and output_node.get_titlebar_hbox().modulate.a>0.99,"large catalog graph starts with readable labels and enabled controls")
+	if output_node != null:
+		var output_position: Vector2 = output_node.position_offset*editor.graph_edit.zoom-editor.graph_edit.scroll_offset
+		check(Rect2(Vector2.ZERO,editor.graph_edit.size).has_point(output_position),"Module Output starts inside viewport")
+	get_tree().root.get_texture().get_image().save_png("res://standard-initial-editor.png")
+	if output_node != null:
+		# Reproduce the queued-redraw interval during graph replacement without
+		# destroying this fixture's actual authoring model.
+		var actual_generator = output_node.generator
+		var retired = preload("res://material_maker/panels/modular_particles/generator.gd").new()
+		output_node.generator = retired
+		retired.free()
+		output_node.queue_redraw()
+		await S.frames(get_tree(),3)
+		check(not is_instance_valid(output_node.generator),"queued canvas redraw tolerates retired generator")
+		output_node.generator = actual_generator
+		output_node.queue_redraw()
+		await S.frames(get_tree(),2)
 	editor.viewport.get_texture().get_image().save_png("res://new-standard-preview.png")
 	for name in ["basic_fountain","box_turbulence","sphere_burst"]:
 		var path: String = "res://material_maker/examples/modular_particles/"+name+".mpfx"

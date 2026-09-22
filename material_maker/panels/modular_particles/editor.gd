@@ -371,8 +371,19 @@ func fit_graph() -> void:
 			bounds = bounds.merge(rect) if started else rect
 			started = true
 	if started:
-		graph_edit.zoom = clampf(minf((graph_edit.size.x-60.0)/maxf(1.0,bounds.size.x),(graph_edit.size.y-60.0)/maxf(1.0,bounds.size.y)),graph_edit.zoom_min,1.0)
-		graph_edit.center_view()
+		var fitted := clampf(minf((graph_edit.size.x-60.0)/maxf(1.0,bounds.size.x),(graph_edit.size.y-60.0)/maxf(1.0,bounds.size.y)),graph_edit.zoom_min,1.0)
+		var catalog: bool = not current_module.is_empty() and (document.modules[current_module].has("standard_module") or document.modules[current_module].get("catalog_snapshot",false))
+		# MM hides labels and disables controls below zoom 0.3. Large catalog
+		# graphs should open on their Write contract, not as unreadable wires.
+		if catalog and fitted < 0.5:
+			for node in graph_edit.get_children():
+				if node is MMGraphNodeGeneric and node.generator != null and node.generator.get("settings") is Dictionary and node.generator.settings.get("kind") == "module_output":
+					graph_edit.zoom = clampf(minf((graph_edit.size.x-56)/maxf(node.size.x,1),(graph_edit.size.y-70)/maxf(node.size.y,1)),0.5,1.0)
+					graph_edit.scroll_offset = node.position_offset*graph_edit.zoom-Vector2(28,50)
+					return
+		graph_edit.zoom = fitted
+		if catalog: graph_edit.scroll_offset = bounds.get_center()*graph_edit.zoom-0.5*graph_edit.size
+		else: graph_edit.center_view()
 
 func watch(generator: Node) -> void:
 	if generator is MMGenBase and not generator.parameter_changed.is_connected(generator_changed): generator.parameter_changed.connect(generator_changed)

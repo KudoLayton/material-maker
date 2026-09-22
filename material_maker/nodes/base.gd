@@ -172,6 +172,9 @@ func on_theme_changed() -> void:
 
 
 func _draw_port(slot_index: int, pos: Vector2i, left: bool, color: Color):
+	# Graph replacement frees the model before queued canvas nodes disappear.
+	# A redraw in that interval must not dereference the old generator.
+	if not is_instance_valid(generator): return
 	if left:
 		var inputs = generator.get_input_defs()
 		if slot_index < inputs.size() and inputs[slot_index].has("group_size") and inputs[slot_index].group_size > 1:
@@ -190,6 +193,7 @@ func _draw_port(slot_index: int, pos: Vector2i, left: bool, color: Color):
 
 
 func _draw() -> void:
+	if not is_instance_valid(generator): return
 	var color : Color = get_theme_color("title_color")
 	@warning_ignore("narrowing_conversion")
 	var inputs = generator.get_input_defs()
