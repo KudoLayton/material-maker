@@ -28,6 +28,10 @@ static func run(editor, tree: SceneTree, check: Callable, screenshot_path: Strin
 	var selection: int = editor.selected
 	var original_stage: String = editor.stage
 	var setup: Dictionary = original.duplicate(true)
+	# Keep authoring definitions for persistence checks, but simulate only the
+	# fixtures here. Otherwise removing a Spawn input can legitimately shift
+	# the uniform offsets used by the original effect's Update modules.
+	setup.stages = {"spawn":[],"update":[]}
 	var module := Library.definition("Input deletion test",["spawn","update"],[{"id":"velocity","name":"Velocity","type":"vec3"}])
 	module.inputs = [{"id":KEEP,"name":"Keep","type":"float","default":1.0},
 		{"id":INPUT,"name":"Delete Me","type":"vec3","default":[1.0,2.0,3.0]}]

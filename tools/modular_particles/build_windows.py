@@ -65,6 +65,7 @@ def prepare(project, settings_name):
     validation.mkdir()
     shutil.copy2(ROOT / 'test/modular_particles/test_release.gd', validation / 'release_smoke.gd')
     shutil.copy2(ROOT / 'test/modular_particles/rename_checks.gd', validation / 'rename_checks.gd')
+    shutil.copy2(ROOT / 'test/modular_particles/input_delete_checks.gd', validation / 'input_delete_checks.gd')
     (validation / 'release_smoke.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://validation/release_smoke.gd" id="1"]\n[node name="ReleaseSmoke" type="Node"]\nscript = ExtResource("1")\n', encoding='utf-8')
 
 
@@ -149,6 +150,12 @@ EXE만 복사하지 말고 MaterialMaker 폴더 전체를 유지하세요.
 현재 효과에서 같은 모듈 정의를 사용하는 모든 인스턴스에 반영됩니다.
 Undo/Redo를 지원하며, Save로 .mpfx 문서에 저장하세요.
 Library .mmg 파일과 다른 효과는 자동으로 변경하지 않습니다.
+
+Module Input 삭제: 입력 행의 Delete 버튼을 누르세요.
+Read 노드가 참조 중이면 삭제하지 않고 상태 영역에 참조 위치를 안내합니다.
+연결되지 않은 Read와 중첩 그래프 안의 Read도 먼저 지워야 합니다.
+같은 모듈의 모든 인스턴스 입력값을 함께 정리하며 Undo/Redo로 복구합니다.
+삭제 후 Save로 .mpfx 문서에 저장하세요.
 
 Godot 예제: GodotExample/project.godot을 Godot 4.7.2에서 열고 F5로 실행하세요.
 기존 프로젝트: GodotAddon.zip을 프로젝트 루트에 풀거나 Export 결과의

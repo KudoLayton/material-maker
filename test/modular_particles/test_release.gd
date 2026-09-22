@@ -2,6 +2,7 @@ extends Node
 ## Shipped as an optional validation scene; normal startup remains parse_args.tscn.
 const Exporter = preload("res://addons/material_maker/particles/modular/exporter.gd")
 const RenameChecks = preload("rename_checks.gd")
+const DeleteChecks = preload("input_delete_checks.gd")
 var failures := 0
 var checks := 0
 func check(value: bool, message: String) -> void:
@@ -47,12 +48,23 @@ func run() -> void:
 		check(is_instance_valid(editor.preview) and editor.preview.ready_for_simulation,"packaged GPU preview: " + editor.status.text)
 		check(editor.graph_edit.get_children().any(func(n): return n is GraphNode),"packaged graph canvas")
 		var renamed: Dictionary = await RenameChecks.run(editor,get_tree(),check,output.path_join("rename-dialog.png"))
+		var deleted: Dictionary = await DeleteChecks.run(editor,get_tree(),check,output.path_join("input-delete.png"))
 		editor.save_path = output.path_join("roundtrip.mpfx")
 		check(await editor.save(),"packaged authoring save")
 		check(await window.do_load_project(editor.save_path),"packaged authoring reopen")
 		editor = window.get_current_project()
 		await frames(40)
 		check(not renamed.is_empty() and editor.document.modules[renamed.id].name == renamed.name,"packaged rename persists after reopening mpfx")
+		check(not editor.document.modules[deleted.module_id].inputs.any(func(input): return input.id == deleted.input_id),"packaged input deletion persists after reopening mpfx")
+		var clean := true
+		for stage in ["spawn","update"]:
+			for instance in editor.document.stages[stage]:
+				if instance.module == deleted.module_id and instance.parameters.has(deleted.input_id): clean = false
+		check(clean,"packaged deleted overrides stay absent after reopen")
+		var reopened: Dictionary = await editor.compile_document()
+		check(reopened.errors.is_empty(),"packaged deleted-input effect still compiles")
+		# Test-only no-op modules must not become part of the delivered Godot demo.
+		await DeleteChecks.restore(editor,deleted,get_tree())
 		var compiled: Dictionary = await editor.compile_document()
 		check(compiled.errors.is_empty(),"packaged Curve/FBM/typed graph compiler: " + str(compiled.errors))
 		if compiled.effect != null:
