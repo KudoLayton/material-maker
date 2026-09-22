@@ -93,7 +93,7 @@ python tools/modular_particles/run_app_tests.py --godot $GODOT --test legacy:tes
 
 ## 추가 요청: 모듈 Rename / F2 포함 빌드
 
-**최신 배포: `build/modular-release-20260922-084010/`**. 기존 배포 폴더와 설치본은 유지했습니다.
+Rename 배포: `build/modular-release-20260922-084010/` (입력 삭제 포함 최신 빌드는 아래 참조). 기존 배포 폴더와 설치본은 유지했습니다.
 
 - UI: 선택된 공유 모듈 정의를 Rename 버튼 또는 스택 포커스 F2로 변경. 이름 선택/포커스, Enter와 확인 버튼, 공백 제거, 빈 이름 거부, 취소, Undo/Redo 지원. `.mpfx` 및 `.mmg`에 유지됩니다. 외부 Library 파일과 다른 효과를 자동 수정하지 않습니다.
 - `test_module_rename`: **38 checks** 통과. 동일 정의의 복수 인스턴스/선택 목록 갱신, 안정 ID·입력·그래프·stage 보존, shader hash 불변, 프리뷰 재시작 없음, 반복/수정키 및 스택 밖 F2 무시, 저장·재열기와 `.mmg` roundtrip/reimport 포함.
@@ -108,4 +108,27 @@ python tools/modular_particles/run_app_tests.py --godot $GODOT --test legacy:tes
 - 기존 편집기/그래프 회귀: `%TEMP%/mm-modular-app-_y848jsr/run-2.log`, `run-3.log`.
 - 실제 배포 EXE: 최신 배포의 `verification/app-process.log`, `verification/app/release-smoke.json`.
 - 실제 Rename 창/이름 반영 화면: `verification/app/rename-dialog.png`, `material-maker.png`.
-- 독립 Godot 검증: `%TEMP%/mm-modular-export-fu2p2kj6/`; 로그 사본은 최신 배포의 `verification/godot/`.
+- 독립 Godot 검증: `%TEMP%/mm-modular-export-fu2p2kj6/`; 로그 사본은 Rename 배포의 `verification/godot/`.
+
+## 추가 요청: Module Input 삭제
+
+**최신 배포: `build/modular-release-20260922-092746/`**. 이전 EXE/사용자 문서는 그대로 유지했습니다. private 런타임 submodule은 `41a62fee`로 유지하며 이번 변경은 Material Maker 편집기와 검사/문서에만 있습니다.
+
+- 입력 행에 **Delete** 버튼 추가. 연결/비연결/중첩 Read를 현재 그래프에서 찾아 사용 중이면 삭제를 거부하고 참조 경로를 안내합니다. 아직 저장하지 않은 Read도 검사합니다.
+- 같은 모듈의 Spawn/Update 인스턴스에서 해당 입력값만 정리합니다. 비활성 인스턴스를 포함하고 다른 모듈/입력은 보존합니다. Undo/Redo로 정의·순서·인스턴스별 값을 복구/재삭제합니다.
+- shader hash가 같아도 입력 버퍼 구성이 달라지면 Preview를 갱신합니다. 일반 숫자 입력 변경은 시뮬레이션을 재생성하지 않습니다.
+- `test_module_input_delete`: **36 checks** 통과. 삭제 버튼, stale/loading callback 보호, 연결/비연결/중첩/typed IR 참조, 공유 값 정리, Undo/Redo, preview layout, `.mpfx` 재열기, `.mmg` 저장/reimport를 검증했습니다.
+- 회귀: 기존 editor **24**, Rename **38**, graph backend **6**, exporter **25** checks 통과. 이번 작업에서 전체 앱 스위트를 재실행했다는 의미는 아닙니다.
+- 실제 Windows Release: **MODULAR_RELEASE PASS checks=82 editor=false**. 동일 삭제 검사를 실제 EXE에서 실행하고 저장·재열기·독립 효과 내보내기까지 확인했습니다. 테스트용 모듈은 최종 Godot 예제를 만들기 전에 제거합니다.
+- 해당 GodotExample의 플러그인 활성화 import, 독립 실행 **5 checks**, Windows export 후 실제 실행 **5 checks** 통과. 독립 런타임은 ERROR/RID leak 없이 종료했습니다.
+- 전체 Material Maker 로그에는 기존 종료 누수 경고와 Windows `Unable to open clipboard` 로그가 남습니다. 이번 삭제 기능 검사는 클립보드 내용을 사용하지 않으며, 이를 클립보드 기능의 정상 검증으로 주장하지 않습니다.
+
+최초 패키지 검사는 입력 삭제가 기존 mmtest Update 모듈의 uniform offset을 바꿔 shader hash도 바뀌는 정상 상황을 잘못 가정한 테스트가 실패했습니다. 같은 hash/다른 layout 검사는 독립된 무참조 테스트 모듈로 격리하고, assertion을 유지한 채 소스/새 패키지 모두 재검증했습니다.
+
+증거:
+
+- 입력 삭제/그래프/exporter: `%TEMP%/mm-modular-app-zi8qnwem/run-1.log` ~ `run-3.log`.
+- 기존 editor/Rename: `%TEMP%/mm-modular-app-2shub7o4/run-2.log`, `run-3.log`.
+- 실제 EXE: 최신 배포의 `verification/app-process.log`, `verification/app/release-smoke.json`.
+- UI 화면: `verification/app/input-delete.png`, `material-maker.png`.
+- 독립 Godot: `%TEMP%/mm-modular-export-noqyfo8n/`; 로그 사본은 최신 배포의 `verification/godot/`.

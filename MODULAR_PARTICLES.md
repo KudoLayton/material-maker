@@ -33,6 +33,14 @@ git submodule update --init --recursive
 - Save 후 `.mpfx`를 다시 열어도 유지됩니다. `Save .mmg`에도 새 이름이 들어갑니다. 기존 Library 파일, 파일명, 다른 효과는 자동 변경하지 않습니다.
 - 모듈/입력/Attribute ID, 연결과 생성 셰이더는 유지되며 이름 변경만으로 GPU Preview를 재시작하지 않습니다.
 
+### Module Input 삭제
+
+- 모듈을 선택하고 입력 행의 **Delete** 버튼을 누릅니다.
+- 같은 모듈의 그래프에 해당 입력을 읽는 Read 노드가 있으면 삭제하지 않고 아래 상태 영역에 참조 노드 경로를 표시합니다. **연결되지 않은 Read와 중첩 그래프 안의 Read도 먼저 삭제**해야 합니다. 다른 모듈의 같은 ID나 Attribute Read는 삭제를 막지 않습니다.
+- 현재 효과의 공유 모듈 입력 정의와 모든 Spawn/Update 인스턴스의 해당 입력값을 함께 지웁니다. 비활성 인스턴스도 정리하지만 다른 입력이나 다른 모듈은 변경하지 않습니다.
+- **Undo/Redo**로 입력 정의·순서·인스턴스별 값을 함께 복구/재삭제합니다. Save 후 `.mpfx`를 다시 열어도 유지되고 `Save .mmg`에도 반영됩니다. 외부 Library 파일은 자동 수정하지 않습니다.
+- 삭제로 입력 버퍼 구성이 바뀌면 GPU Preview를 갱신합니다. 일반적인 입력값 변경은 기존처럼 시뮬레이션을 재시작하지 않습니다.
+
 기존 설치된 Material Maker 실행 파일은 수정하지 않았습니다. 아래 빌드 도구로 새 실행용 패키지를 만들 수 있습니다. 빌드는 런타임 `.gd` 원문을 보존하여 배포된 MM 실행 파일에서도 효과를 다시 내보낼 수 있게 합니다. 원문이 없는 다른 패키지는 exporter가 거부합니다. 빌드/검증 도구는 선택적 GodotSteam 확장을 **임시 사본에서만** 제외합니다.
 
 ## Windows 포터블 빌드
@@ -123,7 +131,7 @@ python tools/modular_particles/run_tests.py --godot $GODOT --test test_compiler 
 # GPU 검사: gpu_probe, test_shader, test_runtime, test_render, test_performance
 python tools/modular_particles/run_tests.py --godot $GODOT --test test_runtime
 python tools/modular_particles/run_tests.py --godot $GODOT --test test_performance
-python tools/modular_particles/run_app_tests.py --godot $GODOT --test test_module_rename
+python tools/modular_particles/run_app_tests.py --godot $GODOT --test test_module_rename,test_module_input_delete
 python tools/modular_particles/run_app_tests.py --godot $GODOT --test all --keep-going
 # 위 test_export가 생성한 PROJECT/standalone을 지정
 python tools/modular_particles/verify_export.py --godot $GODOT --bundle $BUNDLE --templates $TEMPLATES
