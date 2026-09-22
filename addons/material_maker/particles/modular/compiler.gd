@@ -3,7 +3,9 @@ extends RefCounted
 const Document = preload("document.gd")
 const Effect = preload("res://addons/mm_gpu_particles/effect.gd")
 const Kernel = preload("kernel.gd")
+const StandardValidation = preload("standard_validation.gd")
 var errors: Array[Dictionary] = []
+var warnings: Array[Dictionary] = []
 var attributes: Dictionary = {}
 var parameters: Dictionary = {}
 var nodes: Dictionary = {}
@@ -24,6 +26,7 @@ func compile(document: Dictionary, prepared_graphs: Dictionary = {}) -> Dictiona
 	graph_modules = prepared_graphs
 	graph_functions.clear()
 	errors.clear()
+	warnings.clear()
 	attributes.clear()
 	parameters.clear()
 	stage = ""
@@ -72,6 +75,10 @@ func compile(document: Dictionary, prepared_graphs: Dictionary = {}) -> Dictiona
 	if not Document.valid_value("float", renderer.get("quad_size")) or float(renderer.get("quad_size", 0)) <= 0: fail("Quad size must be positive")
 	var custom: String = str(renderer.get("custom_attribute", "custom"))
 	if not attributes.has(custom) or attributes[custom].type != "vec4": fail("Renderer custom binding requires vec4")
+	if not errors.is_empty(): return result(effect)
+	var diagnostics := StandardValidation.validate(document)
+	errors.append_array(diagnostics.errors)
+	warnings.append_array(diagnostics.warnings)
 	if not errors.is_empty(): return result(effect)
 	effect.emitter = emitter.duplicate(true)
 	effect.render_settings = renderer.duplicate(true)
@@ -128,7 +135,7 @@ func compile(document: Dictionary, prepared_graphs: Dictionary = {}) -> Dictiona
 	return result(effect)
 
 func result(effect: Resource) -> Dictionary:
-	return {"effect":effect if errors.is_empty() else null, "errors":errors.duplicate(true)}
+	return {"effect":effect if errors.is_empty() else null, "errors":errors.duplicate(true), "warnings":warnings.duplicate(true)}
 
 func compile_module(module: Dictionary, instance: Dictionary, effect: Resource) -> String:
 	if not module.get("stages") is Array or stage not in module.stages:
