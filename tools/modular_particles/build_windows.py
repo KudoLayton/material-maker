@@ -67,6 +67,8 @@ def prepare(project, settings_name):
     shutil.copy2(ROOT / 'test/modular_particles/rename_checks.gd', validation / 'rename_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/input_delete_checks.gd', validation / 'input_delete_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/namespace_checks.gd', validation / 'namespace_checks.gd')
+    for helper in ['standard_checks.gd', 'standard_ui_checks.gd']:
+        shutil.copy2(ROOT / 'test/modular_particles' / helper, validation / helper)
     (validation / 'release_smoke.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://validation/release_smoke.gd" id="1"]\n[node name="ReleaseSmoke" type="Node"]\nscript = ExtResource("1")\n', encoding='utf-8')
 
 
@@ -126,6 +128,10 @@ application/modify_resources=false
     if args.docs: shutil.copytree(args.docs, app / 'doc')
     shutil.copy2(ROOT / 'LICENSE.md', app / 'LICENSE.md')
     shutil.copy2(ROOT / 'MODULAR_PARTICLES.md', app / 'MODULAR_PARTICLES.md')
+    shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md', app / 'STANDARD_PARTICLE_MODULES.md')
+    shutil.copytree(ROOT / 'material_maker/panels/modular_particles/standard', app / 'modules/standard_particles', ignore=shutil.ignore_patterns('*.uid'))
+    for example in ['basic_fountain','box_turbulence','sphere_burst']:
+        (app / ('Open ' + example + '.cmd')).write_text('@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0MaterialMaker.exe" --no-splash "%~dp0examples\\modular_particles\\' + example + '.mpfx"\r\n', encoding='ascii')
     (app / 'Open mmtest.cmd').write_text('@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0MaterialMaker.exe" --no-splash "%~dp0examples\\modular_particles\\mmtest.mpfx"\r\n', encoding='ascii')
     smoke = logs / 'app'
     smoke.mkdir()
@@ -134,17 +140,30 @@ application/modify_resources=false
     report = json.loads((smoke / 'release-smoke.json').read_text(encoding='utf-8'))
     if not report['passed'] or report['editor']: raise SystemExit('Release smoke verification did not pass')
     shutil.copytree(smoke / 'godot-example', output / 'GodotExample')
+    shutil.copytree(smoke / 'godot-basic-example', output / 'GodotBasicExample')
+    shutil.copy2(smoke / 'basic-128.mpfx', app / 'examples/modular_particles/basic-128.mpfx')
     addon = output / 'GodotAddon' / 'addons' / 'mm_gpu_particles'
     shutil.copytree(output / 'GodotExample/addons/mm_gpu_particles', addon)
     guide = ROOT / 'GODOT_PARTICLES_PLUGIN.md'
     if guide.exists():
-        for target in [output,output / 'GodotAddon',output / 'GodotExample',app]:
+        for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',app]:
             shutil.copy2(guide,target / guide.name)
+            shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md',target / 'STANDARD_PARTICLE_MODULES.md')
     shutil.make_archive(str(output / 'GodotAddon'), 'zip', output / 'GodotAddon')
     (output / 'START_HERE.txt').write_text('''Modular GPU Particles — Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan
 
-실행: MaterialMaker/Open mmtest.cmd 또는 MaterialMaker/MaterialMaker.exe
+실행: MaterialMaker/Open basic_fountain.cmd 또는 MaterialMaker/MaterialMaker.exe
+기존 mmtest 예제는 MaterialMaker/Open mmtest.cmd로 열 수 있습니다.
 EXE만 복사하지 말고 MaterialMaker 폴더 전체를 유지하세요.
+
+기본 모듈 12종: Browse Library…에서 이름/카테고리/Stage로 검색하세요.
+Add Copy는 선택한 행 다음에 독립 그래프 복사본과 필요한 Attribute를 함께 추가합니다.
+Initialize/Solve 같은 다른 모듈은 자동 추가하지 않습니다. 상태 영역의 순서 진단을 확인하세요.
+Gravity/Curl/Drag → Solve Motion 순서로 배치하며 Color/Scale over Life는 초기값을 사용합니다.
+Curve/Gradient는 모듈 그래프에서, 수식은 Code 입력 우클릭 → Edit text에서 편집합니다.
+예제: basic_fountain, box_turbulence, sphere_burst (각 Open *.cmd 제공)
+상세 기본값/단위/의존성: MaterialMaker/STANDARD_PARTICLE_MODULES.md
+원본 기본 모듈 .mmg: MaterialMaker/modules/standard_particles (필요하면 Import .mmg)
 
 모듈 이름 변경: Spawn/Update 스택에서 모듈 선택 → Rename 버튼 또는 F2
 이름 입력 후 Enter 또는 Rename으로 확인합니다. Cancel로 취소합니다.
@@ -165,7 +184,9 @@ Particle.Custom.Position = 별도의 사용자 Attribute, Context.delta = 시뮬
 Attribute 트리의 Name 열만 편집하며, 선택 설명에서 Renderer/Module Output 상태를 확인하세요.
 긴 이름과 전체 ID는 툴팁으로 확인하고, 왼쪽 패널은 필요하면 스크롤하세요.
 
-Godot 예제: GodotExample/project.godot을 Godot 4.7.2에서 열고 F5로 실행하세요.
+새 기본 모듈 Godot 예제: GodotBasicExample/project.godot (128개 burst)
+기존 mmtest Godot 예제: GodotExample/project.godot
+Godot 4.7.2에서 열고 F5로 실행하세요.
 기존 프로젝트: GodotAddon.zip을 프로젝트 루트에 풀거나 Export 결과의
 addons/mm_gpu_particles 및 effects/modular_particles를 복사하고 particles.tscn을 배치하세요.
 기존 project.godot을 덮어쓰지 마세요. 세부 안내: GODOT_PARTICLES_PLUGIN.md
@@ -178,7 +199,7 @@ addons/mm_gpu_particles 및 effects/modular_particles를 복사하고 particles.
             'exe_sha256':hashlib.sha256((app / 'MaterialMaker.exe').read_bytes()).hexdigest()}
     (output / 'build-info.json').write_text(json.dumps(info,indent=2,ensure_ascii=False), encoding='utf-8')
     (output / 'BUILD_IN_PROGRESS.txt').unlink()
-    print(f'BUILT: {app / "MaterialMaker.exe"}\nGODOT: {output / "GodotExample/project.godot"}\nADDON: {output / "GodotAddon.zip"}', flush=True)
+    print(f'BUILT: {app / "MaterialMaker.exe"}\nGODOT: {output / "GodotExample/project.godot"}\nGODOT BASIC: {output / "GodotBasicExample/project.godot"}\nADDON: {output / "GodotAddon.zip"}', flush=True)
 
 
 if __name__ == '__main__': main()

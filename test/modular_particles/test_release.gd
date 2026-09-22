@@ -4,6 +4,8 @@ const Exporter = preload("res://addons/material_maker/particles/modular/exporter
 const RenameChecks = preload("rename_checks.gd")
 const DeleteChecks = preload("input_delete_checks.gd")
 const NamespaceChecks = preload("namespace_checks.gd")
+const StandardChecks = preload("standard_checks.gd")
+const StandardUI = preload("standard_ui_checks.gd")
 var failures := 0
 var checks := 0
 func check(value: bool, message: String) -> void:
@@ -75,6 +77,14 @@ func run() -> void:
 		check(editor.document.attributes[0].name == namespaced.name and editor.document.modules[namespaced.module_id].inputs[0].name == "Position","packaged namespace display does not contaminate saved raw names")
 		check(NamespaceChecks.ui_node(editor,"Input").title == "Read Module.Position" and NamespaceChecks.ui_node(editor,"CustomRead").title == "Read Particle.Custom."+namespaced.name,"packaged qualified labels restored after reopen")
 		await NamespaceChecks.restore(editor,namespaced,get_tree())
+		var standard_state: Dictionary = await StandardUI.run(editor,get_tree(),check,output.path_join("standard-library.png"))
+		editor.save_path = output.path_join("standard-roundtrip.mpfx")
+		check(await editor.save(),"packaged standard authoring save")
+		check(await window.do_load_project(editor.save_path),"packaged standard authoring reopen")
+		editor = window.get_current_project()
+		await frames(40)
+		check((await editor.compile_document()).errors.is_empty(),"packaged standard snapshots and role bindings survive reload")
+		await StandardUI.restore(editor,standard_state)
 		var compiled: Dictionary = await editor.compile_document()
 		check(compiled.errors.is_empty(),"packaged Curve/FBM/typed graph compiler: " + str(compiled.errors))
 		if compiled.effect != null:
@@ -84,10 +94,46 @@ func run() -> void:
 			await frames(20)
 			await RenderingServer.frame_post_draw
 			get_tree().root.get_texture().get_image().save_png(output.path_join("material-maker.png"))
+	# Compile and dispatch every packaged recipe, including 3D Curl and both
+	# editable Gradient/Curve paths. These tests run in the actual release EXE.
+	check(StandardChecks.L.catalog().size() == 12,"all twelve catalog entries packaged")
+	var all_standard := StandardChecks.document(["initialize_particle","box_location","sphere_location","add_velocity","add_velocity_in_cone"],["gravity","drag","curl_noise","solve_motion","color_over_life","scale_over_life","kill_particles"])
+	var all_compiled := await StandardChecks.compile(all_standard)
+	check(all_compiled.errors.is_empty(),"all packaged recipes compile: "+str(all_compiled.errors))
+	if all_compiled.effect != null:
+		var probe = await StandardChecks.start(self,all_compiled.effect,16)
+		check(probe.ready_for_simulation,"all packaged recipes GPU shader")
+		if probe.ready_for_simulation:
+			probe.emit_burst(4)
+			probe.advance(1.0/60.0)
+			await StandardChecks.frames(get_tree())
+			var snapshot := await StandardChecks.snapshot(probe)
+			check(snapshot.count == 4 and StandardChecks.vector(probe,snapshot,"position").is_finite(),"packaged 12-module GPU result")
+		await StandardChecks.dispose(probe)
+	var basic = window.new_modular_particles()
+	await frames(50)
+	check(basic.document.stages.spawn.size() == 2 and basic.document.stages.update.size() == 4 and basic.document.attributes.size() == 4,"packaged new-document defaults")
+	check(is_instance_valid(basic.preview) and basic.preview.ready_for_simulation,"packaged new-document preview")
+	check(basic.graph_edit.zoom>=0.5,"packaged large graph keeps labels visible")
+	var output_nodes: Array = basic.graph_edit.get_children().filter(func(n): return n is MMGraphNodeGeneric and n.generator != null and n.generator.get("settings") is Dictionary and n.generator.settings.get("kind") == "module_output")
+	check(output_nodes.size() == 1 and Rect2(Vector2.ZERO,basic.graph_edit.size).has_point(output_nodes[0].position_offset*basic.graph_edit.zoom-basic.graph_edit.scroll_offset),"packaged Output starts inside graph viewport")
+	var basic_document: Dictionary = basic.document.duplicate(true)
+	basic_document.emitter.merge({"rate":0.0,"duration":2.0,"lifetime":2.0,"loop":true,"bursts":[{"time":0.0,"count":128}]},true)
+	basic_document["preview_capacity"] = 128
+	await StandardUI.load_document(basic,basic_document,"spawn")
+	basic.save_path = output.path_join("basic-128.mpfx")
+	check(await basic.save(),"packaged standalone basic authoring snapshot")
+	var basic_compiled: Dictionary = await basic.compile_document()
+	check(basic_compiled.errors.is_empty(),"packaged basic burst compilation")
+	if basic_compiled.effect != null:
+		var exported: Dictionary = await Exporter.new().export_bundle(basic_compiled.effect,output.path_join("godot-basic-example"),128)
+		check(exported.error.is_empty(),"standard module export from release EXE: "+exported.error)
+	await RenderingServer.frame_post_draw
+	get_tree().root.get_texture().get_image().save_png(output.path_join("standard-editor.png"))
 	var old = await window.new_particle_shader()
 	await frames(10)
 	check(old is MMGraphEdit and old.get_material_node() is MMGenParticleMaterial,"legacy ptex editor still opens")
-	var info := {"passed":failures == 0,"checks":checks,"engine":Engine.get_version_info().string,"editor":OS.has_feature("editor"),"export":output.path_join("godot-example"),"userdata":OS.get_user_data_dir()}
+	var info := {"passed":failures == 0,"checks":checks,"engine":Engine.get_version_info().string,"editor":OS.has_feature("editor"),"export":output.path_join("godot-example"),"standard_export":output.path_join("godot-basic-example"),"userdata":OS.get_user_data_dir()}
 	var file := FileAccess.open(output.path_join("release-smoke.json"),FileAccess.WRITE)
 	file.store_string(JSON.stringify(info,"\t"))
 	file.close()
