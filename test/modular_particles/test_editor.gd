@@ -16,6 +16,9 @@ func run() -> void:
 	get_tree().root.size = Vector2i(1400,900)
 	var editor = window.new_modular_particles()
 	await frames(40)
+	# Explicit original workflow fixture; new-document defaults have their own tests.
+	editor.apply_document(preload("res://material_maker/panels/modular_particles/library.gd").legacy_document())
+	await frames(40)
 	check(window.get_current_mode() == "material", "material layout")
 	check(window.get_current_graph_edit() == editor.graph_edit, "existing MM graph canvas")
 	check(editor.graph_edit.get_children().filter(func(n): return n is GraphNode).size() >= 2,"editable module graph nodes exist")

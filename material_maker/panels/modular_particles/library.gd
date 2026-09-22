@@ -49,7 +49,22 @@ static func catalog_payload(id: String) -> Dictionary:
 		return graph
 	return ModuleLibrary.payload(id)
 
+const DEFAULT_SPAWN := ["initialize_particle","add_velocity_in_cone"]
+const DEFAULT_UPDATE := ["gravity","solve_motion","color_over_life","scale_over_life"]
+
 static func new_document() -> Dictionary:
+	var data := Document.create()
+	for stage in ["spawn","update"]:
+		for id in DEFAULT_SPAWN if stage == "spawn" else DEFAULT_UPDATE:
+			var inserted := ModuleLibrary.insert(data,catalog_payload(id),stage)
+			if not inserted.ok:
+				push_error("Missing or invalid packaged standard module: "+id+": "+inserted.error)
+				return Document.create()
+			data = inserted.document
+	return data
+
+static func legacy_document() -> Dictionary:
+	# Explicit compatibility fixture; also documents the original two-module workflow.
 	var data := Document.create()
 	data.modules = defaults()
 	data.stages.spawn = [{"id":Document.uid(),"module":"initialize_velocity","parameters":{},"enabled":true}]

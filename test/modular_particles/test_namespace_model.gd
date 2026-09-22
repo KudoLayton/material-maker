@@ -12,7 +12,7 @@ func check(value: bool, message: String) -> void:
 		print("FAIL: ",message)
 func _ready() -> void: run.call_deferred()
 func run() -> void:
-	var doc := Library.new_document()
+	var doc := Library.legacy_document()
 	doc.attributes = [{"id":"custom_position","name":"Position","type":"vec3","default":[0.0,0.0,0.0]},
 		{"id":"12345678a","name":"Duplicate","type":"vec4","default":[0.0,0.0,0.0,0.0]},
 		{"id":"12345678b","name":"Duplicate","type":"vec4","default":[0.0,0.0,0.0,0.0]}]

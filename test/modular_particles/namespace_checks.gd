@@ -35,7 +35,7 @@ static func focused_line(node: Node) -> LineEdit:
 	return null
 
 static func fixture() -> Dictionary:
-	var doc := Library.new_document()
+	var doc := Library.legacy_document()
 	doc.emitter.rate = 0.0
 	doc.attributes = [{"id":CUSTOM,"name":"Position","type":"vec3","default":[0.0,0.0,0.0]},
 		{"id":"copy","name":"StoredPositionCopy","type":"vec3","default":[0.0,0.0,0.0]},

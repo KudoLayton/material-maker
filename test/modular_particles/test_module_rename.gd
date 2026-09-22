@@ -18,6 +18,9 @@ func run() -> void:
 	get_tree().root.size = Vector2i(1440,960)
 	var editor = window.new_modular_particles()
 	await frames(50)
+	# This test duplicates the first Spawn module; standard Initialize deliberately rejects duplicates.
+	editor.apply_document(preload("res://material_maker/panels/modular_particles/library.gd").legacy_document())
+	await frames(40)
 	var renamed: Dictionary = await RenameChecks.run(editor,get_tree(),check)
 	if not renamed.is_empty():
 		editor.save_path = "res://renamed_roundtrip.mpfx"
