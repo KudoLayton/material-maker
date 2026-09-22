@@ -4,6 +4,7 @@ const Document = preload("res://addons/material_maker/particles/modular/document
 const Compiler = preload("res://addons/material_maker/particles/modular/compiler.gd")
 const Library = preload("library.gd")
 const History = preload("history.gd")
+const Presentation = preload("res://addons/material_maker/particles/modular/presentation.gd")
 const Particles = preload("res://addons/mm_gpu_particles/particles_3d.gd")
 var document: Dictionary = Library.new_document()
 var save_path := ""
@@ -20,6 +21,10 @@ var rename_button: Button
 var rename_dialog: ConfirmationDialog
 var attribute_choice: OptionButton
 var attributes_tree: Tree
+var binding_details: RichTextLabel
+var _detail_kind := "module_read"
+var _detail_id := "position"
+var _presentation_pending := false
 var input_box: VBoxContainer
 var status: RichTextLabel
 var viewport: SubViewport
@@ -50,9 +55,14 @@ func _ready() -> void:
 	var split := HSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(split)
+	var left_scroll := ScrollContainer.new()
+	left_scroll.custom_minimum_size.x = 380
+	left_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	left_scroll.follow_focus = true
+	split.add_child(left_scroll)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size.x = 240
-	split.add_child(left)
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_scroll.add_child(left)
 	stage_choice = OptionButton.new()
 	stage_choice.add_item("Particle Spawn")
 	stage_choice.add_item("Particle Update")
@@ -100,14 +110,25 @@ func _ready() -> void:
 	left.add_child(label)
 	attributes_tree = Tree.new()
 	attributes_tree.hide_root = true
+	attributes_tree.columns = 3
+	attributes_tree.column_titles_visible = true
+	for column in 3:
+		attributes_tree.set_column_title(column,["Namespace","Name","Type / ID"][column])
+		attributes_tree.set_column_custom_minimum_width(column,[112,90,130][column])
+		attributes_tree.set_column_clip_content(column,true)
 	attributes_tree.custom_minimum_size.y = 150
 	left.add_child(attributes_tree)
 	attributes_tree.item_edited.connect(rename_attribute)
+	attributes_tree.item_selected.connect(func():
+		var item := attributes_tree.get_selected()
+		if item != null: show_binding_details("module_read",str(item.get_metadata(0))))
 	actions = HBoxContainer.new()
 	left.add_child(actions)
 	button(actions,"Add Attribute",add_attribute_dialog)
 	button(actions,"Delete",delete_attribute)
 	attribute_choice = OptionButton.new()
+	attribute_choice.fit_to_longest_item = false
+	attribute_choice.item_selected.connect(func(index): show_binding_details("module_read",attribute_choice.get_item_metadata(index).id))
 	left.add_child(attribute_choice)
 	actions = HBoxContainer.new()
 	left.add_child(actions)
@@ -122,6 +143,12 @@ func _ready() -> void:
 	button(context_row,"Read Context",func():
 		var key := context_choice.get_item_text(context_choice.selected)
 		add_binding("module_context",key,{"delta":"float","time":"float","just_spawned":"bool","seed":"uint","index":"uint"}[key],key))
+	binding_details = RichTextLabel.new()
+	binding_details.custom_minimum_size.y = 100
+	binding_details.fit_content = true
+	binding_details.scroll_active = false
+	binding_details.selection_enabled = true
+	left.add_child(binding_details)
 	button(left,"Add Module Input",add_input_dialog)
 	input_box = VBoxContainer.new()
 	left.add_child(input_box)
@@ -133,6 +160,7 @@ func _ready() -> void:
 	graph_edit.custom_minimum_size.y = 300
 	middle.add_child(graph_edit)
 	graph_edit.graph_changed.connect(graph_changed)
+	graph_edit.view_updated.connect(func(_generator): queue_presentation_refresh())
 	var container := SubViewportContainer.new()
 	container.custom_minimum_size.y = 220
 	container.stretch = true
@@ -197,18 +225,80 @@ func refresh_lists() -> void:
 		if stage in document.modules[id].stages:
 			module_choice.add_item(document.modules[id].name)
 			module_choice.set_item_metadata(module_choice.item_count-1,id)
+	var tree_id: String = str(attributes_tree.get_selected().get_metadata(0)) if attributes_tree.get_selected() != null else ""
+	var choice_id: String = attribute_choice.get_item_metadata(attribute_choice.selected).id if attribute_choice.selected >= 0 else "position"
 	attributes_tree.clear()
 	var root_item := attributes_tree.create_item()
 	attribute_choice.clear()
 	for attribute in all_attributes():
 		var item := attributes_tree.create_item(root_item)
-		item.set_text(0,attribute.name + " : " + attribute.type)
 		item.set_metadata(0,attribute.id)
-		item.set_tooltip_text(0,attribute.id)
-		item.set_editable(0,document.attributes.any(func(a): return a.id == attribute.id))
-		attribute_choice.add_item(attribute.name + " : " + attribute.type)
+		item.set_editable(1,document.attributes.any(func(a): return a.id == attribute.id))
+		attribute_choice.add_item(attribute.name)
 		attribute_choice.set_item_metadata(attribute_choice.item_count-1,attribute)
+		if attribute.id == choice_id: attribute_choice.select(attribute_choice.item_count-1)
+		if attribute.id == tree_id: item.select(1)
+	refresh_attribute_labels(Presentation.context(document,current_module))
+	queue_presentation_refresh()
 	update_title()
+
+static func short_binding_label(info: Dictionary) -> String:
+	return Presentation.compact(info.qualified,36) + (" " + info.badge if not info.badge.is_empty() else "") + (" [Missing]" if info.missing else "")
+
+func refresh_attribute_labels(ctx: Dictionary) -> void:
+	var root_item := attributes_tree.get_root()
+	if root_item == null: return
+	var index := 0
+	for item in root_item.get_children():
+		var id: String = str(item.get_metadata(0))
+		var info := Presentation.describe("module_read",id,"","",ctx)
+		item.set_text(0,info["namespace"])
+		item.set_text(1,info.raw_name)
+		item.set_text(2,info.type + (" " + info.badge if not info.badge.is_empty() else ""))
+		for column in 3: item.set_tooltip_text(column,info.tooltip)
+		attribute_choice.set_item_text(index,short_binding_label(info) + " : " + info.type)
+		attribute_choice.set_item_tooltip(index,info.tooltip)
+		index += 1
+
+func queue_presentation_refresh() -> void:
+	if _presentation_pending: return
+	_presentation_pending = true
+	refresh_binding_display.call_deferred()
+
+func show_binding_details(kind: String, id: String) -> void:
+	_detail_kind = kind
+	_detail_id = id
+	queue_presentation_refresh()
+
+func refresh_binding_display(allow_loading: bool = false) -> void:
+	_presentation_pending = false
+	if not is_inside_tree() or (_loading and not allow_loading): return
+	var graph: Dictionary = {}
+	if not current_module.is_empty() and graph_edit.top_generator != null and document.modules.get(current_module,{}).has("mm_graph"):
+		graph = graph_edit.top_generator.serialize()
+	var ctx := Presentation.context(document,current_module,graph)
+	refresh_attribute_labels(ctx)
+	binding_details.text = Presentation.describe(_detail_kind,_detail_id,"","",ctx).tooltip
+	for row in input_box.get_children():
+		if row.is_queued_for_deletion() or not row.has_meta("module_input_id"): continue
+		var info := Presentation.describe("module_parameter",str(row.get_meta("module_input_id")),"","",ctx)
+		var label: Label = row.get_node("InputLabel")
+		label.text = short_binding_label(info) + " : " + info.type
+		label.tooltip_text = info.tooltip
+	apply_display_context(graph_edit.top_generator,ctx)
+	for node in graph_edit.get_children():
+		if not node is MMGraphNodeGeneric or node.generator == null or not node.generator.has_method("set_display_context"): continue
+		var signature: Array = [node.generator.get_type_name(),node.generator.get_input_defs(),node.generator.get_output_defs(),node.generator.get_description()]
+		if node.get_meta("module_presentation",[]) != signature:
+			node.set_meta("module_presentation",signature)
+			# No generator signals: __update_all__ would dirty the graph/history.
+			node.update_node()
+			node.tooltip_text = node.generator.get_description()
+
+func apply_display_context(generator: Node, ctx: Dictionary) -> void:
+	if generator == null: return
+	if generator.has_method("set_display_context"): generator.set_display_context(ctx)
+	for child in generator.get_children(): apply_display_context(child,ctx)
 
 func load_selected() -> void:
 	if _loading: return
@@ -225,14 +315,23 @@ func load_selected() -> void:
 			watch(graph_edit.top_generator)
 		for parameter in module.inputs:
 			var line := HBoxContainer.new()
+			line.set_meta("module_input_id",parameter.id)
 			input_box.add_child(line)
 			var label := Label.new()
-			label.text = parameter.name
+			label.name = "InputLabel"
+			label.text = "Module." + parameter.name
+			label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			label.custom_minimum_size.x = 120
+			label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			label.mouse_filter = Control.MOUSE_FILTER_STOP
+			label.gui_input.connect(func(event):
+				if event is InputEventMouseButton and event.pressed: show_binding_details("module_parameter",parameter.id))
 			line.add_child(label)
 			var value := LineEdit.new()
 			value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			value.text = JSON.stringify(instance.get("parameters",{}).get(parameter.id,parameter.default))
 			line.add_child(value)
+			value.focus_entered.connect(func(): show_binding_details("module_parameter",parameter.id))
 			value.text_submitted.connect(func(text): set_input(instance.id,parameter.id,JSON.parse_string(text)))
 			button(line,"Read",func(): add_binding("module_parameter",parameter.id,parameter.type,parameter.name))
 			var remove := button(line,"Delete",func(): delete_input(instance.module,parameter.id))
@@ -240,6 +339,9 @@ func load_selected() -> void:
 			remove.tooltip_text = "Delete this shared module input and its instance values. Remove all referencing Read nodes first."
 	else:
 		graph_edit.clear_material()
+	await get_tree().process_frame
+	refresh_binding_display(true)
+	# Fit the final qualified labels, not the temporary cached/ID fallback sizes.
 	await get_tree().process_frame
 	fit_graph()
 	_loading = false
@@ -264,6 +366,7 @@ func watch(generator: Node) -> void:
 
 func generator_changed(_key, _value) -> void: graph_changed()
 func graph_changed() -> void:
+	queue_presentation_refresh()
 	if _loading: return
 	need_save = true
 	update_title()
@@ -486,10 +589,11 @@ func add_attribute(label: String, type: String, value) -> void:
 
 func rename_attribute() -> void:
 	var item := attributes_tree.get_edited()
+	if item == null or attributes_tree.get_edited_column() != 1: return
 	var before := document.duplicate(true)
 	for field in document.attributes:
-		if field.id == item.get_metadata(0): field.name = item.get_text(0).get_slice(" : ",0)
-	changed(before)
+		if field.id == item.get_metadata(0): field.name = item.get_text(1)
+	if before != document: changed(before)
 
 func delete_attribute() -> void:
 	var item := attributes_tree.get_selected()
