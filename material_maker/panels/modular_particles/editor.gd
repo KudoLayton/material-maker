@@ -5,6 +5,7 @@ const Compiler = preload("res://addons/material_maker/particles/modular/compiler
 const Library = preload("library.gd")
 const History = preload("history.gd")
 const Presentation = preload("res://addons/material_maker/particles/modular/presentation.gd")
+const ModuleLibrary = preload("res://addons/material_maker/particles/modular/module_library.gd")
 const Particles = preload("res://addons/mm_gpu_particles/particles_3d.gd")
 var document: Dictionary = Library.new_document()
 var save_path := ""
@@ -783,21 +784,18 @@ func module_payload(id: String) -> Dictionary:
 	var module: Dictionary = document.modules[id].duplicate(true)
 	var data: Dictionary = module.mm_graph
 	module.erase("mm_graph")
-	data.particle_module = {"version":1,"id":id,"definition":module}
+	data.particle_module = {"version":1,"id":id,"definition":module,"attributes":ModuleLibrary.snapshots(document,module)}
 	return data
 
 func load_module_data(data: Dictionary) -> bool:
-	var metadata: Dictionary = data.get("particle_module",{})
-	if metadata.get("version") != 1 or not Document.identifier(metadata.get("id")) or not metadata.get("definition") is Dictionary: return false
-	var module: Dictionary = metadata.definition.duplicate(true)
-	for key in ["stages","inputs","reads","writes"]:
-		if not module.get(key) is Array: return false
-	if not data.get("nodes") is Array or not data.get("connections") is Array: return false
+	var merged := ModuleLibrary.merge_payload(document,data)
+	if not merged.ok:
+		status.text = merged.error
+		return false
 	capture_graph()
 	var before := document.duplicate(true)
-	module.mm_graph = data.duplicate(true)
-	module.mm_graph.erase("particle_module")
-	document.modules[metadata.id] = module
+	merged = ModuleLibrary.merge_payload(document,data)
+	document = merged.document
 	changed(before,true)
 	return true
 
