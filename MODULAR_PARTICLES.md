@@ -25,6 +25,25 @@ git submodule update --init --recursive
 7. `Save`는 저작용 `.mpfx`, `Save .mmg`는 재사용 모듈 스냅샷을 저장합니다. `Import .mmg`로 명시적으로 모듈을 갱신합니다. 외부 Library 변경을 자동 반영하지 않습니다.
 8. `Export`에서 빈 출력 폴더를 선택합니다. 생성된 `project.godot`을 Godot 4.7.2로 열고 실행하거나 `particles.tscn`을 게임 씬에 인스턴스화합니다.
 
+### Namespace와 바인딩 구분
+
+| 표시 | 뜻 |
+|---|---|
+| `Module.Position` | 모듈 인스턴스의 공통 입력값 |
+| `Particle.Position` | 기본 입자 위치 Attribute |
+| `Particle.Custom.Position` | 이름만 Position인 별도의 사용자 정의 Attribute |
+| `Context.delta` | 시뮬레이션 컨텍스트 값 |
+
+단수형 `Particle`을 사용합니다. `Read`와 `Write`는 역할이며 같은 Attribute를 출력에 연결해도 namespace는 바뀌지 않습니다. 이름을 `Position`이나 `Particle.Position`으로 정해도 타입/바인딩을 추론하지 않습니다. Module Input의 Attribute 바인딩 기능을 추가한 것은 아닙니다.
+
+- Attribute 트리는 **Namespace / Name / Type·ID** 열입니다. 사용자 Attribute의 **Name 열만** 원래 이름으로 편집합니다. namespace/타입/ID 배지는 저장 이름에 섞이지 않습니다.
+- Attribute를 선택하거나 입력값에 포커스를 주면 상세 설명에서 전체 이름·ID·종류·역할을 확인합니다. 노드와 포트에도 툴팁을 제공합니다.
+- `Renderer`는 실제 렌더 용도입니다. 기본 Position/Rotation/Scale/Color 및 설정된 `INSTANCE_CUSTOM` 대상을 구분합니다. `Particle.Custom`은 사용자 정의라는 뜻이지, 영원히 렌더에 연결할 수 없다는 뜻은 아닙니다.
+- `Module Output`의 **Not registered / Unconnected — existing value preserved / Connected**는 포트 미등록/등록 후 미연결/와이어 연결을 뜻합니다. 렌더 바인딩과는 별개입니다.
+- 같은 namespace 안의 동명 항목은 읽기 전용 `[#ID]` 배지로 구분합니다. 접두사 충돌 시 길이를 늘립니다. 긴 이름은 목록에서 생략하고 툴팁으로 전체를 표시합니다. 왼쪽 패널은 스크롤할 수 있습니다.
+- 정의 ID가 없으면 `Missing`으로 표시하고 기존 오류를 유지합니다. 같은 이름의 다른 항목으로 자동 연결하지 않습니다. 문서 컨텍스트가 없는 Library 미리보기는 저장된 이름을 쓰면서 정의 확인 불가를 안내합니다.
+- 이 표시는 직렬화하지 않는 UI 정보입니다. 기존 `.mpfx`/`.mmg`, stable ID, shader, GPU layout, 런타임 parameter API를 변경하지 않습니다. 중첩 그래프/이름 변경/Undo·Redo/import 후에도 현재 정의를 기준으로 표시합니다.
+
 ### 모듈 이름 변경
 
 - F2는 **Spawn/Update 스택에 키보드 포커스가 있을 때만** 동작합니다. 그래프 노드 이름 변경과는 별개입니다.
@@ -131,6 +150,7 @@ python tools/modular_particles/run_tests.py --godot $GODOT --test test_compiler 
 # GPU 검사: gpu_probe, test_shader, test_runtime, test_render, test_performance
 python tools/modular_particles/run_tests.py --godot $GODOT --test test_runtime
 python tools/modular_particles/run_tests.py --godot $GODOT --test test_performance
+python tools/modular_particles/run_app_tests.py --godot $GODOT --test test_namespace_model,test_namespace_editor
 python tools/modular_particles/run_app_tests.py --godot $GODOT --test test_module_rename,test_module_input_delete
 python tools/modular_particles/run_app_tests.py --godot $GODOT --test all --keep-going
 # 위 test_export가 생성한 PROJECT/standalone을 지정

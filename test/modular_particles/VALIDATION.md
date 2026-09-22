@@ -112,7 +112,7 @@ Rename 배포: `build/modular-release-20260922-084010/` (입력 삭제 포함 �
 
 ## 추가 요청: Module Input 삭제
 
-**최신 배포: `build/modular-release-20260922-092746/`**. 이전 EXE/사용자 문서는 그대로 유지했습니다. private 런타임 submodule은 `41a62fee`로 유지하며 이번 변경은 Material Maker 편집기와 검사/문서에만 있습니다.
+입력 삭제 배포: `build/modular-release-20260922-092746/` (namespace 표시 포함 최신 빌드는 아래 참조). 이전 EXE/사용자 문서는 그대로 유지했습니다. private 런타임 submodule은 `41a62fee`로 유지하며 이번 변경은 Material Maker 편집기와 검사/문서에만 있습니다.
 
 - 입력 행에 **Delete** 버튼 추가. 연결/비연결/중첩 Read를 현재 그래프에서 찾아 사용 중이면 삭제를 거부하고 참조 경로를 안내합니다. 아직 저장하지 않은 Read도 검사합니다.
 - 같은 모듈의 Spawn/Update 인스턴스에서 해당 입력값만 정리합니다. 비활성 인스턴스를 포함하고 다른 모듈/입력은 보존합니다. Undo/Redo로 정의·순서·인스턴스별 값을 복구/재삭제합니다.
@@ -131,4 +131,32 @@ Rename 배포: `build/modular-release-20260922-084010/` (입력 삭제 포함 �
 - 기존 editor/Rename: `%TEMP%/mm-modular-app-2shub7o4/run-2.log`, `run-3.log`.
 - 실제 EXE: 최신 배포의 `verification/app-process.log`, `verification/app/release-smoke.json`.
 - UI 화면: `verification/app/input-delete.png`, `material-maker.png`.
-- 독립 Godot: `%TEMP%/mm-modular-export-noqyfo8n/`; 로그 사본은 최신 배포의 `verification/godot/`.
+- 독립 Godot: `%TEMP%/mm-modular-export-noqyfo8n/`; 로그 사본은 입력 삭제 배포의 `verification/godot/`.
+
+## 추가 요청: Namespace 표시와 바인딩 상태 구분
+
+**최신 배포: `build/modular-release-20260922-212743/`**. Godot 4.7.2 / Forward+ / Vulkan 대상이며 private runtime submodule은 `41a62fee` 그대로입니다.
+
+- Module Input은 `Module.Position`, 기본 Attribute는 `Particle.Position`, 사용자 Attribute는 `Particle.Custom.Position`, 컨텍스트는 `Context.delta`처럼 표시합니다. 단수 `Particle`을 사용합니다.
+- `Read`/`Write` 역할, 실제 Renderer 용도, 출력 포트 등록/연결 상태는 namespace와 별도로 안내합니다. 사용자 vec4의 명시적인 INSTANCE_CUSTOM 지정도 ID로 확인합니다.
+- Namespace/Name/Type·ID 트리, 원래 이름만 편집, 중복 ID 배지, 긴 이름 툴팁, 중첩·전환·Undo/Redo·import 갱신을 지원합니다. 표시 컨텍스트는 직렬화하지 않습니다.
+- `.mpfx`/`.mmg` 버전, 원래 이름, stable ID, 포트 ID/타입, shader, Attribute/parameter layout, 런타임 API는 바꾸지 않았습니다. 이름 기반 자동 바인딩이나 새로운 입력 바인딩 기능은 추가하지 않았습니다.
+
+| 검사 | 결과 |
+|---|---|
+| `test_namespace_model` | **29 checks**: 세 Position 구분, 현재 정의 이름, renderer/output 상태, readonly, 중복 Attribute/입력 이름·ID 접두사 충돌, Missing/fallback, 긴 한글/namespace처럼 보이는 이름, port ABI·직렬화·shader/layout 불변 |
+| `test_namespace_editor` | **46 checks**: 실제 입력/트리/포트·툴팁, raw Name inline edit, 중첩/모듈 전환/연결·Unbind·Missing 갱신, Undo/Redo, `.mpfx`/`.mmg` roundtrip/import, dirty/history/preview 불변 및 GPU 구별 |
+| 기존 편집기 회귀 | editor 24, Rename 38, input delete 36, graph backend 6, mmtest 36, exporter 25, 기존 port UI **163 checks** 모두 통과 |
+| 실제 Release EXE | **MODULAR_RELEASE PASS checks=123 editor=false**: namespace 공유 UI/GPU 검사, raw 이름 저장·재열기, 기존 삭제/Rename 및 독립 효과 Export 포함 |
+| 독립 Godot / Windows Release | plugin 활성화 import와 각 **5 checks** 통과, 독립 런타임 ERROR/RID leak 없음 |
+
+GPU 구별 검사는 Module.Position `[5,6,7]`을 사용자 Position에 쓰고 다음 Update 모듈에서 다시 읽어 별도 Attribute로 복사합니다. GPU readback에서 사용자 Position과 복사 값은 `[5,6,7]`, 기본 Position과 MultiMesh 렌더 위치는 `[0,0,0]`으로 확인했습니다. 동일 이름이 자동으로 연결되지 않습니다.
+
+전체 Material Maker의 기존 종료 경고는 별도입니다. 이번 작업에서 모든 legacy 앱 스위트를 재실행했다는 의미는 아니며, 위에 명시한 회귀 검사와 실제 Release를 검증했습니다. 테스트용 namespace 그래프는 최종 GodotExample을 내보내기 전에 원래 mmtest 효과로 복원합니다.
+
+증거:
+
+- namespace 모델/UI: `%TEMP%/mm-modular-app-juw68map/run-1.log`, `run-2.log`.
+- 회귀 7/7: `%TEMP%/mm-modular-app-vo3n9kt4/app-results.json`, `run-1.log` ~ `run-7.log`.
+- 최신 배포: `verification/app-process.log`, `verification/app/release-smoke.json`, `verification/app/namespaces.png`, `material-maker.png`.
+- 독립 Godot: `%TEMP%/mm-modular-export-0vgwxvtk/`; 로그 사본은 최신 배포의 `verification/godot/`.
