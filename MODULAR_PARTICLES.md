@@ -17,13 +17,19 @@ git submodule update --init --recursive
 ## 사용
 
 1. 이 소스 버전의 Material Maker에서 **File → New Modular GPU Particles**를 선택합니다.
-2. 또는 **File → Load**로 `material_maker/examples/modular_particles/mmtest.mpfx`를 엽니다.
-3. Spawn/Update 스택에서 모듈을 선택합니다. 기존 MM 그래프 캔버스와 Library 노드를 그대로 사용합니다.
+2. 또는 **File → Load**로 `material_maker/examples/modular_particles/basic_fountain.mpfx`, `box_turbulence.mpfx`, `sphere_burst.mpfx`를 엽니다. 기존 `mmtest.mpfx`도 그대로 유지합니다.
+3. Spawn/Update 스택에서 모듈을 선택합니다. **Browse Library…**에서 기본 12종을 검색해 독립 복사본으로 추가합니다. 기존 MM 그래프 캔버스와 Library 노드를 그대로 사용합니다.
 4. `Read`, `Write binding`, `Add Module Input`으로 Attribute와 입력을 연결합니다. 입력 값은 JSON 스칼라/배열로 입력 후 Enter로 확정합니다.
 5. Up/Down, Copy, On/Off, Remove, Undo/Redo를 지원합니다. 모듈 이름은 **스택에서 선택 → Rename 또는 F2 → 이름 입력 → Enter/Rename**으로 변경합니다. Preview는 내보내기와 같은 런타임입니다. 휠로 확대/축소합니다.
 6. `Emitter settings`에서 방출·수명·렌더 설정 JSON을 편집합니다. 그래프 오류는 Stage/인스턴스/노드 위치를 표시하며 마지막 정상 Preview를 유지합니다.
 7. `Save`는 저작용 `.mpfx`, `Save .mmg`는 재사용 모듈 스냅샷을 저장합니다. `Import .mmg`로 명시적으로 모듈을 갱신합니다. 외부 Library 변경을 자동 반영하지 않습니다.
 8. `Export`에서 빈 출력 폴더를 선택합니다. 생성된 `project.godot`을 Godot 4.7.2로 열고 실행하거나 `particles.tscn`을 게임 씬에 인스턴스화합니다.
+
+### 기본 모듈 라이브러리
+
+새 문서는 Spawn의 **Initialize Particle → Add Velocity in Cone**, Update의 **Gravity → Solve Motion → Color over Life → Scale over Life**로 시작합니다. 필요한 Custom Attribute는 자동 추가하지만 Initialize/Solve 같은 다른 모듈은 자동 추가·이동하지 않습니다. 가속도/Drag 누적 모듈은 Solve 앞에 배치하세요. 오류 시 정상 Preview를 보존하고 Export를 막으며, 경고만 있으면 Ready를 유지합니다.
+
+**Browse Library의 Add Copy**는 독립 그래프 복사본, 기존 **Add/Copy**는 공유 정의의 인스턴스입니다. 수식과 Curve/Gradient는 기존 그래프에서 편집합니다. 전체 목록·단위·역할·의존성·예제는 [STANDARD_PARTICLE_MODULES.md](STANDARD_PARTICLE_MODULES.md)를 참고하세요. 기존 문서는 자동 변환하지 않습니다.
 
 ### Namespace와 바인딩 구분
 
@@ -73,8 +79,11 @@ python tools/modular_particles/build_windows.py --godot $GODOT --templates $TEMP
 출력은 새 `build/modular-release-날짜-시간/` 폴더입니다.
 
 - `MaterialMaker/MaterialMaker.exe`: 일반 실행용 앱. Godot Editor 없이 실행합니다.
-- `MaterialMaker/Open mmtest.cmd`: 동봉 예제를 바로 엽니다.
-- `GodotExample/project.godot`: 앱의 Export로 생성한 독립 Godot 예제.
+- `MaterialMaker/Open basic_fountain.cmd`, `Open box_turbulence.cmd`, `Open sphere_burst.cmd`: 새 기본 모듈 예제.
+- `MaterialMaker/Open mmtest.cmd`: 기존 예제를 그대로 엽니다.
+- `MaterialMaker/modules/standard_particles/`: Import용 원본 기본 모듈 12종.
+- `GodotBasicExample/project.godot`: 새 기본 모듈의 128 burst 독립 예제.
+- `GodotExample/project.godot`: 기존 mmtest의 독립 예제. 둘 다 실제 앱의 Export로 생성합니다.
 - `GodotAddon.zip`: 프로젝트 루트에 풀 수 있는 런타임 애드온.
 - `verification/`: 실제 Release EXE에서 열기/Preview/저장/내보내기를 확인한 로그.
 

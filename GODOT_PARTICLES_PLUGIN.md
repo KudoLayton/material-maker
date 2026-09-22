@@ -9,14 +9,17 @@
 
 ## 가장 빠른 시작: 완성된 Godot 예제
 
-빌드 폴더의 **`GodotExample/project.godot`**을 Godot 4.7.2로 가져온 뒤 **F6**으로 `effects/modular_particles/demo.tscn`을 실행하거나 **F5**로 프로젝트를 실행합니다.
+빌드 폴더에서 원하는 독립 예제의 `project.godot`을 Godot 4.7.2로 가져온 뒤 **F6**으로 `effects/modular_particles/demo.tscn` 또는 **F5**로 프로젝트를 실행합니다.
 
-128개, 0.7초 반복 burst의 mmtest 효과가 들어 있습니다. 이 폴더는 독립 프로젝트이며 Material Maker나 별도 autoload가 필요하지 않습니다.
+- **`GodotBasicExample/project.godot`**: 새 기본 모듈(Initialize/Cone/Gravity/Solve/Color/Scale)의 128개, 2초 반복 burst.
+- **`GodotExample/project.godot`**: 기존 mmtest의 128개, 0.7초 반복 burst.
+
+두 폴더는 각각 독립 프로젝트이며 Material Maker나 별도 autoload가 필요하지 않습니다. 같은 효과 경로를 사용하므로 두 예제를 기존 프로젝트의 같은 폴더에 덮어쓰지 마세요.
 
 ## 내 게임 프로젝트에 넣기 (권장)
 
 1. 게임 프로젝트의 Renderer를 **Forward+**로 설정합니다.
-2. 내보낸 폴더 또는 `GodotExample`에서 다음 폴더를 게임 프로젝트 **루트**에 복사합니다.
+2. 내보낸 폴더 또는 선택한 `GodotBasicExample`/`GodotExample`에서 다음 폴더를 게임 프로젝트 **루트**에 복사합니다.
    - `addons/mm_gpu_particles/`
    - `effects/modular_particles/`
 3. `effects/modular_particles/particles.tscn`을 자신의 3D 씬으로 드래그합니다.
@@ -43,10 +46,10 @@
 
 ## Material Maker에서 효과를 수정한 뒤
 
-1. `MaterialMaker/MaterialMaker.exe`를 실행합니다. **`Open mmtest.cmd`**는 예제를 바로 엽니다.
-2. 새 효과: **File → New Modular GPU Particles**.
-3. 기존 효과: **File → Load**, 예제는 `examples/modular_particles/mmtest.mpfx`.
-4. Spawn/Update 그래프를 편집하고 `.mpfx`를 저장합니다.
+1. `MaterialMaker/MaterialMaker.exe`를 실행합니다. **`Open basic_fountain.cmd`** 등으로 예제를 바로 열 수도 있습니다.
+2. 새 효과: **File → New Modular GPU Particles**. 새 기본 6모듈 스택으로 시작합니다.
+3. 기존 효과: **File → Load**. 새 예제 3종과 기존 `examples/modular_particles/mmtest.mpfx`가 있습니다.
+4. **Browse Library…**에서 기본 12종을 추가하고 Spawn/Update 그래프를 편집한 뒤 `.mpfx`를 저장합니다. [모듈 목록과 순서](STANDARD_PARTICLE_MODULES.md)를 참고하세요.
 5. 탭의 **Export**로 **빈 폴더**에 내보냅니다.
 6. 생성된 `addons/mm_gpu_particles/`와 `effects/modular_particles/`를 위 설명처럼 게임에 넣습니다.
 
@@ -68,7 +71,7 @@ func control_examples() -> void:
     particles.set_parameter("mmtest_initialize/velocity", 8.0)
 ```
 
-입력 키는 **모듈 인스턴스 ID / 입력 ID**입니다. 위 키는 동봉된 mmtest 예제용이며 새로 만든 모듈은 다른 ID를 사용합니다. `set_parameter()`는 잘못된 ID/타입이면 `false`를 반환합니다.
+입력 키는 **모듈 인스턴스 ID / 입력 ID**입니다. 위 키는 동봉된 mmtest 예제용이며 새로 만든 모듈은 다른 ID를 사용합니다. `set_parameter()`는 잘못된 ID/타입이면 `false`를 반환합니다. 새 효과의 실제 입력은 `particles.effect.parameters`의 `id`, `name`, `type`으로 확인하세요. 표준 모듈도 같은 API를 사용하며 이름으로 Attribute를 자동 바인딩하지 않습니다.
 
 ## 주의 사항
 

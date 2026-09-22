@@ -22,7 +22,9 @@ git submodule update --init --recursive
 
 The runtime is mounted at `addons/mm_gpu_particles` from
 `git@github.com:KudoLayton/godot-modular-gpu-particles.git`.
-See [MODULAR_PARTICLES.md](MODULAR_PARTICLES.md) for authoring/build instructions
+See [MODULAR_PARTICLES.md](MODULAR_PARTICLES.md) for authoring/build instructions,
+[STANDARD_PARTICLE_MODULES.md](STANDARD_PARTICLE_MODULES.md) for the 12 editable
+basic modules, searchable catalog, and acceleration/drag solver workflow,
 and [GODOT_PARTICLES_PLUGIN.md](GODOT_PARTICLES_PLUGIN.md) for game integration.
 The upstream downloads below do **not** contain this fork's modular editor.
 
