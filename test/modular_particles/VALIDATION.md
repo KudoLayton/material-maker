@@ -2,7 +2,7 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
-**최신 상태(2026-09-23): 기본 모듈 12종과 배포 EXE·독립 Godot 예제는 검증했습니다. 최종 전체 앱 회귀는 40/41이며, 기존 클립보드 검사 1건은 Windows 접근 거부(오류 5)로 재검증 대기 중입니다. 앞선 실행의 41/41 통과와 구분하며, 아래 마지막 섹션을 참고하세요. 기존 Material Maker 종료 경고도 별도로 남아 있습니다.**
+**최신 상태(2026-09-23): 기본 모듈 12종과 배포 EXE·독립 Godot 예제를 검증했으며, 최신 전체 앱 회귀도 41/41 통과했습니다(`aph_7wsc`). Windows 클립보드 접근 거부로 남았던 검사는 코드 변경 없이 단독·전체 재실행 모두 통과했습니다. 이전 실패 기록과 기존 Material Maker 종료 경고는 아래에 별도로 보존합니다. 배포 EXE와 private runtime은 변경하지 않았습니다.**
 
 ## 통과한 검사
 
@@ -177,7 +177,7 @@ GPU 구별 검사는 Module.Position `[5,6,7]`을 사용자 Position에 쓰고 �
 | 12종 GPU 수치 | **155 checks**: 단계별 가속도/Drag/적분/누적값 초기화, 분포·seed, 음수 범위 양 끝값 clamp, 영벡터·0 반경/주파수, 비누적 외형, Kill/slot 재사용, Local/World, 서로 다른 Curve/Gradient/Curl 복사본 |
 | 라이브러리 UI | **51 checks**: 검색·카테고리·Stage·상세·Enter·더블클릭·실제 Esc, 삽입 위치/단일 Undo, role 재사용, Rename/Input 삭제, 독립 Code 편집, mpfx/mmg 왕복, 오류 시 Preview 보존·Ready 경고 |
 | 새 문서/예제 UI·GPU | **42 checks**: 기본 6모듈/4role, 독립 ID, 기존 Emitter/Renderer, 3예제 GPU/128 burst, 파일 보존, Kill Age, 읽기 쉬운 초기 화면·해제 generator redraw |
-| 전체 앱 스위트 | 먼저 `cbw31zpz`에서 **41/41** 통과. 이후 최종 코드 `0wy8cxki`에서 **40/41** 통과; 유일한 실패는 아래 클립보드 접근 거부 |
+| 전체 앱 스위트 | 최신 `aph_7wsc`에서 **41/41** 통과(14 modular + 27 legacy). 클립보드 단독 `pxf__e4e`도 **1/1** 통과. 이전 `0wy8cxki`의 **40/41** 실패 기록은 아래에 보존 |
 | 순수 compiler / runtime / render | **23 / 31 / 31 checks**, strict ERROR/leak 검사 통과 |
 | 실제 Windows Material Maker | **MODULAR_RELEASE PASS checks=179 editor=false**. 정상 CLI 시작, 기존 Rename/Delete/Namespace, 라이브러리/새 문서, 12종 GPU 실행, 두 독립 효과 Export 포함 |
 | GodotBasicExample | plugin 활성화 import, 독립 실행 **11 checks**, 실제 Windows EXE **11 checks**. SPIR-V, 128 indirect instances/pixels, pause, 수명/초기값/누적값/Curve/Gradient 확인. ERROR/leak 없음 |
@@ -185,30 +185,37 @@ GPU 구별 검사는 Module.Position `[5,6,7]`을 사용자 Position에 쓰고 �
 
 ### 성능
 
-RTX 3070, 100k 입자, 36 scalar components, Gravity/Drag/Solve + Box, 100 step 중 21 warmup 이후 79 GPU timestamp 샘플. 최종 전체 회귀 실행의 관측값:
+RTX 3070, 100k 입자, 36 scalar components, Gravity/Drag/Solve + Box, 100 step 중 21 warmup 이후 79 GPU timestamp 샘플. 이전 전체 회귀 `0wy8cxki`의 관측값:
 
 | 조건 | GPU 중앙값 | p95 | 추적 버퍼 |
 |---|---:|---:|---:|
 | Curl OFF | 0.192864 ms | 0.194624 ms | 23,200,260 bytes |
 | Curl ON | 1.644032 ms | 2.349600 ms | 23,200,284 bytes |
 
+최신 전체 재실행 `aph_7wsc`에서는 OFF 중앙값 **0.193152ms**/p95 **0.196256ms**, ON 중앙값 **0.850560ms**/p95 **0.955008ms**였습니다. 버퍼 크기와 샘플 수는 동일합니다.
+
 raster draw/readback은 측정에서 제외했습니다. 최초 별도 실행 `q1ksu166`에서는 ON 중앙값 1.241120ms/p95 1.988960ms였습니다. 실행별 부하에 따라 달라지므로 전체 효과 FPS나 Niagara 대비 우위를 의미하지 않습니다.
 
-### 남은 외부 환경 검사: 클립보드
+### 클립보드 재검증 완료와 이전 실패 기록
 
-- 최종 `legacy:test_app`은 `clipboard_set/get: Unable to open clipboard` 뒤 복사·붙여넣기 assertion에서 실패했습니다. 별도 격리 재실행 `y2bycnsi`도 동일했습니다.
-- 내용을 읽거나 변경하지 않는 Win32 probe: **OpenClipboard(NULL)=false, GetLastError=5 (Access denied)**, locking window/PID 없음. 새 모듈의 Attribute나 GPU 처리 오류와 구분합니다.
-- 해당 테스트는 수정/skip/mock하지 않았습니다. Windows 세션의 클립보드 접근이 복구되면 아래 명령으로 재검증해야 합니다. **최종 코드의 모든 앱 검사가 통과했다고 보고하지 않습니다.**
+- 이전 전체 실행 `0wy8cxki`의 `legacy:test_app`은 `clipboard_set/get: Unable to open clipboard` 뒤 복사·붙여넣기 assertion에서 실패했습니다. 별도 격리 재실행 `y2bycnsi`도 동일했습니다.
+- 당시 내용을 읽거나 변경하지 않는 Win32 probe: **OpenClipboard(NULL)=false, GetLastError=5 (Access denied)**, locking window/PID 없음. 새 모듈의 Attribute나 GPU 처리 오류와 구분합니다.
+- 이후 새 격리 프로젝트 `pxf__e4e`에서 같은 테스트를 재실행해 **exit 0, PARTICLE_APP_TESTS: passed, 1/1 통과**를 확인했습니다. 이어 전체 스위트 `aph_7wsc`도 **exit 0, 41/41 통과**했습니다. 두 재실행 로그에 클립보드 접근 오류가 없습니다.
+- 소스 기준은 `a8ecb2d75c0f94496a6338378c065bae58322386`이며 테스트/구현 수정, skip/mock 또는 Windows 권한·설정 변경 없이 통과했습니다. 후속 변경은 검증 기록뿐입니다.
 
 ```powershell
 python tools/modular_particles/run_app_tests.py --godot $GODOT --test legacy:test_app
+python tools/modular_particles/run_app_tests.py --godot $GODOT --test all --keep-going
 ```
 
-전체 MM 앱의 기존 HDR/종료 RID/ObjectDB 경고와 일부 클립보드 접근 오류는 로그에 보존합니다. 독립 Godot 예제의 strict 무오류·무누수 결과와 혼동하지 않습니다.
+전체 MM 앱의 기존 HDR/종료 RID/ObjectDB 경고와 이전 클립보드 실패 로그는 보존합니다. 전체 앱의 통과는 이 경고까지 해결했다는 뜻이 아니며, 독립 Godot 예제의 strict 무오류·무누수 결과와 혼동하지 않습니다.
 
 ### 재현과 증거
 
-- 전체 앱 최종: `%TEMP%/mm-modular-app-0wy8cxki/app-results.json`, `run-1.log`~`run-41.log`, `standard-performance.json`.
+- 최신 전체 앱 **41/41**: `%TEMP%/mm-modular-app-aph_7wsc/app-results.json`, `run-1.log`~`run-41.log`, `standard-performance.json`. 로그 사본은 배포의 `verification/source-regression-rerun/`.
+- 클립보드 단독 **1/1**: `%TEMP%/mm-modular-app-pxf__e4e/app-results.json`, `run-1.log`. 로그 사본은 배포의 `verification/clipboard-rerun/`.
+- 이전 전체 앱 **40/41**: `%TEMP%/mm-modular-app-0wy8cxki/app-results.json`; 배포의 기존 `verification/source-regression/`도 덮어쓰지 않고 보존했습니다.
+- 배포 EXE SHA256은 재검증 전후 **b41c7f97851c6fc1dbd7403c9d4b0b5d5a14152e45769484461ed098adef037e**로 동일합니다.
 - 이전 전체 통과: `%TEMP%/mm-modular-app-cbw31zpz/app-results.json`. 음수 범위 보완 후 GPU155/예제39/UI51은 `o05f73eq`; 가독성/수명 회귀 보완은 `zvwr4o1c`, `10_fep6u` 및 최종 전체 실행에서 확인했습니다.
 - 순수 검사: `%TEMP%/mm-standard-runtime-cb483f99beff4951b3100ee4d59863bb/`; 원 실행은 `mm-modular-particles-c86hpk65`, `7z74pdd4`, `wzqof8p2`.
 - 최종 EXE: 배포의 `verification/app-process.log`, `verification/app/release-smoke.json`, `verification/app/standard-library.png`, `verification/app/standard-editor.png`.
