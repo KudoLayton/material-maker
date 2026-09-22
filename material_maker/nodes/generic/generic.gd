@@ -502,6 +502,7 @@ func update_node() -> void:
 		if label != "":
 			var label_widget : Label = Label.new()
 			label_widget.text = label
+			label_widget.tooltip_text = input.get("tooltip", "")
 			if particle_port: label_widget.set_meta("particle_type", input.type)
 			label_widget.theme_type_variation = "MM_NodePropertyLabel"
 			var replace : Control = hsizer.get_child(0)
@@ -637,6 +638,7 @@ func update_node() -> void:
 		if not generator.minimized and (not output.get("shader_type", "").is_empty() or mm_io_types.types.get(output.type, {}).has("particle_type")):
 			var output_label := Label.new()
 			output_label.text = mm_io_types.format_port_label(output.get("label", output.get("name", "value")), output.type, output.get("shader_type", ""))
+			output_label.tooltip_text = output.get("tooltip", "")
 			output_label.theme_type_variation = "MM_NodePropertyLabel"
 			output_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			output_label.size_flags_horizontal = SIZE_EXPAND_FILL
