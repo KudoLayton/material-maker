@@ -211,8 +211,7 @@ python tools/modular_particles/run_app_tests.py --godot $GODOT --test legacy:tes
 - 전체 앱 최종: `%TEMP%/mm-modular-app-0wy8cxki/app-results.json`, `run-1.log`~`run-41.log`, `standard-performance.json`.
 - 이전 전체 통과: `%TEMP%/mm-modular-app-cbw31zpz/app-results.json`. 음수 범위 보완 후 GPU155/예제39/UI51은 `o05f73eq`; 가독성/수명 회귀 보완은 `zvwr4o1c`, `10_fep6u` 및 최종 전체 실행에서 확인했습니다.
 - 순수 검사: `%TEMP%/mm-standard-runtime-cb483f99beff4951b3100ee4d59863bb/`; 원 실행은 `mm-modular-particles-c86hpk65`, `7z74pdd4`, `wzqof8p2`.
-- 최종 EXE: 배포의 `verification/app-process.log`, `verification/app/release-smoke.json`, `standard-library.png`, `standard-editor.png`.
+- 최종 EXE: 배포의 `verification/app-process.log`, `verification/app/release-smoke.json`, `verification/app/standard-library.png`, `verification/app/standard-editor.png`.
 - 새 독립 Godot: `%TEMP%/mm-modular-export-og58tpcy/`; 기존 mmtest: `%TEMP%/mm-modular-export-w1jtxz09/`. 로그 사본은 배포의 `verification/godot-basic/`, `verification/godot-mmtest/`.
 - `build_standard_modules.py --check`, `build_standard_examples.py --check`, `build_mmtest_example.py --check`를 통과했습니다. mmtest 원본 SHA는 위 기록과 동일합니다.
 - private runtime submodule은 **41a62feed99567153bf4a3abd005595b0563c8b0** 그대로이며 public Git 트리에는 gitlink만 있습니다. Godot 엔진·UE 에셋·사용자 원본·이전 빌드/설정은 변경하지 않았습니다.
-

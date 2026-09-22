@@ -136,4 +136,4 @@ python tools/modular_particles/verify_export.py --godot $GODOT --templates $TEMP
 python tools/modular_particles/verify_export.py --godot $GODOT --templates $TEMPLATES --bundle $BUILD/GodotBasicExample --enable-plugin
 ```
 
-`--check`는 원본을 쓰지 않습니다. 레시피를 수정한 개발자만 생성 스크립트의 `--update`로 해당 스크립트가 관리하는 파일을 명시적으로 갱신하세요. mmtest/사용자 문서는 대상이 아닙니다. GPU readback은 테스트에만 있으며 성능 측정은 raster draw/readback을 제외합니다. 실측 결과·로그·전체 MM의 기존 종료 경고 구분은 [검증 기록](test/modular_particles/VALIDATION.md)에 남깁니다.
+`--check`는 원본을 쓰지 않습니다. 레시피를 수정한 개발자만 생성 스크립트의 `--update`로 해당 스크립트가 관리하는 파일을 명시적으로 갱신하세요. mmtest/사용자 문서는 대상이 아닙니다. GPU readback은 테스트에만 있으며 성능 측정은 raster draw/readback을 제외합니다. 실측 결과·로그·전체 MM의 기존 종료 경고 구분은 [소스 검증 기록](test/modular_particles/VALIDATION.md)에 남깁니다. 배포본에서는 최상위 폴더의 `verification/VALIDATION.md`와 로그 사본을 확인하세요. 미해결 외부 환경 검사도 이 기록에 명시합니다.
