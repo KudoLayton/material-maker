@@ -66,6 +66,7 @@ def prepare(project, settings_name):
     shutil.copy2(ROOT / 'test/modular_particles/test_release.gd', validation / 'release_smoke.gd')
     shutil.copy2(ROOT / 'test/modular_particles/rename_checks.gd', validation / 'rename_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/input_delete_checks.gd', validation / 'input_delete_checks.gd')
+    shutil.copy2(ROOT / 'test/modular_particles/namespace_checks.gd', validation / 'namespace_checks.gd')
     (validation / 'release_smoke.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://validation/release_smoke.gd" id="1"]\n[node name="ReleaseSmoke" type="Node"]\nscript = ExtResource("1")\n', encoding='utf-8')
 
 
@@ -156,6 +157,13 @@ Read 노드가 참조 중이면 삭제하지 않고 상태 영역에 참조 위�
 연결되지 않은 Read와 중첩 그래프 안의 Read도 먼저 지워야 합니다.
 같은 모듈의 모든 인스턴스 입력값을 함께 정리하며 Undo/Redo로 복구합니다.
 삭제 후 Save로 .mpfx 문서에 저장하세요.
+
+Namespace 표시:
+Module.Position = 모듈 입력, Particle.Position = 기본 입자 위치,
+Particle.Custom.Position = 별도의 사용자 Attribute, Context.delta = 시뮬레이션 값.
+이름으로 자동 바인딩하지 않습니다. Read/Write는 역할이고 namespace는 유지됩니다.
+Attribute 트리의 Name 열만 편집하며, 선택 설명에서 Renderer/Module Output 상태를 확인하세요.
+긴 이름과 전체 ID는 툴팁으로 확인하고, 왼쪽 패널은 필요하면 스크롤하세요.
 
 Godot 예제: GodotExample/project.godot을 Godot 4.7.2에서 열고 F5로 실행하세요.
 기존 프로젝트: GodotAddon.zip을 프로젝트 루트에 풀거나 Export 결과의

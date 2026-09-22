@@ -3,6 +3,7 @@ extends Node
 const Exporter = preload("res://addons/material_maker/particles/modular/exporter.gd")
 const RenameChecks = preload("rename_checks.gd")
 const DeleteChecks = preload("input_delete_checks.gd")
+const NamespaceChecks = preload("namespace_checks.gd")
 var failures := 0
 var checks := 0
 func check(value: bool, message: String) -> void:
@@ -65,6 +66,15 @@ func run() -> void:
 		check(reopened.errors.is_empty(),"packaged deleted-input effect still compiles")
 		# Test-only no-op modules must not become part of the delivered Godot demo.
 		await DeleteChecks.restore(editor,deleted,get_tree())
+		var namespaced: Dictionary = await NamespaceChecks.run(editor,get_tree(),check,output.path_join("namespaces.png"))
+		editor.save_path = output.path_join("namespace-roundtrip.mpfx")
+		check(await editor.save(),"packaged namespace save")
+		check(await window.do_load_project(editor.save_path),"packaged namespace reopen")
+		editor = window.get_current_project()
+		await frames(40)
+		check(editor.document.attributes[0].name == namespaced.name and editor.document.modules[namespaced.module_id].inputs[0].name == "Position","packaged namespace display does not contaminate saved raw names")
+		check(NamespaceChecks.ui_node(editor,"Input").title == "Read Module.Position" and NamespaceChecks.ui_node(editor,"CustomRead").title == "Read Particle.Custom."+namespaced.name,"packaged qualified labels restored after reopen")
+		await NamespaceChecks.restore(editor,namespaced,get_tree())
 		var compiled: Dictionary = await editor.compile_document()
 		check(compiled.errors.is_empty(),"packaged Curve/FBM/typed graph compiler: " + str(compiled.errors))
 		if compiled.effect != null:
