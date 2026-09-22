@@ -37,6 +37,22 @@ static func new_document() -> Dictionary:
 	data.stages.update = [{"id":Document.uid(),"module":"integrate_velocity","parameters":{},"enabled":true}]
 	return data
 
+static func input_reference(graph: Dictionary, input_id: String, parent_path: String = "") -> String:
+	# Inspect every binding, not just connected/reachable shader nodes. A loose
+	# or nested Read must remain valid if the user connects it later.
+	var label: String = str(graph.get("name",graph.get("id","Graph")))
+	var path := label if parent_path.is_empty() else parent_path + "/" + label
+	var settings: Dictionary = graph.get("settings",{})
+	if graph.get("type") == "modular_particle" and settings.get("kind") == "module_parameter" and settings.get("id") == input_id:
+		return path
+	if graph.get("op") == "parameter" and graph.get("parameter") == input_id:
+		return path
+	for child in graph.get("nodes",[]):
+		if child is Dictionary:
+			var reference := input_reference(child,input_id,path)
+			if not reference.is_empty(): return reference
+	return ""
+
 static func contracts(graph: Dictionary) -> Dictionary:
 	var reads: Array = []
 	var writes: Array = []

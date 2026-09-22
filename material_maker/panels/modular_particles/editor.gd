@@ -235,6 +235,9 @@ func load_selected() -> void:
 			line.add_child(value)
 			value.text_submitted.connect(func(text): set_input(instance.id,parameter.id,JSON.parse_string(text)))
 			button(line,"Read",func(): add_binding("module_parameter",parameter.id,parameter.type,parameter.name))
+			var remove := button(line,"Delete",func(): delete_input(instance.module,parameter.id))
+			remove.set_meta("module_input_id",parameter.id)
+			remove.tooltip_text = "Delete this shared module input and its instance values. Remove all referencing Read nodes first."
 	else:
 		graph_edit.clear_material()
 	await get_tree().process_frame
@@ -508,6 +511,31 @@ func add_input_dialog() -> void:
 		document.modules[current_module].inputs.append({"id":Document.uid(),"name":label,"type":type,"default":value})
 		changed(before,true))
 
+func delete_input(module_id: String, input_id: String) -> bool:
+	# Ignore stale row callbacks while switching modules or rebuilding the UI.
+	if selected_module_id() != module_id or module_id.is_empty(): return false
+	var module: Dictionary = document.modules[module_id]
+	if not module.inputs.any(func(input): return input.id == input_id): return false
+	var graph: Dictionary = module.get("mm_graph",{})
+	if module.has("mm_graph") and graph_edit.top_generator != null:
+		graph = graph_edit.top_generator.serialize()
+	var reference := Library.input_reference(graph,input_id)
+	if reference.is_empty(): reference = Library.input_reference(module.get("graph",{}),input_id)
+	if not reference.is_empty():
+		status.text = "Cannot delete module input: referenced by " + reference + ". Remove its Read node first (including nested/unconnected nodes)."
+		return false
+	# Only capture pending graph edits after validation, so a rejected deletion
+	# does not change the saved definition, history, dirty flag or GPU preview.
+	if module.has("mm_graph"): capture_graph()
+	var before := document.duplicate(true)
+	module.inputs = module.inputs.filter(func(input): return input.id != input_id)
+	for current_stage in ["spawn","update"]:
+		for instance in document.stages[current_stage]:
+			if instance.module == module_id and instance.has("parameters"):
+				instance.parameters.erase(input_id)
+	changed(before,true)
+	return true
+
 func set_input(instance_id: String, parameter_id: String, value) -> void:
 	var before := document.duplicate(true)
 	for current_stage in ["spawn","update"]:
@@ -562,6 +590,11 @@ func compile_document() -> Dictionary:
 		if is_instance_valid(generator): generator.free()
 	return result
 
+static func parameter_layout(effect: MMParticleEffect) -> Array:
+	# Unused input deletion can change the parameter buffer without changing
+	# shader text. Defaults/names are not layout, so live value edits stay cheap.
+	return effect.parameters.map(func(parameter): return [parameter.id,parameter.type,parameter.offset])
+
 func refresh_preview() -> void:
 	if _building:
 		refresh_timer.start()
@@ -577,7 +610,7 @@ func refresh_preview() -> void:
 		status.text = "\n".join(messages)
 		return
 	last_compiled = result.effect
-	if is_instance_valid(preview) and preview.effect.source_hash == result.effect.source_hash and preview.effect.emitter == result.effect.emitter and preview.effect.render_settings == result.effect.render_settings and preview.capacity == int(document.get("preview_capacity",4096)):
+	if is_instance_valid(preview) and preview.effect.source_hash == result.effect.source_hash and parameter_layout(preview.effect) == parameter_layout(result.effect) and preview.effect.emitter == result.effect.emitter and preview.effect.render_settings == result.effect.render_settings and preview.capacity == int(document.get("preview_capacity",4096)):
 		for parameter in result.effect.parameters: preview.set_parameter(parameter.id,parameter.default)
 		status.text = "Ready — Godot 4.7.2 / GPU / " + str(result.effect.component_count) + " components"
 		return
