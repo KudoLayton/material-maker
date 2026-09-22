@@ -1,0 +1,340 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Context_delta",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_context",
+        "id": "delta",
+        "data_type": "float",
+        "label": "delta"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_velocity",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "velocity",
+        "data_type": "vec3",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Read_acceleration",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "std_acceleration",
+        "data_type": "vec3",
+        "label": "std_acceleration"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "Read_drag",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "std_drag",
+        "data_type": "float",
+        "label": "std_drag"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "VelocityStep",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "float dt=max(delta,0.0); return (velocity+acceleration*dt)*exp(-max(drag,0.0)*dt);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "velocity",
+            "type": "vec3"
+          },
+          {
+            "name": "acceleration",
+            "type": "vec3"
+          },
+          {
+            "name": "drag",
+            "type": "float"
+          },
+          {
+            "name": "delta",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_position",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 880
+      }
+    },
+    {
+      "name": "PositionStep",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return position+velocity*max(delta,0.0);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "position",
+            "type": "vec3"
+          },
+          {
+            "name": "velocity",
+            "type": "vec3"
+          },
+          {
+            "name": "delta",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "ClearAcceleration",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "constant",
+        "data_type": "vec3",
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1100
+      }
+    },
+    {
+      "name": "ClearDrag",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "constant",
+        "data_type": "float",
+        "value": 0.0
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1320
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "velocity",
+            "name": "Velocity",
+            "type": "vec3"
+          },
+          {
+            "id": "position",
+            "name": "Position",
+            "type": "vec3"
+          },
+          {
+            "id": "std_acceleration",
+            "name": "Acceleration",
+            "type": "vec3"
+          },
+          {
+            "id": "std_drag",
+            "name": "Drag",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Read_velocity",
+      "from_port": 0,
+      "to": "VelocityStep",
+      "to_port": 0
+    },
+    {
+      "from": "Read_acceleration",
+      "from_port": 0,
+      "to": "VelocityStep",
+      "to_port": 1
+    },
+    {
+      "from": "Read_drag",
+      "from_port": 0,
+      "to": "VelocityStep",
+      "to_port": 2
+    },
+    {
+      "from": "Context_delta",
+      "from_port": 0,
+      "to": "VelocityStep",
+      "to_port": 3
+    },
+    {
+      "from": "Read_position",
+      "from_port": 0,
+      "to": "PositionStep",
+      "to_port": 0
+    },
+    {
+      "from": "VelocityStep",
+      "from_port": 0,
+      "to": "PositionStep",
+      "to_port": 1
+    },
+    {
+      "from": "Context_delta",
+      "from_port": 0,
+      "to": "PositionStep",
+      "to_port": 2
+    },
+    {
+      "from": "VelocityStep",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    },
+    {
+      "from": "PositionStep",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 1
+    },
+    {
+      "from": "ClearAcceleration",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 2
+    },
+    {
+      "from": "ClearDrag",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 3
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_solve_motion",
+    "definition": {
+      "name": "Solve Motion",
+      "stages": [
+        "update"
+      ],
+      "inputs": [],
+      "reads": [
+        "velocity",
+        "std_acceleration",
+        "std_drag",
+        "position"
+      ],
+      "writes": [
+        "velocity",
+        "position",
+        "std_acceleration",
+        "std_drag"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "solve_motion",
+        "revision": 1,
+        "bindings": {
+          "mm.standard.v1.acceleration": "std_acceleration",
+          "mm.standard.v1.drag": "std_drag"
+        }
+      }
+    },
+    "attributes": [
+      {
+        "id": "std_acceleration",
+        "name": "Acceleration",
+        "type": "vec3",
+        "default": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "standard_role": "mm.standard.v1.acceleration"
+      },
+      {
+        "id": "std_drag",
+        "name": "Drag",
+        "type": "float",
+        "default": 0.0,
+        "standard_role": "mm.standard.v1.drag"
+      }
+    ]
+  }
+}

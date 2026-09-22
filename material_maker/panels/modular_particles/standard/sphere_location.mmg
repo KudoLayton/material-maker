@@ -1,0 +1,314 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Input_center",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "center",
+        "data_type": "vec3",
+        "label": "center"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Input_radius",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "radius",
+        "data_type": "float",
+        "label": "radius"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Input_surface_only",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "surface_only",
+        "data_type": "bool",
+        "label": "surface_only"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "Input_seed",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "seed",
+        "data_type": "uint",
+        "label": "seed"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "SeedOffset_211",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "uint",
+        "code": "return seed+211u;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "seed",
+            "type": "uint"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Random_211",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "random",
+        "data_type": "vec4",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "SphereSample",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "float z=2.0*random_value.x-1.0; float phi=6.283185307179586*random_value.y; float xy=sqrt(max(0.0,1.0-z*z));\nfloat r=max(radius,0.0)*(surface_only ? 1.0 : pow(random_value.z,1.0/3.0));\nreturn center+r*vec3(xy*cos(phi),z,xy*sin(phi));",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "center",
+            "type": "vec3"
+          },
+          {
+            "name": "radius",
+            "type": "float"
+          },
+          {
+            "name": "surface_only",
+            "type": "bool"
+          },
+          {
+            "name": "random_value",
+            "type": "vec4"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_position",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 880
+      }
+    },
+    {
+      "name": "OffsetPosition",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return a+b;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "a",
+            "type": "vec3"
+          },
+          {
+            "name": "b",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1320,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "position",
+            "name": "Position",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1650,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Input_seed",
+      "from_port": 0,
+      "to": "SeedOffset_211",
+      "to_port": 0
+    },
+    {
+      "from": "SeedOffset_211",
+      "from_port": 0,
+      "to": "Random_211",
+      "to_port": 2
+    },
+    {
+      "from": "Input_center",
+      "from_port": 0,
+      "to": "SphereSample",
+      "to_port": 0
+    },
+    {
+      "from": "Input_radius",
+      "from_port": 0,
+      "to": "SphereSample",
+      "to_port": 1
+    },
+    {
+      "from": "Input_surface_only",
+      "from_port": 0,
+      "to": "SphereSample",
+      "to_port": 2
+    },
+    {
+      "from": "Random_211",
+      "from_port": 0,
+      "to": "SphereSample",
+      "to_port": 3
+    },
+    {
+      "from": "Read_position",
+      "from_port": 0,
+      "to": "OffsetPosition",
+      "to_port": 0
+    },
+    {
+      "from": "SphereSample",
+      "from_port": 0,
+      "to": "OffsetPosition",
+      "to_port": 1
+    },
+    {
+      "from": "OffsetPosition",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_sphere_location",
+    "definition": {
+      "name": "Sphere Location",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [
+        {
+          "id": "center",
+          "name": "Center",
+          "type": "vec3",
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "id": "radius",
+          "name": "Radius",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "id": "surface_only",
+          "name": "Surface Only",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "id": "seed",
+          "name": "Seed",
+          "type": "uint",
+          "default": 0
+        }
+      ],
+      "reads": [
+        "position"
+      ],
+      "writes": [
+        "position"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "sphere_location",
+        "revision": 1,
+        "bindings": {}
+      }
+    },
+    "attributes": []
+  }
+}

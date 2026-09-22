@@ -1,0 +1,275 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Read_age",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "age",
+        "data_type": "float",
+        "label": "age"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_lifetime",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "lifetime",
+        "data_type": "float",
+        "label": "lifetime"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "NormalizedAge",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "float",
+        "code": "return clamp(age/max(lifetime,0.000001),0.0,1.0);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "age",
+            "type": "float"
+          },
+          {
+            "name": "lifetime",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "LifeGradient",
+      "type": "colorize",
+      "seed_int": 0,
+      "parameters": {
+        "gradient": {
+          "type": "Gradient",
+          "interpolation": 1,
+          "points": [
+            {
+              "pos": 0.0,
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            },
+            {
+              "pos": 1.0,
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 0.0
+            }
+          ]
+        }
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_initial_color",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "std_initial_color",
+        "data_type": "vec4",
+        "label": "std_initial_color"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "Input_multiplier",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "multiplier",
+        "data_type": "vec4",
+        "label": "multiplier"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "ApplyInitialColor",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec4",
+        "code": "return initial*multiplier*gradient_value;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "initial",
+            "type": "vec4"
+          },
+          {
+            "name": "multiplier",
+            "type": "vec4"
+          },
+          {
+            "name": "gradient_value",
+            "type": "vec4"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "color",
+            "name": "Color",
+            "type": "vec4"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1320,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Read_age",
+      "from_port": 0,
+      "to": "NormalizedAge",
+      "to_port": 0
+    },
+    {
+      "from": "Read_lifetime",
+      "from_port": 0,
+      "to": "NormalizedAge",
+      "to_port": 1
+    },
+    {
+      "from": "NormalizedAge",
+      "from_port": 0,
+      "to": "LifeGradient",
+      "to_port": 0
+    },
+    {
+      "from": "Read_initial_color",
+      "from_port": 0,
+      "to": "ApplyInitialColor",
+      "to_port": 0
+    },
+    {
+      "from": "Input_multiplier",
+      "from_port": 0,
+      "to": "ApplyInitialColor",
+      "to_port": 1
+    },
+    {
+      "from": "LifeGradient",
+      "from_port": 0,
+      "to": "ApplyInitialColor",
+      "to_port": 2
+    },
+    {
+      "from": "ApplyInitialColor",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_color_over_life",
+    "definition": {
+      "name": "Color over Life",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "multiplier",
+          "name": "Color Multiplier",
+          "type": "vec4",
+          "default": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "reads": [
+        "age",
+        "lifetime",
+        "std_initial_color"
+      ],
+      "writes": [
+        "color"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "color_over_life",
+        "revision": 1,
+        "bindings": {
+          "mm.standard.v1.initial_color": "std_initial_color"
+        }
+      }
+    },
+    "attributes": [
+      {
+        "id": "std_initial_color",
+        "name": "InitialColor",
+        "type": "vec4",
+        "default": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "standard_role": "mm.standard.v1.initial_color"
+      }
+    ]
+  }
+}

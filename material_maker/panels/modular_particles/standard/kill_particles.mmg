@@ -1,0 +1,136 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Read_alive",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "alive",
+        "data_type": "bool",
+        "label": "alive"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Input_kill",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "kill",
+        "data_type": "bool",
+        "label": "kill"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Kill",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "bool",
+        "code": "return alive && !kill_value;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "alive",
+            "type": "bool"
+          },
+          {
+            "name": "kill_value",
+            "type": "bool"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "alive",
+            "name": "Alive",
+            "type": "bool"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Read_alive",
+      "from_port": 0,
+      "to": "Kill",
+      "to_port": 0
+    },
+    {
+      "from": "Input_kill",
+      "from_port": 0,
+      "to": "Kill",
+      "to_port": 1
+    },
+    {
+      "from": "Kill",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_kill_particles",
+    "definition": {
+      "name": "Kill Particles",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "kill",
+          "name": "Kill",
+          "type": "bool",
+          "default": false
+        }
+      ],
+      "reads": [
+        "alive"
+      ],
+      "writes": [
+        "alive"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "kill_particles",
+        "revision": 1,
+        "bindings": {}
+      }
+    },
+    "attributes": []
+  }
+}

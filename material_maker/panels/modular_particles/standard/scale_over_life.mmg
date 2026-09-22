@@ -1,0 +1,270 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Read_age",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "age",
+        "data_type": "float",
+        "label": "age"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_lifetime",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "lifetime",
+        "data_type": "float",
+        "label": "lifetime"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "NormalizedAge",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "float",
+        "code": "return clamp(age/max(lifetime,0.000001),0.0,1.0);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "age",
+            "type": "float"
+          },
+          {
+            "name": "lifetime",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "LifeCurve",
+      "type": "tonality",
+      "seed_int": 0,
+      "parameters": {
+        "curve": {
+          "type": "Curve",
+          "points": [
+            {
+              "x": 0.0,
+              "y": 1.0,
+              "ls": -1.0,
+              "rs": -1.0
+            },
+            {
+              "x": 1.0,
+              "y": 0.0,
+              "ls": -1.0,
+              "rs": -1.0
+            }
+          ]
+        }
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_initial_scale",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "std_initial_scale",
+        "data_type": "vec3",
+        "label": "std_initial_scale"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "Input_multiplier",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "multiplier",
+        "data_type": "vec3",
+        "label": "multiplier"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "ApplyInitialScale",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return initial*multiplier*curve_value;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "initial",
+            "type": "vec3"
+          },
+          {
+            "name": "multiplier",
+            "type": "vec3"
+          },
+          {
+            "name": "curve_value",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "scale",
+            "name": "Scale",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1320,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Read_age",
+      "from_port": 0,
+      "to": "NormalizedAge",
+      "to_port": 0
+    },
+    {
+      "from": "Read_lifetime",
+      "from_port": 0,
+      "to": "NormalizedAge",
+      "to_port": 1
+    },
+    {
+      "from": "NormalizedAge",
+      "from_port": 0,
+      "to": "LifeCurve",
+      "to_port": 0
+    },
+    {
+      "from": "Read_initial_scale",
+      "from_port": 0,
+      "to": "ApplyInitialScale",
+      "to_port": 0
+    },
+    {
+      "from": "Input_multiplier",
+      "from_port": 0,
+      "to": "ApplyInitialScale",
+      "to_port": 1
+    },
+    {
+      "from": "LifeCurve",
+      "from_port": 0,
+      "to": "ApplyInitialScale",
+      "to_port": 2
+    },
+    {
+      "from": "ApplyInitialScale",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_scale_over_life",
+    "definition": {
+      "name": "Scale over Life",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "multiplier",
+          "name": "Scale Multiplier",
+          "type": "vec3",
+          "default": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "reads": [
+        "age",
+        "lifetime",
+        "std_initial_scale"
+      ],
+      "writes": [
+        "scale"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "scale_over_life",
+        "revision": 1,
+        "bindings": {
+          "mm.standard.v1.initial_scale": "std_initial_scale"
+        }
+      }
+    },
+    "attributes": [
+      {
+        "id": "std_initial_scale",
+        "name": "InitialScale",
+        "type": "vec3",
+        "default": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "standard_role": "mm.standard.v1.initial_scale"
+      }
+    ]
+  }
+}

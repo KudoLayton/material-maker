@@ -1,0 +1,1280 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Input_strength",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "strength",
+        "data_type": "float",
+        "label": "strength"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Input_frequency",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "frequency",
+        "data_type": "float",
+        "label": "frequency"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Input_pan",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "pan",
+        "data_type": "vec3",
+        "label": "pan"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "Input_seed",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "seed",
+        "data_type": "uint",
+        "label": "seed"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "SeedOffset_401",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "uint",
+        "code": "return seed+401u;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "seed",
+            "type": "uint"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Random_401",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "random",
+        "data_type": "vec4",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "SharedFieldID",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "constant",
+        "data_type": "uint",
+        "value": 0
+      },
+      "node_position": {
+        "x": 0,
+        "y": 880
+      }
+    },
+    {
+      "name": "Read_position",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1100
+      }
+    },
+    {
+      "name": "Context_time",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_context",
+        "id": "time",
+        "data_type": "float",
+        "label": "time"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1320
+      }
+    },
+    {
+      "name": "NoiseCoordinates",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return position*max(frequency,0.0)+pan*time+random_value.xyz*64.0;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "position",
+            "type": "vec3"
+          },
+          {
+            "name": "frequency",
+            "type": "float"
+          },
+          {
+            "name": "pan",
+            "type": "vec3"
+          },
+          {
+            "name": "time",
+            "type": "float"
+          },
+          {
+            "name": "random_value",
+            "type": "vec4"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    },
+    {
+      "name": "Curl3D",
+      "type": "graph",
+      "seed_int": 0,
+      "nodes": [
+        {
+          "name": "gen_inputs",
+          "type": "ios",
+          "ports": [
+            {
+              "name": "Coordinates",
+              "type": "rgb"
+            }
+          ],
+          "node_position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "name": "gen_outputs",
+          "type": "ios",
+          "ports": [
+            {
+              "name": "Curl",
+              "type": "rgb"
+            }
+          ],
+          "node_position": {
+            "x": 320,
+            "y": 0
+          }
+        },
+        {
+          "name": "gen_parameters",
+          "type": "remote",
+          "widgets": [],
+          "node_position": {
+            "x": 640,
+            "y": 0
+          }
+        },
+        {
+          "name": "PotentialNoise",
+          "type": "tex3d_fbm_3",
+          "seed_int": 0,
+          "parameters": {
+            "noise": 4.0,
+            "iterations": 2.0,
+            "persistence": 0.5,
+            "scale_x": 1.0,
+            "scale_y": 1.0,
+            "scale_z": 1.0
+          },
+          "node_position": {
+            "x": 960,
+            "y": 0
+          }
+        },
+        {
+          "name": "A0_D1_M_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(19.1,7.7,3.3)+vec3(0.0,-0.01,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 1280,
+            "y": 0
+          }
+        },
+        {
+          "name": "A0_D1_M",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 0,
+            "y": 180
+          }
+        },
+        {
+          "name": "A0_D1_P_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(19.1,7.7,3.3)+vec3(0.0,0.01,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 320,
+            "y": 180
+          }
+        },
+        {
+          "name": "A0_D1_P",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 640,
+            "y": 180
+          }
+        },
+        {
+          "name": "A0_D2_M_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(19.1,7.7,3.3)+vec3(0.0,0.0,-0.01),0.0);"
+          },
+          "node_position": {
+            "x": 960,
+            "y": 180
+          }
+        },
+        {
+          "name": "A0_D2_M",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 1280,
+            "y": 180
+          }
+        },
+        {
+          "name": "A0_D2_P_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(19.1,7.7,3.3)+vec3(0.0,0.0,0.01),0.0);"
+          },
+          "node_position": {
+            "x": 0,
+            "y": 360
+          }
+        },
+        {
+          "name": "A0_D2_P",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 320,
+            "y": 360
+          }
+        },
+        {
+          "name": "A1_D0_M_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(47.2,11.8,29.4)+vec3(-0.01,0.0,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 640,
+            "y": 360
+          }
+        },
+        {
+          "name": "A1_D0_M",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 960,
+            "y": 360
+          }
+        },
+        {
+          "name": "A1_D0_P_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(47.2,11.8,29.4)+vec3(0.01,0.0,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 1280,
+            "y": 360
+          }
+        },
+        {
+          "name": "A1_D0_P",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 0,
+            "y": 540
+          }
+        },
+        {
+          "name": "A1_D2_M_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(47.2,11.8,29.4)+vec3(0.0,0.0,-0.01),0.0);"
+          },
+          "node_position": {
+            "x": 320,
+            "y": 540
+          }
+        },
+        {
+          "name": "A1_D2_M",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 640,
+            "y": 540
+          }
+        },
+        {
+          "name": "A1_D2_P_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(47.2,11.8,29.4)+vec3(0.0,0.0,0.01),0.0);"
+          },
+          "node_position": {
+            "x": 960,
+            "y": 540
+          }
+        },
+        {
+          "name": "A1_D2_P",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 1280,
+            "y": 540
+          }
+        },
+        {
+          "name": "A2_D0_M_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(5.6,61.3,13.9)+vec3(-0.01,0.0,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 0,
+            "y": 720
+          }
+        },
+        {
+          "name": "A2_D0_M",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 320,
+            "y": 720
+          }
+        },
+        {
+          "name": "A2_D0_P_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(5.6,61.3,13.9)+vec3(0.01,0.0,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 640,
+            "y": 720
+          }
+        },
+        {
+          "name": "A2_D0_P",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 960,
+            "y": 720
+          }
+        },
+        {
+          "name": "A2_D1_M_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(5.6,61.3,13.9)+vec3(0.0,-0.01,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 1280,
+            "y": 720
+          }
+        },
+        {
+          "name": "A2_D1_M",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 0,
+            "y": 900
+          }
+        },
+        {
+          "name": "A2_D1_P_Coordinate",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec4",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "point",
+                "type": "vec3"
+              }
+            ],
+            "code": "return vec4(point+vec3(5.6,61.3,13.9)+vec3(0.0,0.01,0.0),0.0);"
+          },
+          "node_position": {
+            "x": 320,
+            "y": 900
+          }
+        },
+        {
+          "name": "A2_D1_P",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "evaluate",
+            "function_type": "tex3d_gs"
+          },
+          "node_position": {
+            "x": 640,
+            "y": 900
+          }
+        },
+        {
+          "name": "CurlDifference",
+          "type": "particle_node",
+          "parameters": {},
+          "settings": {
+            "kind": "custom",
+            "data_type": "vec3",
+            "editor_profile": "standard_module_v1",
+            "input_ports": [
+              {
+                "name": "v0p",
+                "type": "float"
+              },
+              {
+                "name": "v0m",
+                "type": "float"
+              },
+              {
+                "name": "v1p",
+                "type": "float"
+              },
+              {
+                "name": "v1m",
+                "type": "float"
+              },
+              {
+                "name": "v2p",
+                "type": "float"
+              },
+              {
+                "name": "v2m",
+                "type": "float"
+              },
+              {
+                "name": "v3p",
+                "type": "float"
+              },
+              {
+                "name": "v3m",
+                "type": "float"
+              },
+              {
+                "name": "v4p",
+                "type": "float"
+              },
+              {
+                "name": "v4m",
+                "type": "float"
+              },
+              {
+                "name": "v5p",
+                "type": "float"
+              },
+              {
+                "name": "v5m",
+                "type": "float"
+              }
+            ],
+            "code": "return vec3((v0p-v0m)-(v1p-v1m),(v2p-v2m)-(v3p-v3m),(v4p-v4m)-(v5p-v5m))/0.02;"
+          },
+          "node_position": {
+            "x": 960,
+            "y": 900
+          }
+        }
+      ],
+      "connections": [
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A0_D1_M_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A0_D1_M",
+          "to_port": 0
+        },
+        {
+          "from": "A0_D1_M_Coordinate",
+          "from_port": 0,
+          "to": "A0_D1_M",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A0_D1_P_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A0_D1_P",
+          "to_port": 0
+        },
+        {
+          "from": "A0_D1_P_Coordinate",
+          "from_port": 0,
+          "to": "A0_D1_P",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A0_D2_M_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A0_D2_M",
+          "to_port": 0
+        },
+        {
+          "from": "A0_D2_M_Coordinate",
+          "from_port": 0,
+          "to": "A0_D2_M",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A0_D2_P_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A0_D2_P",
+          "to_port": 0
+        },
+        {
+          "from": "A0_D2_P_Coordinate",
+          "from_port": 0,
+          "to": "A0_D2_P",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A1_D0_M_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A1_D0_M",
+          "to_port": 0
+        },
+        {
+          "from": "A1_D0_M_Coordinate",
+          "from_port": 0,
+          "to": "A1_D0_M",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A1_D0_P_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A1_D0_P",
+          "to_port": 0
+        },
+        {
+          "from": "A1_D0_P_Coordinate",
+          "from_port": 0,
+          "to": "A1_D0_P",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A1_D2_M_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A1_D2_M",
+          "to_port": 0
+        },
+        {
+          "from": "A1_D2_M_Coordinate",
+          "from_port": 0,
+          "to": "A1_D2_M",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A1_D2_P_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A1_D2_P",
+          "to_port": 0
+        },
+        {
+          "from": "A1_D2_P_Coordinate",
+          "from_port": 0,
+          "to": "A1_D2_P",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A2_D0_M_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A2_D0_M",
+          "to_port": 0
+        },
+        {
+          "from": "A2_D0_M_Coordinate",
+          "from_port": 0,
+          "to": "A2_D0_M",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A2_D0_P_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A2_D0_P",
+          "to_port": 0
+        },
+        {
+          "from": "A2_D0_P_Coordinate",
+          "from_port": 0,
+          "to": "A2_D0_P",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A2_D1_M_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A2_D1_M",
+          "to_port": 0
+        },
+        {
+          "from": "A2_D1_M_Coordinate",
+          "from_port": 0,
+          "to": "A2_D1_M",
+          "to_port": 1
+        },
+        {
+          "from": "gen_inputs",
+          "from_port": 0,
+          "to": "A2_D1_P_Coordinate",
+          "to_port": 0
+        },
+        {
+          "from": "PotentialNoise",
+          "from_port": 0,
+          "to": "A2_D1_P",
+          "to_port": 0
+        },
+        {
+          "from": "A2_D1_P_Coordinate",
+          "from_port": 0,
+          "to": "A2_D1_P",
+          "to_port": 1
+        },
+        {
+          "from": "A2_D1_P",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 0
+        },
+        {
+          "from": "A2_D1_M",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 1
+        },
+        {
+          "from": "A1_D2_P",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 2
+        },
+        {
+          "from": "A1_D2_M",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 3
+        },
+        {
+          "from": "A0_D2_P",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 4
+        },
+        {
+          "from": "A0_D2_M",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 5
+        },
+        {
+          "from": "A2_D0_P",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 6
+        },
+        {
+          "from": "A2_D0_M",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 7
+        },
+        {
+          "from": "A1_D0_P",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 8
+        },
+        {
+          "from": "A1_D0_M",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 9
+        },
+        {
+          "from": "A0_D1_P",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 10
+        },
+        {
+          "from": "A0_D1_M",
+          "from_port": 0,
+          "to": "CurlDifference",
+          "to_port": 11
+        },
+        {
+          "from": "CurlDifference",
+          "from_port": 0,
+          "to": "gen_outputs",
+          "to_port": 0
+        }
+      ],
+      "node_position": {
+        "x": 1320,
+        "y": 0
+      }
+    },
+    {
+      "name": "Amplitude",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return frequency>0.0 ? strength*curl_value : vec3(0.0);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "frequency",
+            "type": "float"
+          },
+          {
+            "name": "strength",
+            "type": "float"
+          },
+          {
+            "name": "curl_value",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1650,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_acceleration",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "std_acceleration",
+        "data_type": "vec3",
+        "label": "std_acceleration"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1540
+      }
+    },
+    {
+      "name": "Accumulate",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return a+b;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "a",
+            "type": "vec3"
+          },
+          {
+            "name": "b",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1980,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "std_acceleration",
+            "name": "Acceleration",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 2310,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Input_seed",
+      "from_port": 0,
+      "to": "SeedOffset_401",
+      "to_port": 0
+    },
+    {
+      "from": "SeedOffset_401",
+      "from_port": 0,
+      "to": "Random_401",
+      "to_port": 2
+    },
+    {
+      "from": "SharedFieldID",
+      "from_port": 0,
+      "to": "Random_401",
+      "to_port": 0
+    },
+    {
+      "from": "Read_position",
+      "from_port": 0,
+      "to": "NoiseCoordinates",
+      "to_port": 0
+    },
+    {
+      "from": "Input_frequency",
+      "from_port": 0,
+      "to": "NoiseCoordinates",
+      "to_port": 1
+    },
+    {
+      "from": "Input_pan",
+      "from_port": 0,
+      "to": "NoiseCoordinates",
+      "to_port": 2
+    },
+    {
+      "from": "Context_time",
+      "from_port": 0,
+      "to": "NoiseCoordinates",
+      "to_port": 3
+    },
+    {
+      "from": "Random_401",
+      "from_port": 0,
+      "to": "NoiseCoordinates",
+      "to_port": 4
+    },
+    {
+      "from": "NoiseCoordinates",
+      "from_port": 0,
+      "to": "Curl3D",
+      "to_port": 0
+    },
+    {
+      "from": "Input_frequency",
+      "from_port": 0,
+      "to": "Amplitude",
+      "to_port": 0
+    },
+    {
+      "from": "Input_strength",
+      "from_port": 0,
+      "to": "Amplitude",
+      "to_port": 1
+    },
+    {
+      "from": "Curl3D",
+      "from_port": 0,
+      "to": "Amplitude",
+      "to_port": 2
+    },
+    {
+      "from": "Read_acceleration",
+      "from_port": 0,
+      "to": "Accumulate",
+      "to_port": 0
+    },
+    {
+      "from": "Amplitude",
+      "from_port": 0,
+      "to": "Accumulate",
+      "to_port": 1
+    },
+    {
+      "from": "Accumulate",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_curl_noise",
+    "definition": {
+      "name": "Curl Noise",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "strength",
+          "name": "Strength",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "id": "frequency",
+          "name": "Frequency",
+          "type": "float",
+          "default": 0.5
+        },
+        {
+          "id": "pan",
+          "name": "Pan",
+          "type": "vec3",
+          "default": [
+            0.0,
+            0.2,
+            0.0
+          ]
+        },
+        {
+          "id": "seed",
+          "name": "Seed",
+          "type": "uint",
+          "default": 0
+        }
+      ],
+      "reads": [
+        "position",
+        "std_acceleration"
+      ],
+      "writes": [
+        "std_acceleration"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "curl_noise",
+        "revision": 1,
+        "bindings": {
+          "mm.standard.v1.acceleration": "std_acceleration"
+        }
+      }
+    },
+    "attributes": [
+      {
+        "id": "std_acceleration",
+        "name": "Acceleration",
+        "type": "vec3",
+        "default": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "standard_role": "mm.standard.v1.acceleration"
+      }
+    ]
+  }
+}

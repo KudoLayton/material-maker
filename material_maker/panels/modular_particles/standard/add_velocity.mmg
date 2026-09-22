@@ -1,0 +1,140 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Read_velocity",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "velocity",
+        "data_type": "vec3",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Input_velocity",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "velocity",
+        "data_type": "vec3",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "AddVelocity",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return a+b;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "a",
+            "type": "vec3"
+          },
+          {
+            "name": "b",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "velocity",
+            "name": "Velocity",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Read_velocity",
+      "from_port": 0,
+      "to": "AddVelocity",
+      "to_port": 0
+    },
+    {
+      "from": "Input_velocity",
+      "from_port": 0,
+      "to": "AddVelocity",
+      "to_port": 1
+    },
+    {
+      "from": "AddVelocity",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_add_velocity",
+    "definition": {
+      "name": "Add Velocity",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [
+        {
+          "id": "velocity",
+          "name": "Velocity",
+          "type": "vec3",
+          "default": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "reads": [
+        "velocity"
+      ],
+      "writes": [
+        "velocity"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "add_velocity",
+        "revision": 1,
+        "bindings": {}
+      }
+    },
+    "attributes": []
+  }
+}

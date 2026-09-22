@@ -1,0 +1,146 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Input_drag",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "drag",
+        "data_type": "float",
+        "label": "drag"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_drag",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "std_drag",
+        "data_type": "float",
+        "label": "std_drag"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Accumulate",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "float",
+        "code": "return current+max(drag,0.0);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "current",
+            "type": "float"
+          },
+          {
+            "name": "drag",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "std_drag",
+            "name": "Drag",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Read_drag",
+      "from_port": 0,
+      "to": "Accumulate",
+      "to_port": 0
+    },
+    {
+      "from": "Input_drag",
+      "from_port": 0,
+      "to": "Accumulate",
+      "to_port": 1
+    },
+    {
+      "from": "Accumulate",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_drag",
+    "definition": {
+      "name": "Drag",
+      "stages": [
+        "update"
+      ],
+      "inputs": [
+        {
+          "id": "drag",
+          "name": "Drag",
+          "type": "float",
+          "default": 1.0
+        }
+      ],
+      "reads": [
+        "std_drag"
+      ],
+      "writes": [
+        "std_drag"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "drag",
+        "revision": 1,
+        "bindings": {
+          "mm.standard.v1.drag": "std_drag"
+        }
+      }
+    },
+    "attributes": [
+      {
+        "id": "std_drag",
+        "name": "Drag",
+        "type": "float",
+        "default": 0.0,
+        "standard_role": "mm.standard.v1.drag"
+      }
+    ]
+  }
+}

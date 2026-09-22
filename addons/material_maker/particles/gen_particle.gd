@@ -133,6 +133,8 @@ func model_data() -> Dictionary:
 				else: value[i] = constant_component("v%d" % i, value[i], type)
 		else: value = constant_component("value", n.get("value", value), type)
 		n["value"] = value
+	if n.kind == "custom" and settings.get("editor_profile") == "standard_module_v1":
+		n["code"] = parameters.get("code", settings.get("code", ""))
 	if n.kind == "uniform":
 		n["uniform"] = parameters.get("uniform_name", n.get("uniform", "parameter"))
 		n["array_size"] = int(parameters.get("array_size", 1)) if parameters.get("is_array", false) else 0
@@ -244,6 +246,8 @@ func get_parameter_defs() -> Array:
 					for j in value[i].size(): result.append(number_parameter("v%d_%d" % [i, j], value[i][j], integer))
 				else: result.append(number_parameter("v%d" % i, value[i], integer))
 		else: result.append(number_parameter("value", value, integer))
+	if n.kind == "custom" and settings.get("editor_profile") == "standard_module_v1":
+		result.append({"name":"code","label":"Code","type":"string","commit_on_submit":true,"default":settings.get("code",""),"longdesc":"GLSL function body. Inputs are the named typed ports. Right-click > Edit text for multiline editing. Changes affect this module definition, not the built-in catalog."})
 	if n.kind == "array_get": result.append(number_parameter("array_size", settings.get("array_size", 1), true))
 	if n.kind == "uniform":
 		result.append({"name": "uniform_name", "label": "Name", "type": "string", "commit_on_submit": true, "default": settings.get("uniform", "parameter")})

@@ -1,0 +1,651 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Input_position_offset",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "position_offset",
+        "data_type": "vec3",
+        "label": "position_offset"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Input_velocity",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "velocity",
+        "data_type": "vec3",
+        "label": "velocity"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Input_color",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "color",
+        "data_type": "vec4",
+        "label": "color"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "Input_scale",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "scale",
+        "data_type": "vec3",
+        "label": "scale"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "Input_override_lifetime",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "override_lifetime",
+        "data_type": "bool",
+        "label": "override_lifetime"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 880
+      }
+    },
+    {
+      "name": "Input_lifetime_min",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "lifetime_min",
+        "data_type": "float",
+        "label": "lifetime_min"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1100
+      }
+    },
+    {
+      "name": "Input_lifetime_max",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "lifetime_max",
+        "data_type": "float",
+        "label": "lifetime_max"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1320
+      }
+    },
+    {
+      "name": "Input_seed",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "seed",
+        "data_type": "uint",
+        "label": "seed"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1540
+      }
+    },
+    {
+      "name": "SeedOffset_11",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "uint",
+        "code": "return seed+11u;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "seed",
+            "type": "uint"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Random_11",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "random",
+        "data_type": "vec4",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_lifetime",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "lifetime",
+        "data_type": "float",
+        "label": "lifetime"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1760
+      }
+    },
+    {
+      "name": "Lifetime",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "float",
+        "code": "return override_value ? max(0.0,mix(min(lo,hi),max(lo,hi),random_value.x)) : current;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "override_value",
+            "type": "bool"
+          },
+          {
+            "name": "lo",
+            "type": "float"
+          },
+          {
+            "name": "hi",
+            "type": "float"
+          },
+          {
+            "name": "random_value",
+            "type": "vec4"
+          },
+          {
+            "name": "current",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_position",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 1980
+      }
+    },
+    {
+      "name": "PositionOffset",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return a+b;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "a",
+            "type": "vec3"
+          },
+          {
+            "name": "b",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 220
+      }
+    },
+    {
+      "name": "IdentityRotation",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "constant",
+        "data_type": "vec4",
+        "value": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "node_position": {
+        "x": 0,
+        "y": 2200
+      }
+    },
+    {
+      "name": "ZeroAcceleration",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "constant",
+        "data_type": "vec3",
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "node_position": {
+        "x": 0,
+        "y": 2420
+      }
+    },
+    {
+      "name": "ZeroDrag",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "constant",
+        "data_type": "float",
+        "value": 0.0
+      },
+      "node_position": {
+        "x": 0,
+        "y": 2640
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "position",
+            "name": "Position",
+            "type": "vec3"
+          },
+          {
+            "id": "velocity",
+            "name": "Velocity",
+            "type": "vec3"
+          },
+          {
+            "id": "color",
+            "name": "Color",
+            "type": "vec4"
+          },
+          {
+            "id": "scale",
+            "name": "Scale",
+            "type": "vec3"
+          },
+          {
+            "id": "std_initial_color",
+            "name": "InitialColor",
+            "type": "vec4"
+          },
+          {
+            "id": "std_initial_scale",
+            "name": "InitialScale",
+            "type": "vec3"
+          },
+          {
+            "id": "lifetime",
+            "name": "Lifetime",
+            "type": "float"
+          },
+          {
+            "id": "rotation",
+            "name": "Rotation",
+            "type": "vec4"
+          },
+          {
+            "id": "std_acceleration",
+            "name": "Acceleration",
+            "type": "vec3"
+          },
+          {
+            "id": "std_drag",
+            "name": "Drag",
+            "type": "float"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1320,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Input_seed",
+      "from_port": 0,
+      "to": "SeedOffset_11",
+      "to_port": 0
+    },
+    {
+      "from": "SeedOffset_11",
+      "from_port": 0,
+      "to": "Random_11",
+      "to_port": 2
+    },
+    {
+      "from": "Input_override_lifetime",
+      "from_port": 0,
+      "to": "Lifetime",
+      "to_port": 0
+    },
+    {
+      "from": "Input_lifetime_min",
+      "from_port": 0,
+      "to": "Lifetime",
+      "to_port": 1
+    },
+    {
+      "from": "Input_lifetime_max",
+      "from_port": 0,
+      "to": "Lifetime",
+      "to_port": 2
+    },
+    {
+      "from": "Random_11",
+      "from_port": 0,
+      "to": "Lifetime",
+      "to_port": 3
+    },
+    {
+      "from": "Read_lifetime",
+      "from_port": 0,
+      "to": "Lifetime",
+      "to_port": 4
+    },
+    {
+      "from": "Read_position",
+      "from_port": 0,
+      "to": "PositionOffset",
+      "to_port": 0
+    },
+    {
+      "from": "Input_position_offset",
+      "from_port": 0,
+      "to": "PositionOffset",
+      "to_port": 1
+    },
+    {
+      "from": "PositionOffset",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    },
+    {
+      "from": "Input_velocity",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 1
+    },
+    {
+      "from": "Input_color",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 2
+    },
+    {
+      "from": "Input_scale",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 3
+    },
+    {
+      "from": "Input_color",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 4
+    },
+    {
+      "from": "Input_scale",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 5
+    },
+    {
+      "from": "Lifetime",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 6
+    },
+    {
+      "from": "IdentityRotation",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 7
+    },
+    {
+      "from": "ZeroAcceleration",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 8
+    },
+    {
+      "from": "ZeroDrag",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 9
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_initialize_particle",
+    "definition": {
+      "name": "Initialize Particle",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [
+        {
+          "id": "position_offset",
+          "name": "Position Offset",
+          "type": "vec3",
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "id": "velocity",
+          "name": "Velocity",
+          "type": "vec3",
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "id": "color",
+          "name": "Color",
+          "type": "vec4",
+          "default": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "id": "scale",
+          "name": "Scale",
+          "type": "vec3",
+          "default": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "id": "override_lifetime",
+          "name": "Override Lifetime",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "id": "lifetime_min",
+          "name": "Lifetime Min",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "id": "lifetime_max",
+          "name": "Lifetime Max",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "id": "seed",
+          "name": "Seed",
+          "type": "uint",
+          "default": 0
+        }
+      ],
+      "reads": [
+        "lifetime",
+        "position"
+      ],
+      "writes": [
+        "position",
+        "velocity",
+        "color",
+        "scale",
+        "std_initial_color",
+        "std_initial_scale",
+        "lifetime",
+        "rotation",
+        "std_acceleration",
+        "std_drag"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "initialize_particle",
+        "revision": 1,
+        "bindings": {
+          "mm.standard.v1.acceleration": "std_acceleration",
+          "mm.standard.v1.drag": "std_drag",
+          "mm.standard.v1.initial_color": "std_initial_color",
+          "mm.standard.v1.initial_scale": "std_initial_scale"
+        }
+      }
+    },
+    "attributes": [
+      {
+        "id": "std_acceleration",
+        "name": "Acceleration",
+        "type": "vec3",
+        "default": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "standard_role": "mm.standard.v1.acceleration"
+      },
+      {
+        "id": "std_drag",
+        "name": "Drag",
+        "type": "float",
+        "default": 0.0,
+        "standard_role": "mm.standard.v1.drag"
+      },
+      {
+        "id": "std_initial_color",
+        "name": "InitialColor",
+        "type": "vec4",
+        "default": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "standard_role": "mm.standard.v1.initial_color"
+      },
+      {
+        "id": "std_initial_scale",
+        "name": "InitialScale",
+        "type": "vec3",
+        "default": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "standard_role": "mm.standard.v1.initial_scale"
+      }
+    ]
+  }
+}

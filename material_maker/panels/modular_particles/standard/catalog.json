@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "id": "initialize_particle",
+      "name": "Initialize Particle",
+      "revision": 1,
+      "stages": [
+        "spawn"
+      ],
+      "category": "Initialization",
+      "description": "Initialize visible particle state and capture initial Color/Scale. Emitter lifetime is preserved unless overridden.",
+      "inputs_help": "Position Offset: m; Velocity: m/s; Color: linear RGBA; Scale: multiplier; Override Lifetime: bool; Lifetime Min/Max: seconds; Seed: uint.",
+      "order": "First in Spawn, before Location and Velocity modules.",
+      "tags": "Initialization spawn particle Niagara 기본 입자",
+      "file": "initialize_particle.mmg"
+    },
+    {
+      "id": "box_location",
+      "name": "Box Location",
+      "revision": 1,
+      "stages": [
+        "spawn"
+      ],
+      "category": "Location",
+      "description": "Uniform volume sampling in a box, added to the current Position.",
+      "inputs_help": "Center and full Size: m; Seed: uint. Absolute Size is used.",
+      "order": "After Initialize Particle.",
+      "tags": "Location spawn particle Niagara 기본 입자",
+      "file": "box_location.mmg"
+    },
+    {
+      "id": "sphere_location",
+      "name": "Sphere Location",
+      "revision": 1,
+      "stages": [
+        "spawn"
+      ],
+      "category": "Location",
+      "description": "Uniform sphere volume or surface sampling, added to current Position.",
+      "inputs_help": "Center/Radius: m; Surface Only: bool; Seed: uint. Negative radius becomes zero.",
+      "order": "After Initialize Particle.",
+      "tags": "Location spawn particle Niagara 기본 입자",
+      "file": "sphere_location.mmg"
+    },
+    {
+      "id": "add_velocity",
+      "name": "Add Velocity",
+      "revision": 1,
+      "stages": [
+        "spawn"
+      ],
+      "category": "Velocity",
+      "description": "Add a constant velocity in simulation coordinates.",
+      "inputs_help": "Velocity: m/s.",
+      "order": "After Initialize Particle; use Solve Motion in Update to move.",
+      "tags": "Velocity spawn particle Niagara 기본 입자",
+      "file": "add_velocity.mmg"
+    },
+    {
+      "id": "add_velocity_in_cone",
+      "name": "Add Velocity in Cone",
+      "revision": 1,
+      "stages": [
+        "spawn"
+      ],
+      "category": "Velocity",
+      "description": "Add velocity uniformly distributed over a cone solid angle.",
+      "inputs_help": "Axis: direction (+Y fallback); Half Angle: degrees [0,180]; Speed Min/Max: m/s, sorted and nonnegative; Seed: uint.",
+      "order": "After Initialize Particle; use Solve Motion in Update to move.",
+      "tags": "Velocity spawn particle Niagara 기본 입자",
+      "file": "add_velocity_in_cone.mmg"
+    },
+    {
+      "id": "gravity",
+      "name": "Gravity",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Forces",
+      "description": "Accumulate acceleration without multiplying by delta. No mass is used.",
+      "inputs_help": "Gravity: m/s², default (0,-9.81,0).",
+      "order": "Before exactly one Solve Motion.",
+      "tags": "Forces update particle Niagara 기본 입자",
+      "file": "gravity.mmg"
+    },
+    {
+      "id": "drag",
+      "name": "Drag",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Forces",
+      "description": "Accumulate nonnegative exponential velocity damping.",
+      "inputs_help": "Drag: seconds⁻¹. Negative values contribute zero.",
+      "order": "Before exactly one Solve Motion.",
+      "tags": "Forces update particle Niagara 기본 입자",
+      "file": "drag.mmg"
+    },
+    {
+      "id": "curl_noise",
+      "name": "Curl Noise",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Forces",
+      "description": "A shared seeded 3D curl field, not per-particle jitter or the mmtest XY curl. Editable 12-sample central differences of a vector potential.",
+      "inputs_help": "Strength: acceleration multiplier; Frequency: noise units/m; Pan: noise units/s; Seed: uint. FBM octave/persistence controls are inside the graph.",
+      "order": "Before exactly one Solve Motion. More expensive than Gravity; no texture/bake input.",
+      "tags": "Forces update particle Niagara 기본 입자",
+      "file": "curl_noise.mmg"
+    },
+    {
+      "id": "solve_motion",
+      "name": "Solve Motion",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Solvers",
+      "description": "Semi-implicit velocity/position integration with exponential drag; clears both accumulators after use.",
+      "inputs_help": "Uses Context.delta in seconds. No module inputs.",
+      "order": "Exactly once, after all Gravity/Curl/Drag modules. Color/Scale over Life may follow.",
+      "tags": "Solvers update particle Niagara 기본 입자",
+      "file": "solve_motion.mmg"
+    },
+    {
+      "id": "color_over_life",
+      "name": "Color over Life",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Appearance",
+      "description": "Evaluate from captured initial state each frame, not from the previous frame result.",
+      "inputs_help": "Multiplier: linear RGBA.",
+      "order": "Requires a Spawn writer for InitialColor.",
+      "tags": "Appearance update particle Niagara 기본 입자",
+      "file": "color_over_life.mmg"
+    },
+    {
+      "id": "scale_over_life",
+      "name": "Scale over Life",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Appearance",
+      "description": "Evaluate from captured initial state each frame, not from the previous frame result.",
+      "inputs_help": "Multiplier: XYZ scale. Edit the Gradient/Curve inside this module.",
+      "order": "Requires a Spawn writer for InitialScale.",
+      "tags": "Appearance update particle Niagara 기본 입자",
+      "file": "scale_over_life.mmg"
+    },
+    {
+      "id": "kill_particles",
+      "name": "Kill Particles",
+      "revision": 1,
+      "stages": [
+        "update"
+      ],
+      "category": "Lifetime",
+      "description": "Kill without resurrecting dead particles. Replace the Kill connection with a per-particle bool graph for conditional killing.",
+      "inputs_help": "Kill: bool, default false. A true instance input kills all particles reaching this module.",
+      "order": "Usually last in Update. Does not add a volume or event system.",
+      "tags": "Lifetime update particle Niagara 기본 입자",
+      "file": "kill_particles.mmg"
+    }
+  ]
+}

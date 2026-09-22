@@ -1,0 +1,286 @@
+{
+  "type": "graph",
+  "name": "Module",
+  "seed_int": 0,
+  "nodes": [
+    {
+      "name": "Input_center",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "center",
+        "data_type": "vec3",
+        "label": "center"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "Input_size",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "size",
+        "data_type": "vec3",
+        "label": "size"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 220
+      }
+    },
+    {
+      "name": "Input_seed",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_parameter",
+        "id": "seed",
+        "data_type": "uint",
+        "label": "seed"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 440
+      }
+    },
+    {
+      "name": "SeedOffset_101",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "uint",
+        "code": "return seed+101u;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "seed",
+            "type": "uint"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 330,
+        "y": 0
+      }
+    },
+    {
+      "name": "Random_101",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "random",
+        "data_type": "vec4",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "node_position": {
+        "x": 660,
+        "y": 0
+      }
+    },
+    {
+      "name": "BoxSample",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return center+(random_value.xyz-vec3(0.5))*abs(size);",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "center",
+            "type": "vec3"
+          },
+          {
+            "name": "size",
+            "type": "vec3"
+          },
+          {
+            "name": "random_value",
+            "type": "vec4"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 990,
+        "y": 0
+      }
+    },
+    {
+      "name": "Read_position",
+      "type": "modular_particle",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "module_read",
+        "id": "position",
+        "data_type": "vec3",
+        "label": "position"
+      },
+      "node_position": {
+        "x": 0,
+        "y": 660
+      }
+    },
+    {
+      "name": "OffsetPosition",
+      "type": "particle_node",
+      "seed_int": 0,
+      "parameters": {},
+      "settings": {
+        "kind": "custom",
+        "data_type": "vec3",
+        "code": "return a+b;",
+        "editor_profile": "standard_module_v1",
+        "input_ports": [
+          {
+            "name": "a",
+            "type": "vec3"
+          },
+          {
+            "name": "b",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1320,
+        "y": 0
+      }
+    },
+    {
+      "name": "Output",
+      "type": "modular_particle",
+      "parameters": {},
+      "seed_int": 0,
+      "settings": {
+        "kind": "module_output",
+        "fields": [
+          {
+            "id": "position",
+            "name": "Position",
+            "type": "vec3"
+          }
+        ]
+      },
+      "node_position": {
+        "x": 1650,
+        "y": 0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Input_seed",
+      "from_port": 0,
+      "to": "SeedOffset_101",
+      "to_port": 0
+    },
+    {
+      "from": "SeedOffset_101",
+      "from_port": 0,
+      "to": "Random_101",
+      "to_port": 2
+    },
+    {
+      "from": "Input_center",
+      "from_port": 0,
+      "to": "BoxSample",
+      "to_port": 0
+    },
+    {
+      "from": "Input_size",
+      "from_port": 0,
+      "to": "BoxSample",
+      "to_port": 1
+    },
+    {
+      "from": "Random_101",
+      "from_port": 0,
+      "to": "BoxSample",
+      "to_port": 2
+    },
+    {
+      "from": "Read_position",
+      "from_port": 0,
+      "to": "OffsetPosition",
+      "to_port": 0
+    },
+    {
+      "from": "BoxSample",
+      "from_port": 0,
+      "to": "OffsetPosition",
+      "to_port": 1
+    },
+    {
+      "from": "OffsetPosition",
+      "from_port": 0,
+      "to": "Output",
+      "to_port": 0
+    }
+  ],
+  "particle_module": {
+    "version": 1,
+    "id": "standard_box_location",
+    "definition": {
+      "name": "Box Location",
+      "stages": [
+        "spawn"
+      ],
+      "inputs": [
+        {
+          "id": "center",
+          "name": "Center",
+          "type": "vec3",
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "id": "size",
+          "name": "Size",
+          "type": "vec3",
+          "default": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "id": "seed",
+          "name": "Seed",
+          "type": "uint",
+          "default": 0
+        }
+      ],
+      "reads": [
+        "position"
+      ],
+      "writes": [
+        "position"
+      ],
+      "revision": 1,
+      "standard_module": {
+        "catalog_id": "box_location",
+        "revision": 1,
+        "bindings": {}
+      }
+    },
+    "attributes": []
+  }
+}
