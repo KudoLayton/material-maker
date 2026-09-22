@@ -193,7 +193,7 @@
       "settings": {
         "kind": "custom",
         "data_type": "float",
-        "code": "return override_value ? max(0.0,mix(min(lo,hi),max(lo,hi),random_value.x)) : current;",
+        "code": "return override_value ? mix(max(0.0,min(lo,hi)),max(0.0,max(lo,hi)),random_value.x) : current;",
         "editor_profile": "standard_module_v1",
         "input_ports": [
           {

@@ -125,7 +125,7 @@ def recipes():
     hi=g.param('lifetime_max','Lifetime Max','float',1.)
     seed=g.param('seed','Seed','uint',0)
     rnd=g.random(seed,11)
-    lifetime=g.custom('Lifetime','float','return override_value ? max(0.0,mix(min(lo,hi),max(lo,hi),random_value.x)) : current;',
+    lifetime=g.custom('Lifetime','float','return override_value ? mix(max(0.0,min(lo,hi)),max(0.0,max(lo,hi)),random_value.x) : current;',
         [('override_value','bool',override),('lo','float',lo),('hi','float',hi),('random_value','vec4',rnd),('current','float',g.read('lifetime'))])
     g.output('position',g.add('PositionOffset',g.read('position'),offset))
     for attr,source in [('velocity',velocity),('color',color),('scale',scale),('initial_color',color),('initial_scale',scale),('lifetime',lifetime),
@@ -155,7 +155,7 @@ def recipes():
             'After Initialize Particle; use Solve Motion in Update to move.')
     axis=g.param('axis','Axis','vec3',[0.,1.,0.]); angle=g.param('half_angle','Half Angle','float',15.)
     lo=g.param('speed_min','Speed Min','float',3.); hi=g.param('speed_max','Speed Max','float',3.); rnd=g.random(g.param('seed','Seed','uint',0),307)
-    cone=g.custom('ConeSample','vec3','vec3 axis_n=dot(axis,axis)>1e-12 ? normalize(axis) : vec3(0,1,0);\nvec3 helper=abs(axis_n.y)<0.999 ? vec3(0,1,0) : vec3(1,0,0);\nvec3 tangent=normalize(cross(helper,axis_n)); vec3 bitangent=cross(axis_n,tangent);\nfloat z=mix(1.0,cos(radians(clamp(angle,0.0,180.0))),random_value.x); float phi=6.283185307179586*random_value.y;\nfloat xy=sqrt(max(0.0,1.0-z*z)); float speed=max(0.0,mix(min(lo,hi),max(lo,hi),random_value.z));\nreturn speed*(axis_n*z+xy*(tangent*cos(phi)+bitangent*sin(phi)));',
+    cone=g.custom('ConeSample','vec3','vec3 axis_n=dot(axis,axis)>1e-12 ? normalize(axis) : vec3(0,1,0);\nvec3 helper=abs(axis_n.y)<0.999 ? vec3(0,1,0) : vec3(1,0,0);\nvec3 tangent=normalize(cross(helper,axis_n)); vec3 bitangent=cross(axis_n,tangent);\nfloat z=mix(1.0,cos(radians(clamp(angle,0.0,180.0))),random_value.x); float phi=6.283185307179586*random_value.y;\nfloat xy=sqrt(max(0.0,1.0-z*z)); float speed=mix(max(0.0,min(lo,hi)),max(0.0,max(lo,hi)),random_value.z);\nreturn speed*(axis_n*z+xy*(tangent*cos(phi)+bitangent*sin(phi)));',
         [('axis','vec3',axis),('angle','float',angle),('lo','float',lo),('hi','float',hi),('random_value','vec4',rnd)])
     g.output('velocity',g.add('AddVelocity',g.read('velocity'),cone)); modules.append(g)
 

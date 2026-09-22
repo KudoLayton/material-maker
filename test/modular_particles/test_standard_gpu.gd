@@ -73,7 +73,7 @@ func motion() -> void:
 	await S.dispose(particles)
 
 func distributions() -> void:
-	for mode in ["box","sphere","surface","cone","edge"]:
+	for mode in ["box","sphere","surface","cone","edge","negative_range"]:
 		var spawn: Array = ["initialize_particle"]
 		var overrides := {"initialize_particle":{"position_offset":[2,3,4]}}
 		match mode:
@@ -86,6 +86,10 @@ func distributions() -> void:
 			"cone":
 				spawn.append("add_velocity_in_cone")
 				overrides.add_velocity_in_cone = {"axis":[0,0,0],"half_angle":30.0,"speed_min":5.0,"speed_max":2.0,"seed":33}
+			"negative_range":
+				spawn.append("add_velocity_in_cone")
+				overrides.initialize_particle.merge({"override_lifetime":true,"lifetime_min":3.0,"lifetime_max":-3.0},true)
+				overrides.add_velocity_in_cone = {"half_angle":0.0,"speed_min":3.0,"speed_max":-3.0}
 			"edge":
 				spawn.append_array(["box_location","sphere_location","add_velocity_in_cone"])
 				overrides.box_location = {"size":[0,0,0]}
@@ -96,10 +100,11 @@ func distributions() -> void:
 		if particles == null: continue
 		particles.emit_burst(4096)
 		var snapshot := await step(particles)
-		check(snapshot.count == 4096,"sampling population "+mode)
+		check(snapshot.count>4000 if mode == "negative_range" else snapshot.count == 4096,"sampling population "+mode)
 		var bounds := true
 		var average := Vector3.ZERO
 		var statistic := 0.0
+		var lifetime_sum := 0.0
 		for i in 4096:
 			var point := S.vector(particles,snapshot,"position",i)-Vector3(2,3,4)
 			var velocity := S.vector(particles,snapshot,"velocity",i)
@@ -112,6 +117,10 @@ func distributions() -> void:
 				"cone":
 					bounds = bounds and velocity.length()>=1.99999 and velocity.length()<=5.00001 and velocity.normalized().y>=cos(deg_to_rad(30.0))-0.00001
 					statistic += velocity.normalized().y
+				"negative_range":
+					bounds = bounds and absf(velocity.x)<0.00001 and absf(velocity.z)<0.00001 and velocity.y>=0 and velocity.y<=3.00001
+					statistic += velocity.y
+					lifetime_sum += S.value(particles,snapshot,"lifetime",i)
 				"edge": bounds = bounds and point == Vector3.ZERO and velocity == Vector3.ZERO
 			average += point
 			if mode == "sphere": statistic += pow(point.length()/2,3)
@@ -119,6 +128,7 @@ func distributions() -> void:
 		check((average/4096).length()<0.08,"unbiased spatial mean "+mode)
 		if mode == "sphere": check(absf(statistic/4096-0.5)<0.025,"sphere uniform volume radius cubed")
 		if mode == "cone": check(absf(statistic/4096-(1+cos(deg_to_rad(30.0)))/2)<0.005,"cone uniform solid angle")
+		if mode == "negative_range": check(absf(statistic/4096-1.5)<0.07 and absf(lifetime_sum/4096-1.5)<0.07,"clamp negative endpoints before sampling, no artificial mass at zero")
 		particles.restart()
 		await S.frames(get_tree())
 		particles.emit_burst(4096)
