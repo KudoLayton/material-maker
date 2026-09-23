@@ -20,7 +20,14 @@ func export_effect(effect: MMParticleEffect, destination: String, capacity: int 
 	var result := await export_bundle(effect,destination,capacity)
 	return ("Exported standalone runtime: " + destination) if result.error.is_empty() else result.error
 
-func export_bundle(effect: MMParticleEffect, destination: String, capacity: int = 4096) -> Dictionary:
+static func valid_effect_id(id: String) -> bool:
+	if id.is_empty() or id.length() > 64 or id in ["con","prn","aux","nul","clock$","com1","com2","com3","com4","com5","com6","com7","com8","com9","lpt1","lpt2","lpt3","lpt4","lpt5","lpt6","lpt7","lpt8","lpt9"]: return false
+	for character in id:
+		if character not in "abcdefghijklmnopqrstuvwxyz0123456789_-": return false
+	return true
+
+func export_bundle(effect: MMParticleEffect, destination: String, capacity: int = 4096, effect_id: String = "") -> Dictionary:
+	if not effect_id.is_empty() and not valid_effect_id(effect_id): return problem("Invalid effect ID")
 	if effect == null: return problem("No compiled effect")
 	var error := effect.validation_error()
 	if not error.is_empty(): return problem(error)
@@ -82,6 +89,15 @@ transparent depth sorting is not supported. Runtime scripts are required.
 Do not edit manifest-owned files before re-exporting. Export into a new
 folder if a checksum conflict occurs. project.godot is never overwritten.
 """.to_utf8_buffer()
+	var effect_root := "effects/modular_particles/"
+	if not effect_id.is_empty():
+		var relocated := {}
+		for relative in files:
+			var data: PackedByteArray = files[relative]
+			if str(relative).ends_with(".tscn"):
+				data = data.get_string_from_utf8().replace(effect_root,effect_root + effect_id + "/").to_utf8_buffer()
+			relocated[str(relative).replace(effect_root,effect_root + effect_id + "/")] = data
+		files = relocated
 	var manifest_path := root.path_join(MANIFEST)
 	if _linked(root,MANIFEST): return problem("Refusing linked manifest")
 	var old := {}
@@ -90,6 +106,7 @@ folder if a checksum conflict occurs. project.godot is never overwritten.
 		old = Document.load_file(manifest_path)
 		if old.get("format") != "mm_gpu_particles_export" or old.get("version") != 1 or not old.get("files") is Dictionary:
 			return problem("Unrecognized export manifest; nothing was changed")
+		if old.get("effect_id", "") != effect_id: return problem("Export directory belongs to a different effect ID; use a new directory")
 		for checksum in old.files.values():
 			if not checksum is String or checksum.length() != 64: return problem("Invalid manifest checksum")
 	for relative in files:
@@ -134,6 +151,7 @@ folder if a checksum conflict occurs. project.godot is never overwritten.
 				_cleanup(stage)
 				return problem(error)
 	var manifest := {"format":"mm_gpu_particles_export","version":1,"target":"4.7.2","source_hash":effect.source_hash,"files":{}}
+	if not effect_id.is_empty(): manifest.effect_id = effect_id
 	for relative in files: manifest.files[relative] = FileAccess.get_sha256(stage.path_join(relative))
 	error = _write(stage.path_join(MANIFEST),JSON.stringify(manifest,"\t").to_utf8_buffer())
 	if not error.is_empty():
@@ -142,7 +160,7 @@ folder if a checksum conflict occurs. project.godot is never overwritten.
 	# A new project's config becomes user-owned immediately; subsequent exports
 	# neither overwrite it nor require its checksum to remain unchanged.
 	if not FileAccess.file_exists(root.path_join("project.godot")):
-		files["project.godot"] = PROJECT.to_utf8_buffer()
+		files["project.godot"] = (PROJECT if effect_id.is_empty() else PROJECT.replace(effect_root,effect_root + effect_id + "/")).to_utf8_buffer()
 		error = _write(stage.path_join("project.godot"),files["project.godot"])
 		if not error.is_empty():
 			_cleanup(stage)

@@ -96,6 +96,11 @@ func export_files(files, output_dir, target, target_file, image_size) -> void:
 	get_tree().quit()
 
 func _ready():
+	if "--mpfx-command" in OS.get_cmdline_user_args():
+		var cli = preload("res://addons/material_maker/particles/modular/cli.gd").new()
+		add_child(cli)
+		await cli.run(OS.get_cmdline_user_args())
+		return
 	RenderingServer.set_default_clear_color(Color.BLACK)
 	var args : PackedStringArray = OS.get_cmdline_args()
 	if ("--export" in args) or ("--export-material" in args):

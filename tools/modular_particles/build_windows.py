@@ -129,6 +129,7 @@ application/modify_resources=false
     shutil.copy2(ROOT / 'LICENSE.md', app / 'LICENSE.md')
     shutil.copy2(ROOT / 'MODULAR_PARTICLES.md', app / 'MODULAR_PARTICLES.md')
     shutil.copy2(ROOT / 'PARTICLE_WORKSPACE.md', app / 'PARTICLE_WORKSPACE.md')
+    shutil.copy2(ROOT / 'MODULAR_VFX_CLI.md', app / 'MODULAR_VFX_CLI.md')
     shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md', app / 'STANDARD_PARTICLE_MODULES.md')
     shutil.copytree(ROOT / 'material_maker/panels/modular_particles/standard', app / 'modules/standard_particles', ignore=shutil.ignore_patterns('*.uid'))
     for example in ['basic_fountain','box_turbulence','sphere_burst','user_parameters']:
@@ -193,7 +194,9 @@ User Parameters: 왼쪽 User 패널에서 이름/타입/기본값을 만들고,
 User.Speed는 Cone Speed Min/Max를 공유하고 User.Gravity/Tint도 게임에서 제어합니다.
 User 변경은 Undo/Redo/Save를 지원하며, 값/이름 변경은 Preview 입자 상태를 유지합니다.
 사용 중인 User 삭제/타입 변경은 먼저 모든 참조를 해제해야 합니다.
-상세 사용법·Inspector·API·v1/v2 마이그레이션: USER_PARTICLE_PARAMETERS.md
+효과 원본/런타임은 최신 v2만 지원합니다. 구버전 자동 변환은 제공하지 않습니다.
+상세 사용법·Inspector·API·최신 포맷: USER_PARTICLE_PARAMETERS.md
+명령행 제작·검증·컴파일/Export: MaterialMaker/MODULAR_VFX_CLI.md
 파티클 도크·Looping/Burst/Custom·카메라·HDRI: MaterialMaker/PARTICLE_WORKSPACE.md
 
 User 제어 Godot 예제: GodotUserParametersExample/project.godot

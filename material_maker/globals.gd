@@ -75,7 +75,8 @@ func _enter_tree():
 			config.set_value("config", k, DEFAULT_CONFIG[k])
 
 func _exit_tree():
-	config.save("user://mm_config.ini")
+	if "--mpfx-command" not in OS.get_cmdline_user_args():
+		config.save("user://mm_config.ini")
 
 # Config
 

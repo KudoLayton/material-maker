@@ -2,6 +2,14 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
+## 포터블 VFX CLI 검증
+
+- 소스 실행 **25/25 명령 시나리오 PASS**, `mm-vfx-cli-ifjtdvw3`.
+- 실제 Windows EXE **25/25 PASS**, `mm-vfx-cli-q2ka_48b`: capabilities/create/inspect/validate/export, 한글·공백 경로, 구버전·JSON·바인딩·옵션 오류, GPU 부재, 실제 Vulkan SPIR-V, 효과별 참조 경로/checksum, 재내보내기·ID 충돌·사용자 수정 보호. ERROR/leak 없이 종료했고 기존 환경설정 bytes가 유지됐습니다.
+- 빌드 `build/modular-release-20260924-084846/MaterialMaker/MaterialMaker.exe`: GUI Release **260 checks PASS**, editor=false. CLI 사용법은 [MODULAR_VFX_CLI.md](../../MODULAR_VFX_CLI.md).
+- 앞선 `084342` 빌드는 CLI template의 source/sidecar 경로 차이를 발견한 중간 산출물입니다. 삭제·덮어쓰지 않았으며 CLI 검증 완료 빌드는 `084846`입니다.
+- 다중 효과 **게임 설치 helper**, 스킬 패키지 및 npx 설치는 아직 미완료입니다.
+
 ## 최신 효과 포맷 v2 전용 전환
 
 - GUI·compiler·runtime에서 v1/버전 누락/미지원 미래 버전을 거부합니다. User 추가로 자동 승격하지 않습니다. `.mmg`와 export manifest의 별도 version 1은 유지합니다.
@@ -9,7 +17,7 @@
 - compiler **35**, User model **68**, User GPU runtime **139 PASS** (`mm-modular-particles-a1tzevrl`, `_pvw5g86`, `fwgi1cqa`). invalid sentinel 기본값을 가진 effect v2의 binary serialization/reload 검사 포함.
 - private runtime `8ea4686`: 최신 v2 mmtest 재컴파일 + checksum 갱신. 독립 Godot editor/Windows Release **각 5 checks PASS**, `mm-modular-export-bw8193xs`, plugin enabled, ERROR/leak 없음.
 - 최신 emitter 독립 GPU **PASS**, `mm-emission-standalone-lm3qov42`: 저장 효과로 연속 12 + 지연 burst 3 = GPU 15개.
-- 기존 배포 파일과 외부 사용자 원본은 변경하지 않았습니다. 이 전환을 포함한 Material Maker 배포 EXE/CLI/스킬 설치 검증은 아직 진행 전입니다. 아래 구버전 지원 결과는 **과거 기록**이며 현재 지원 정책이 아닙니다.
+- 기존 배포 파일과 외부 사용자 원본은 변경하지 않았습니다. 이 전환을 포함한 배포 EXE/CLI 검증은 위에 기록합니다. 스킬 설치는 아직 미검증입니다. 아래 구버전 지원 결과는 **과거 기록**이며 현재 지원 정책이 아닙니다.
 
 ## 파티클 작업 공간 이전 검증 (2026-09-23)
 
