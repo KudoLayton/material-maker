@@ -67,7 +67,7 @@ def prepare(project, settings_name):
     shutil.copy2(ROOT / 'test/modular_particles/rename_checks.gd', validation / 'rename_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/input_delete_checks.gd', validation / 'input_delete_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/namespace_checks.gd', validation / 'namespace_checks.gd')
-    for helper in ['standard_checks.gd', 'standard_ui_checks.gd', 'user_ui_checks.gd']:
+    for helper in ['standard_checks.gd', 'standard_ui_checks.gd', 'user_ui_checks.gd', 'workspace_release_checks.gd']:
         shutil.copy2(ROOT / 'test/modular_particles' / helper, validation / helper)
     (validation / 'release_smoke.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://validation/release_smoke.gd" id="1"]\n[node name="ReleaseSmoke" type="Node"]\nscript = ExtResource("1")\n', encoding='utf-8')
 
@@ -128,6 +128,7 @@ application/modify_resources=false
     if args.docs: shutil.copytree(args.docs, app / 'doc')
     shutil.copy2(ROOT / 'LICENSE.md', app / 'LICENSE.md')
     shutil.copy2(ROOT / 'MODULAR_PARTICLES.md', app / 'MODULAR_PARTICLES.md')
+    shutil.copy2(ROOT / 'PARTICLE_WORKSPACE.md', app / 'PARTICLE_WORKSPACE.md')
     shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md', app / 'STANDARD_PARTICLE_MODULES.md')
     shutil.copytree(ROOT / 'material_maker/panels/modular_particles/standard', app / 'modules/standard_particles', ignore=shutil.ignore_patterns('*.uid'))
     for example in ['basic_fountain','box_turbulence','sphere_burst','user_parameters']:
@@ -193,6 +194,7 @@ User.Speed는 Cone Speed Min/Max를 공유하고 User.Gravity/Tint도 게임에�
 User 변경은 Undo/Redo/Save를 지원하며, 값/이름 변경은 Preview 입자 상태를 유지합니다.
 사용 중인 User 삭제/타입 변경은 먼저 모든 참조를 해제해야 합니다.
 상세 사용법·Inspector·API·v1/v2 마이그레이션: USER_PARTICLE_PARAMETERS.md
+파티클 도크·Looping/Burst/Custom·카메라·HDRI: MaterialMaker/PARTICLE_WORKSPACE.md
 
 User 제어 Godot 예제: GodotUserParametersExample/project.godot
 같은 효과의 두 노드를 Left/Right로 독립 제어합니다. Reset은 선택한 노드만 복원합니다.

@@ -7,6 +7,7 @@ const NamespaceChecks = preload("namespace_checks.gd")
 const StandardChecks = preload("standard_checks.gd")
 const StandardUI = preload("standard_ui_checks.gd")
 const UserUI = preload("user_ui_checks.gd")
+const WorkspaceUI = preload("workspace_release_checks.gd")
 var failures := 0
 var checks := 0
 func check(value: bool, message: String) -> void:
@@ -51,6 +52,7 @@ func run() -> void:
 			await get_tree().process_frame
 		check(is_instance_valid(editor.preview) and editor.preview.ready_for_simulation,"packaged GPU preview: " + editor.status.text)
 		check(editor.graph_edit.get_children().any(func(n): return n is GraphNode),"packaged graph canvas")
+		await WorkspaceUI.run(editor,get_tree(),check,output)
 		var renamed: Dictionary = await RenameChecks.run(editor,get_tree(),check,output.path_join("rename-dialog.png"))
 		var deleted: Dictionary = await DeleteChecks.run(editor,get_tree(),check,output.path_join("input-delete.png"))
 		editor.save_path = output.path_join("roundtrip.mpfx")

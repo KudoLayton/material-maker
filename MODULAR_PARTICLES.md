@@ -2,6 +2,10 @@
 
 Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다. 기존 `.ptex` 파티클 셰이더 편집기는 유지하며, 새 `.mpfx` 문서는 별도 Compute 시뮬레이션과 `MMGPUParticles3D`를 사용합니다. 엔진 소스 변경은 없습니다.
 
+## 파티클 도킹 작업 공간
+
+좌상 Module Inputs·좌하 User/Attributes·중앙 그래프·우상 Stack·우하 Preview로 편집합니다. 입력은 좁은 창에서도 도크 안에서 스크롤됩니다. **[Looping/Burst/Custom 방출·카메라·HDRI 안내](PARTICLE_WORKSPACE.md)**를 참고하세요.
+
 ## User Parameters로 게임에서 제어하기
 
 `Open user_parameters.cmd`로 Speed/Gravity/Tint 예제를 엽니다. 왼쪽 User 패널에서 값을 만들고 Module Input의 Source를 User로 연결합니다. 같은 이름만으로는 바인딩하지 않으며, 기본값/이름 변경은 정상 GPU Preview의 입자 상태를 유지합니다.
@@ -27,7 +31,7 @@ git submodule update --init --recursive
 3. Spawn/Update 스택에서 모듈을 선택합니다. **Browse Library…**에서 기본 12종을 검색해 독립 복사본으로 추가합니다. 기존 MM 그래프 캔버스와 Library 노드를 그대로 사용합니다.
 4. `Read`, `Write binding`, `Add Module Input`으로 Attribute와 입력을 연결합니다. 입력 값은 JSON 스칼라/배열로 입력 후 Enter로 확정합니다.
 5. Up/Down, Copy, On/Off, Remove, Undo/Redo를 지원합니다. 모듈 이름은 **스택에서 선택 → Rename 또는 F2 → 이름 입력 → Enter/Rename**으로 변경합니다. Preview는 내보내기와 같은 런타임입니다. 휠로 확대/축소합니다.
-6. `Emitter settings`에서 방출·수명·렌더 설정 JSON을 편집합니다. 그래프 오류는 Stage/인스턴스/노드 위치를 표시하며 마지막 정상 Preview를 유지합니다.
+6. 우상 **Effect Emission**에서 Looping/Burst를 선택하고 Rate/Count/Duration을 편집한 뒤 Apply Emission을 누릅니다. Custom 복합형은 그대로 보존하며 `Emitter settings`에서 고급 JSON을 편집할 수 있습니다. 그래프 오류는 Stage/인스턴스/노드 위치를 표시하며 마지막 정상 Preview를 유지합니다.
 7. `Save`는 저작용 `.mpfx`, `Save .mmg`는 재사용 모듈 스냅샷을 저장합니다. `Import .mmg`로 명시적으로 모듈을 갱신합니다. 외부 Library 변경을 자동 반영하지 않습니다.
 8. `Export`에서 빈 출력 폴더를 선택합니다. 생성된 `project.godot`을 Godot 4.7.2로 열고 실행하거나 `particles.tscn`을 게임 씬에 인스턴스화합니다.
 

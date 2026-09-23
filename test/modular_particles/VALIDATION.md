@@ -2,7 +2,44 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
-**최신 상태(2026-09-23, User Parameters): 클립보드가 허용되는 환경에서 기존 `legacy:test_app` 단독 **1/1**, 전체 앱 회귀 **44/44** 통과했습니다. 테스트/기능 코드를 변경하지 않았습니다. User 런타임·Inspector·독립 예제와 실제 Release EXE 246 checks도 통과했습니다. 이전 클립보드 접근 거부와 v1 검증 기록은 아래에 보존합니다.**
+## 파티클 작업 공간 최신 검증 (2026-09-23)
+
+배포: **`build/modular-release-20260923-231142/MaterialMaker/MaterialMaker.exe`**. 사용법: [PARTICLE_WORKSPACE.md](../../PARTICLE_WORKSPACE.md).
+
+| 영역 | 관측 결과 |
+|---|---|
+| 전체 앱 + legacy | **47/47 PASS**, `mm-modular-app-_3hvu1j2`; 기존 클립보드 검사도 통과 |
+| 도킹·Module Inputs | **186 checks**, `mm-modular-app-gixt2wld`; 1440×960, 1024×720, 폭 170px, 1600×1000 / 125% 배율에서 좌표·스크롤·캡처 확인. 원래 재질/페인트 배치, 탭 전환/삭제, 도크 닫기/재열기 |
+| 방출 UI | **50 checks**; Looping/Burst/Custom, 확인/취소/Undo/Redo, 유효성 검사, v1/v2 저장/compiled effect, GPU 7개 Burst, shader/버퍼/그래프/카메라/Pause 유지 |
+| 카메라·환경 | **24 checks**; 기존 카메라 컨트롤러 MMB/Alt/Shift/Ctrl-wheel/Reset, HDRI pixel/투명 배경, 누락 HDRI의 로컬 폴백. 탭/도크 전환 후에도 GPU 상태 유지 |
+| 실제 Windows Material Maker EXE | **260 checks, editor=false**, `verification/app-process.log`; 새 작업 공간 검사 14개, 기존 Release 검사 246개 포함 |
+| EXE에서 내보낸 독립 프로젝트 | mmtest **5**, Basic **11**, User **27** checks 각각 editor/Windows release 통과, 플러그인 ON. `mm-modular-export-i2j_w0tu` / `180_nnku` / `6c8v2n_3` |
+| 방출 독립 GPU | v1/v2 저장 효과만 로드해 연속 12개 + 지연 Burst 3개 = **GPU 15개** 확인, `mm-emission-standalone-93w56ixl` |
+| Strict core | compiler **23**, User model **67**, GPU probe/shader PASS, runtime/render **각31**, User runtime **139**, performance **132** checks |
+| Godot Inspector | **56 checks**, `mm-user-inspector-9i0tgxxl` |
+| 기존 예제 생성기 | mmtest, 표준 12모듈, 기본 3예제, User 예제 `--check` PASS; 원본/예제 변경 없음 |
+| 보존 감사 | 기존 EXE/시작 안내/예제 **27개 SHA-256 불변**, 원본 mmtest 및 fixture hash 일치, 세 bundle **13/13/14개** manifest 검증, ZIP/폴더 동일 |
+
+Private 런타임 gitlink는 `60b6fb6e32ac56b0028d28d649ee5c54c68dd83b` 그대로이며 checkout도 clean입니다. 런타임 코드나 엔진 소스 변경 없이 authoring Preview 전용 재시작 경로를 사용합니다. 모든 import/테스트는 새 임시 프로젝트와 별도 사용자 설정에서 실행했고, 이전 빌드는 덮어쓰지 않았습니다.
+
+실제 EXE 캡처: `verification/app/workspace-1024.png`, `workspace-1440.png`, `workspace-hdri.png`. 좁은 도크/배율 캡처와 결과: `verification/workspace/`. `verification/workspace-delivery-audit.json`은 보존/manifest 감사 결과입니다.
+
+Strict/독립 검사에서는 ERROR·script error·누수를 실패로 처리해 통과했습니다. 전체 Material Maker 앱에는 기존 HDR/import 및 일부 종료 경고가 남으므로 ERROR-free를 주장하지 않습니다. 레이아웃 전환 후 orphan 패널 때문에 발생했던 종료 크래시는 숨긴 패널을 트리 안에 보관하여 해결했습니다. 도킹 컨트롤과 GPU SubViewport도 분리해 탭 이동으로 GPU가 종료되는 문제를 방지했습니다.
+
+성능 참고(동일 RTX 3070): 100k/32 custom vec4 GPU median **1.566976 ms**, p95 **2.843392 ms**; 표준 Curl OFF/ON median **0.194656 / 0.768288 ms**. 측정 구간 readback/raster 없음; 환경별 성능 보장이 아닙니다.
+
+재검증 명령:
+
+```powershell
+python tools/modular_particles/run_app_tests.py --godot $GODOT --test all --keep-going
+python tools/modular_particles/run_emission_export_test.py --godot $GODOT --effects $EmissionUITestProject
+python tools/modular_particles/build_windows.py --godot $GODOT --templates $Templates
+python tools/modular_particles/verify_export.py --godot $GODOT --templates $Templates --bundle $Bundle --enable-plugin
+```
+
+아래는 이전 배포의 검증 기록입니다.
+
+**이전 상태(2026-09-23, User Parameters): 클립보드가 허용되는 환경에서 기존 `legacy:test_app` 단독 **1/1**, 전체 앱 회귀 **44/44** 통과했습니다. 테스트/기능 코드를 변경하지 않았습니다. User 런타임·Inspector·독립 예제와 실제 Release EXE 246 checks도 통과했습니다. 이전 클립보드 접근 거부와 v1 검증 기록은 아래에 보존합니다.**
 
 ## User Parameters v2 검증과 클립보드 재검증
 
