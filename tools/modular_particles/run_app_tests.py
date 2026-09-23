@@ -38,7 +38,7 @@ def main():
     requested = args.test.split(',')
     if args.test in ['all', 'legacy:all']:
         requested = ['legacy:' + path.stem for path in sorted((ROOT / 'test/particles').glob('test_*.gd'))]
-        if args.test == 'all': requested = ['test_user_editor', 'test_user_binding_app', 'test_module_library', 'test_standard_validation', 'test_standard_gpu', 'test_standard_performance', 'test_standard_editor', 'test_standard_examples', 'test_namespace_model', 'test_namespace_editor', 'test_editor', 'test_module_rename', 'test_module_input_delete', 'test_graph_backend', 'test_mmtest', 'test_export'] + requested
+        if args.test == 'all': requested = ['test_user_export', 'test_user_editor', 'test_user_binding_app', 'test_module_library', 'test_standard_validation', 'test_standard_gpu', 'test_standard_performance', 'test_standard_editor', 'test_standard_examples', 'test_namespace_model', 'test_namespace_editor', 'test_editor', 'test_module_rename', 'test_module_input_delete', 'test_graph_backend', 'test_mmtest', 'test_export'] + requested
     for test in requested:
         folder = 'test/particles' if test.startswith('legacy:') else 'test/modular_particles'
         name = test.removeprefix('legacy:')

@@ -52,10 +52,31 @@ capacity = %d
 position = Vector3(0,0,6)
 current = true
 """.to_utf8_buffer()
+	if not effect.user_parameters.is_empty():
+		var controls := FileAccess.get_file_as_bytes("res://addons/material_maker/particles/modular/user_demo.gd")
+		if controls.is_empty(): return problem("User demo source is not packaged")
+		files["effects/modular_particles/user_demo.gd"] = controls
+		files["effects/modular_particles/demo.tscn"] = """[gd_scene load_steps=3 format=3]
+[ext_resource type="PackedScene" path="res://effects/modular_particles/particles.tscn" id="1"]
+[ext_resource type="Script" path="res://effects/modular_particles/user_demo.gd" id="2"]
+[node name="Demo" type="Node3D"]
+script = ExtResource("2")
+[node name="Particles" parent="." instance=ExtResource("1")]
+position = Vector3(-1.1,0,0)
+[node name="Second" parent="." instance=ExtResource("1")]
+position = Vector3(1.1,0,0)
+[node name="Camera" type="Camera3D" parent="."]
+position = Vector3(0,0.8,6)
+current = true
+""".to_utf8_buffer()
 	files["effects/modular_particles/README.txt"] = """Godot 4.7.2 stable, Forward+, Vulkan. No Material Maker/autoload required.
 Instance particles.tscn in your scene, or run demo.tscn. The binary effect
 contains precompiled SPIR-V; effect.glsl.txt is diagnostic source only.
 MMGPUParticles3D: play/pause/stop/restart/emit_burst/set_parameter.
+Format-2 effects expose User Parameters in the Inspector and support
+set/get/reset_user_parameter("User.Name", ...) plus *_by_id variants.
+User-bound inputs reject set_parameter; use the User API. Values are per-node.
+User demos contain two instances and live controls; graphs/compiler are not needed.
 Set capacity and visibility_aabb explicitly. Opaque/additive/cutout only;
 transparent depth sorting is not supported. Runtime scripts are required.
 Do not edit manifest-owned files before re-exporting. Export into a new

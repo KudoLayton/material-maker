@@ -63,7 +63,8 @@ def main():
     if args.enable_plugin:
         config += '\n[editor_plugins]\nenabled=PackedStringArray("res://addons/mm_gpu_particles/plugin.cfg")\n'
     (project / 'project.godot').write_text(config, encoding='utf-8')
-    shutil.copy2(ROOT / 'test/modular_particles/standalone_smoke.gd', project / 'verify.gd')
+    smoke = 'standalone_user_smoke.gd' if 'effects/modular_particles/user_demo.gd' in manifest['files'] else 'standalone_smoke.gd'
+    shutil.copy2(ROOT / 'test/modular_particles' / smoke, project / 'verify.gd')
     (project / 'verify.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://verify.gd" id="1"]\n[node name="Verify" type="Node"]\nscript=ExtResource("1")\n', encoding='utf-8')
     (project / 'export_presets.cfg').write_text('''[preset.0]
 name="Windows Desktop"
