@@ -1,6 +1,12 @@
-# Modular GPU Particles v1
+# Modular GPU Particles (v1 / User Parameters v2)
 
 Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다. 기존 `.ptex` 파티클 셰이더 편집기는 유지하며, 새 `.mpfx` 문서는 별도 Compute 시뮬레이션과 `MMGPUParticles3D`를 사용합니다. 엔진 소스 변경은 없습니다.
+
+## User Parameters로 게임에서 제어하기
+
+`Open user_parameters.cmd`로 Speed/Gravity/Tint 예제를 엽니다. 왼쪽 User 패널에서 값을 만들고 Module Input의 Source를 User로 연결합니다. 같은 이름만으로는 바인딩하지 않으며, 기본값/이름 변경은 정상 GPU Preview의 입자 상태를 유지합니다.
+
+Godot의 노드별 Inspector 또는 `set_user_parameter("User.Speed", 6.0)` 등으로 독립 제어합니다. 배포의 `GodotUserParametersExample/project.godot`에는 같은 효과를 쓰는 두 노드와 실시간 컨트롤이 있습니다. 기존 v1은 유지되며, User를 추가한 문서는 v2가 됩니다. **[User 편집·API·마이그레이션 안내](USER_PARTICLE_PARAMETERS.md)**를 먼저 참고하세요.
 
 ## 소스 받기
 

@@ -11,15 +11,16 @@
 
 빌드 폴더에서 원하는 독립 예제의 `project.godot`을 Godot 4.7.2로 가져온 뒤 **F6**으로 `effects/modular_particles/demo.tscn` 또는 **F5**로 프로젝트를 실행합니다.
 
+- **`GodotUserParametersExample/project.godot`**: User.Speed/Gravity/Tint 실시간 제어, 같은 효과의 두 노드 독립 override와 Reset.
 - **`GodotBasicExample/project.godot`**: 새 기본 모듈(Initialize/Cone/Gravity/Solve/Color/Scale)의 128개, 2초 반복 burst.
 - **`GodotExample/project.godot`**: 기존 mmtest의 128개, 0.7초 반복 burst.
 
-두 폴더는 각각 독립 프로젝트이며 Material Maker나 별도 autoload가 필요하지 않습니다. 같은 효과 경로를 사용하므로 두 예제를 기존 프로젝트의 같은 폴더에 덮어쓰지 마세요.
+세 폴더는 각각 독립 프로젝트이며 Material Maker나 별도 autoload가 필요하지 않습니다. 같은 효과 경로를 사용하므로 예제들을 기존 프로젝트의 같은 폴더에 덮어쓰지 마세요.
 
 ## 내 게임 프로젝트에 넣기 (권장)
 
 1. 게임 프로젝트의 Renderer를 **Forward+**로 설정합니다.
-2. 내보낸 폴더 또는 선택한 `GodotBasicExample`/`GodotExample`에서 다음 폴더를 게임 프로젝트 **루트**에 복사합니다.
+2. 내보낸 폴더 또는 선택한 `GodotUserParametersExample`/`GodotBasicExample`/`GodotExample`에서 다음 폴더를 게임 프로젝트 **루트**에 복사합니다.
    - `addons/mm_gpu_particles/`
    - `effects/modular_particles/`
 3. `effects/modular_particles/particles.tscn`을 자신의 3D 씬으로 드래그합니다.
@@ -48,7 +49,7 @@
 
 1. `MaterialMaker/MaterialMaker.exe`를 실행합니다. **`Open basic_fountain.cmd`** 등으로 예제를 바로 열 수도 있습니다.
 2. 새 효과: **File → New Modular GPU Particles**. 새 기본 6모듈 스택으로 시작합니다.
-3. 기존 효과: **File → Load**. 새 예제 3종과 기존 `examples/modular_particles/mmtest.mpfx`가 있습니다.
+3. 기존 효과: **File → Load**. 기본 모듈 예제 3종, `user_parameters.mpfx`, 기존 `examples/modular_particles/mmtest.mpfx`가 있습니다.
 4. **Browse Library…**에서 기본 12종을 추가하고 Spawn/Update 그래프를 편집한 뒤 `.mpfx`를 저장합니다. [모듈 목록과 순서](STANDARD_PARTICLE_MODULES.md)를 참고하세요.
 5. 탭의 **Export**로 **빈 폴더**에 내보냅니다.
 6. 생성된 `addons/mm_gpu_particles/`와 `effects/modular_particles/`를 위 설명처럼 게임에 넣습니다.
@@ -72,6 +73,19 @@ func control_examples() -> void:
 ```
 
 입력 키는 **모듈 인스턴스 ID / 입력 ID**입니다. 위 키는 동봉된 mmtest 예제용이며 새로 만든 모듈은 다른 ID를 사용합니다. `set_parameter()`는 잘못된 ID/타입이면 `false`를 반환합니다. 새 효과의 실제 입력은 `particles.effect.parameters`의 `id`, `name`, `type`으로 확인하세요. 표준 모듈도 같은 API를 사용하며 이름으로 Attribute를 자동 바인딩하지 않습니다.
+
+## User 값과 Inspector
+
+User가 있는 효과는 노드 Inspector의 **User Parameters** 그룹에서 타입별 override를 편집합니다. 씬에 노드별로 저장하며 공유 `effect.res` 기본값은 바꾸지 않습니다. 되돌리기는 효과 기본값을 복원합니다.
+
+```gdscript
+$Particles.set_user_parameter("User.Speed", 6.0)
+$Particles.set_user_parameter("User.Gravity", Vector3(0, -4, 0))
+$Particles.set_user_parameter("User.Tint", Color(1, 0, 0, 1))
+$Particles.reset_user_parameter("User.Speed")
+```
+
+ID 기반 `*_by_id` API도 지원합니다. User에 연결된 입력은 기존 `set_parameter()`로 덮어쓸 수 없으며 `false`를 반환합니다. 값 변경은 다음 Step에 기존 buffer로 전달하여 재시작/셰이더 재컴파일 없이 적용합니다. v1 효과는 계속 지원하지만 **v2 효과는 새 애드온과 함께** 배포해야 합니다. [User 편집·타입·마이그레이션 안내](USER_PARTICLE_PARAMETERS.md)를 참고하세요.
 
 ## 주의 사항
 

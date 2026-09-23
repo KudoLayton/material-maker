@@ -2,7 +2,45 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
-**최신 상태(2026-09-23): 기본 모듈 12종과 배포 EXE·독립 Godot 예제를 검증했으며, 최신 전체 앱 회귀도 41/41 통과했습니다(`aph_7wsc`). Windows 클립보드 접근 거부로 남았던 검사는 코드 변경 없이 단독·전체 재실행 모두 통과했습니다. 이전 실패 기록과 기존 Material Maker 종료 경고는 아래에 별도로 보존합니다. 배포 EXE와 private runtime은 변경하지 않았습니다.**
+**최신 상태(2026-09-23, User Parameters): User 런타임·Inspector·편집 UI·독립 예제와 새 Release EXE 246 checks는 통과했습니다. 전체 앱 회귀는 43/44입니다. 기존 `legacy:test_app`의 Windows 클립보드 접근 거부가 단독 재실행에도 재현되어 전체 회귀 완료로 간주하지 않습니다. 이전 v1 검증의 41/41 통과 기록과 실패 이력은 아래에 보존합니다.**
+
+## User Parameters v2 검증과 남은 환경 차단
+
+배포 후보: `build/modular-release-20260923-111027/`. 실제 Material Maker EXE, `GodotUserParametersExample`, 기존 `GodotBasicExample`/`GodotExample`, `GodotAddon.zip`, 사용·마이그레이션 문서를 포함합니다. **현재 클립보드 회귀 1건은 미완료**입니다.
+
+| 영역 | 관측 결과 / 임시 프로젝트 접미사 |
+|---|---|
+| 전체 앱 | **43/44**, `mm-modular-app-2pg_xskv`: User export25/UI59/binding11 및 기존 표준 모듈·legacy 검사를 실행. 유일한 실패는 `legacy:test_app` copy/paste assertion |
+| 클립보드 단독 재시도 | `mm-modular-app-aey6idao`: 동일 실패. 별도 PowerShell Win32 `OpenClipboard(NULL)` 진단도 3회 모두 Error 5(Access denied), 점유 HWND/PID는 0. 클립보드 내용은 읽지 않았으며 권한/설정 변경, 테스트 skip/mock/완화 없음 |
+| 순수 compiler / User 모델 | 23 / 67 checks, `o6aroxha` / `4b3qi5sy` |
+| GPU probe / shader | PASS, `8yvkjalr` / `61hl8hpp` |
+| 기존 runtime / render | 각31 checks, `w77vg89p` / `09zwiukc` |
+| User runtime | **139 checks**, `dzmpv3ru`: typed defaults/API/encoding, 인스턴스 독립성, 기존 state 유지, 실제 GPU 값 |
+| 실제 Godot Inspector | **56 checks**, `mm-user-inspector-_8yr73hs`; 플러그인 체크박스 OFF, 타입별 실제 컨트롤·Undo/Redo·revert·씬 재열기 |
+| 실제 Material Maker Release EXE | **246 checks, editor=false**. 공유 User UI59, v2 저장/재열기, sidecar User 예제와 GPU Preview, EXE에서 v1/v2 Export 포함 |
+| EXE가 내보낸 User 프로젝트 | `mm-modular-export-azupghgq`: editor와 Windows release **각27 checks**, 플러그인 ON. 두 노드의 Speed/Gravity/Tint, reset, 게임 로직, 살아 있는 입자의 age/ID, GPU buffer/shader 동일성, 실제 빨강/파랑 pixel |
+| EXE가 내보낸 기존 두 프로젝트 | Basic `b80jfi1j` **각11**, mmtest `znq_t0ck` **각5**, editor/Windows release 모두 통과 |
+| 성능 | `g1rwvbdm`: 100k/32 custom vec4, 132 checks, GPU median **1.530176 ms**, p95 **2.201216 ms**, 측정 구간 readback/raster 없음 |
+| 표준 모듈 성능 | 전체 앱의 100k Curl OFF/ON median **0.192928 / 1.218464 ms**, p95 **0.195392 / 2.139808 ms**; 기능 회귀 통과이며 보편적 성능 보장은 아님 |
+
+독립/strict 검사기는 ERROR·script error·누수 출력을 실패로 처리하며 위 결과는 해당 기준을 통과했습니다. **전체 Material Maker 앱**은 기존 HDR/import/종료 경고와 이번 세션의 클립보드 오류를 로그에 남기므로 ERROR-free라고 주장하지 않습니다.
+
+User 예제 및 기존 12개 모듈/3개 예제 생성기의 `--check`는 통과했습니다. User export는 v2/SPIR-V/manifest checksum, 재내보내기, 사용자 설정 보존, 수정된 demo 스크립트·잘못된 메타데이터의 원자적 거부를 검사합니다. 초기 standalone 검증의 잘못된 builtin ID와 가산 합산으로 흰색이 되던 demo Tint를 수정한 뒤 통과했습니다. 첫 release observer의 `res://` 예제 경로도 실제 배포 sidecar 경로로 고쳤으며, 실패 빌드 `110541`은 재사용하지 않았습니다.
+
+배포 감사는 기존 EXE/빌드 안내/4개 기존 예제/원본 mmtest.ptex의 **33개 보호 파일 SHA-256 불변**, 세 bundle의 **14/13/13개 manifest checksum**, private checkout과 배포 런타임 파일 동일성, addon ZIP과 폴더 동일성을 확인했습니다. 최신 빌드의 `verification/user-delivery-audit.json` 및 각 검사 원본 로그를 참고하세요.
+
+소스 기능 단위: User 문서 `f8be95f8`, 편집 UI `e6f9eeea`, 예제/export `1916001e`. private runtime gitlink는 `60b6fb6e32ac56b0028d28d649ee5c54c68dd83b`입니다. 런타임 구현 파일을 public 저장소에 복사하지 않습니다.
+
+클립보드가 허용되는 실행 환경에서 아래 검사를 그대로 다시 실행해 전체 통과를 확인해야 합니다. 현재 기록은 이를 대체하지 않습니다.
+
+```powershell
+python tools/modular_particles/run_app_tests.py --godot $GODOT --test legacy:test_app
+python tools/modular_particles/run_app_tests.py --godot $GODOT --test all --keep-going
+python tools/modular_particles/run_inspector_tests.py --godot $GODOT
+python tools/modular_particles/build_user_example.py --check
+```
+
+아래는 기존 v1/기본 모듈 검증 기록입니다.
 
 ## 통과한 검사
 
