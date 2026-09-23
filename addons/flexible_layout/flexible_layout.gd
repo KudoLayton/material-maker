@@ -454,7 +454,9 @@ class FlexLayout:
 		if panel_name == "Main":
 			get_flexmain().add(panel)
 		else:
-			get_default_flextab().add(panel)
+			var tab := get_default_flextab()
+			tab.add(panel)
+			tab.set_current(panel)
 	
 	func init(layout = null):
 		var default_flextab : FlexTab = null
@@ -607,6 +609,9 @@ class FlexWindow:
 var panels : Dictionary = {}
 var flex_layout : FlexLayout
 var subwindows : Array[Window]
+# Hidden panels still need a scene-tree owner (especially SubViewports). Leaving
+# them orphaned during a mode switch leaks resources and can crash on shutdown.
+var inactive_panels : Control
 
 var overlay : Control
 
@@ -642,10 +647,21 @@ func _notification(what):
 						if c is Control:
 							c.theme = new_theme
 
+func park_panel(c : Control) -> void:
+	if not is_instance_valid(inactive_panels):
+		inactive_panels = Control.new()
+		inactive_panels.name = "InactivePanels"
+		inactive_panels.set_meta("flexlayout", true)
+		inactive_panels.hide()
+		add_child(inactive_panels)
+	if c.get_parent() == null:
+		inactive_panels.add_child(c)
+
 func add(n : String, c : Control):
 	c.name = n
 	c.set_meta("flex_layout", self)
 	panels[n] = c
+	park_panel(c)
 
 func init(layout = null):
 	for p in panels.keys():
@@ -674,6 +690,7 @@ func show_panel(panel_name : String, v : bool = true):
 		if panel.has_meta("flex_node"):
 			var flex_node = panel.get_meta("flex_node")
 			flex_node.remove(panel)
+		park_panel(panel)
 
 func serialize() -> Dictionary:
 	var data : Dictionary = {}
