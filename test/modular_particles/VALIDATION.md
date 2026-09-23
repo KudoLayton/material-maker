@@ -2,16 +2,17 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
-**최신 상태(2026-09-23, User Parameters): User 런타임·Inspector·편집 UI·독립 예제와 새 Release EXE 246 checks는 통과했습니다. 전체 앱 회귀는 43/44입니다. 기존 `legacy:test_app`의 Windows 클립보드 접근 거부가 단독 재실행에도 재현되어 전체 회귀 완료로 간주하지 않습니다. 이전 v1 검증의 41/41 통과 기록과 실패 이력은 아래에 보존합니다.**
+**최신 상태(2026-09-23, User Parameters): 클립보드가 허용되는 환경에서 기존 `legacy:test_app` 단독 **1/1**, 전체 앱 회귀 **44/44** 통과했습니다. 테스트/기능 코드를 변경하지 않았습니다. User 런타임·Inspector·독립 예제와 실제 Release EXE 246 checks도 통과했습니다. 이전 클립보드 접근 거부와 v1 검증 기록은 아래에 보존합니다.**
 
-## User Parameters v2 검증과 남은 환경 차단
+## User Parameters v2 검증과 클립보드 재검증
 
-배포 후보: `build/modular-release-20260923-111027/`. 실제 Material Maker EXE, `GodotUserParametersExample`, 기존 `GodotBasicExample`/`GodotExample`, `GodotAddon.zip`, 사용·마이그레이션 문서를 포함합니다. **현재 클립보드 회귀 1건은 미완료**입니다.
+배포: `build/modular-release-20260923-111027/`. 실제 Material Maker EXE, `GodotUserParametersExample`, 기존 `GodotBasicExample`/`GodotExample`, `GodotAddon.zip`, 사용·마이그레이션 문서를 포함합니다. 코드가 동일한 상태에서 이전 클립보드 환경 실패를 재검증했습니다.
 
 | 영역 | 관측 결과 / 임시 프로젝트 접미사 |
 |---|---|
-| 전체 앱 | **43/44**, `mm-modular-app-2pg_xskv`: User export25/UI59/binding11 및 기존 표준 모듈·legacy 검사를 실행. 유일한 실패는 `legacy:test_app` copy/paste assertion |
-| 클립보드 단독 재시도 | `mm-modular-app-aey6idao`: 동일 실패. 별도 PowerShell Win32 `OpenClipboard(NULL)` 진단도 3회 모두 Error 5(Access denied), 점유 HWND/PID는 0. 클립보드 내용은 읽지 않았으며 권한/설정 변경, 테스트 skip/mock/완화 없음 |
+| 전체 앱 최신 | **44/44**, `mm-modular-app-je0tdibe`: User export25/UI59/binding11 및 기존 표준 모듈·legacy 검사 모두 통과. `run-18.log`: `PARTICLE_APP_TESTS: passed`; `app-results.json` 모두 passed |
+| 클립보드 단독 최신 | **1/1**, `mm-modular-app-s2z0kowo`: 기존 `legacy:test_app` 수정 없이 복사·붙여넣기 통과. 별도 Win32 `OpenClipboard(NULL)` 3회 성공(error 0) |
+| 이전 환경 실패 (보존) | 전체 `mm-modular-app-2pg_xskv` **43/44**, 단독 `mm-modular-app-aey6idao` 실패: 당시 Win32 `OpenClipboard(NULL)` 3회 Error 5(Access denied), 점유 HWND/PID 0. 내용은 읽지 않았고 권한/설정 변경이나 테스트 skip/mock/완화 없음 |
 | 순수 compiler / User 모델 | 23 / 67 checks, `o6aroxha` / `4b3qi5sy` |
 | GPU probe / shader | PASS, `8yvkjalr` / `61hl8hpp` |
 | 기존 runtime / render | 각31 checks, `w77vg89p` / `09zwiukc` |
@@ -21,9 +22,9 @@
 | EXE가 내보낸 User 프로젝트 | `mm-modular-export-azupghgq`: editor와 Windows release **각27 checks**, 플러그인 ON. 두 노드의 Speed/Gravity/Tint, reset, 게임 로직, 살아 있는 입자의 age/ID, GPU buffer/shader 동일성, 실제 빨강/파랑 pixel |
 | EXE가 내보낸 기존 두 프로젝트 | Basic `b80jfi1j` **각11**, mmtest `znq_t0ck` **각5**, editor/Windows release 모두 통과 |
 | 성능 | `g1rwvbdm`: 100k/32 custom vec4, 132 checks, GPU median **1.530176 ms**, p95 **2.201216 ms**, 측정 구간 readback/raster 없음 |
-| 표준 모듈 성능 | 전체 앱의 100k Curl OFF/ON median **0.192928 / 1.218464 ms**, p95 **0.195392 / 2.139808 ms**; 기능 회귀 통과이며 보편적 성능 보장은 아님 |
+| 표준 모듈 성능 | 최신 전체 앱의 100k Curl OFF/ON median **0.19408 / 0.849952 ms**, p95 **0.197952 / 0.93536 ms**; 기능 회귀 통과이며 보편적 성능 보장은 아님 |
 
-독립/strict 검사기는 ERROR·script error·누수 출력을 실패로 처리하며 위 결과는 해당 기준을 통과했습니다. **전체 Material Maker 앱**은 기존 HDR/import/종료 경고와 이번 세션의 클립보드 오류를 로그에 남기므로 ERROR-free라고 주장하지 않습니다.
+독립/strict 검사기는 ERROR·script error·누수 출력을 실패로 처리하며 위 결과는 해당 기준을 통과했습니다. **전체 Material Maker 앱**은 기존 HDR/import/종료 경고를 로그에 남길 수 있으므로 ERROR-free라고 주장하지 않습니다. 최신 클립보드 단독·전체 검사에는 이전 클립보드 접근 오류가 재현되지 않았습니다.
 
 User 예제 및 기존 12개 모듈/3개 예제 생성기의 `--check`는 통과했습니다. User export는 v2/SPIR-V/manifest checksum, 재내보내기, 사용자 설정 보존, 수정된 demo 스크립트·잘못된 메타데이터의 원자적 거부를 검사합니다. 초기 standalone 검증의 잘못된 builtin ID와 가산 합산으로 흰색이 되던 demo Tint를 수정한 뒤 통과했습니다. 첫 release observer의 `res://` 예제 경로도 실제 배포 sidecar 경로로 고쳤으며, 실패 빌드 `110541`은 재사용하지 않았습니다.
 
@@ -31,7 +32,7 @@ User 예제 및 기존 12개 모듈/3개 예제 생성기의 `--check`는 통과
 
 소스 기능 단위: User 문서 `f8be95f8`, 편집 UI `e6f9eeea`, 예제/export `1916001e`. private runtime gitlink는 `60b6fb6e32ac56b0028d28d649ee5c54c68dd83b`입니다. 런타임 구현 파일을 public 저장소에 복사하지 않습니다.
 
-클립보드가 허용되는 실행 환경에서 아래 검사를 그대로 다시 실행해 전체 통과를 확인해야 합니다. 현재 기록은 이를 대체하지 않습니다.
+클립보드가 허용되는 실행 환경에서 아래 두 앱 검사를 그대로 재실행하여 각각 1/1, 44/44 통과를 확인했습니다. Inspector와 예제 생성 검사는 직전 배포 검증에서 통과했습니다. 검사를 변경하거나 생략하지 않았습니다.
 
 ```powershell
 python tools/modular_particles/run_app_tests.py --godot $GODOT --test legacy:test_app
