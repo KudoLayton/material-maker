@@ -7,7 +7,7 @@ const RENDERER := {"position":"Position","rotation":"Rotation","scale":"Scale","
 static func is_builtin(id: String) -> bool:
 	return Document.BUILTINS.any(func(field): return field.id == id)
 
-static func context(document: Dictionary, module_id: String, live_graph: Dictionary = {}) -> Dictionary:
+static func context(document: Dictionary, module_id: String, live_graph: Dictionary = {}, instance_id: String = "") -> Dictionary:
 	var module: Dictionary = document.get("modules",{}).get(module_id,{})
 	var graph: Dictionary = live_graph if not live_graph.is_empty() else module.get("mm_graph",{})
 	var outputs := {}
@@ -18,8 +18,13 @@ static func context(document: Dictionary, module_id: String, live_graph: Diction
 			var id: String = fields[port].id
 			var connected: bool = graph.get("connections",[]).any(func(c): return c.get("to") == node.name and c.get("to_port") == port)
 			outputs[id] = connected or outputs.get(id,false)
+	var bindings := {}
+	for stage in ["spawn","update"]:
+		for instance in document.get("stages",{}).get(stage,[]):
+			if instance.id == instance_id and instance.module == module_id: bindings = instance.get("input_bindings",{}).duplicate(true)
 	return {"known":true,"attributes":Document.BUILTINS.duplicate(true) + document.get("attributes",[]).duplicate(true),
 		"inputs":module.get("inputs",[]).duplicate(true),"renderer":document.get("renderer",{}).duplicate(true),
+		"user_parameters":document.get("user_parameters",[]).duplicate(true),"input_bindings":bindings,
 		"outputs":outputs,"output_known":not graph.is_empty()}
 
 static func id_badge(id: String, raw_name: String, peers: Array) -> String:
@@ -82,7 +87,17 @@ static func describe(kind: String, id: String, fallback_name: String = "", fallb
 	if not known: tooltip += "\nDefinition context unavailable; using saved label, not name-based binding"
 	if missing: tooltip += "\nMissing definition; no automatic name-based reconnection"
 	if scope_name.begins_with("Particle"): tooltip += "\nRenderer: " + renderer + "\nModule Output: " + output
-	return {"namespace":scope_name,"raw_name":raw_name,"qualified":qualified,"display":display,"badge":badge,
+	var binding_source := ""
+	if scope_name == "Module":
+		binding_source = "Constant"
+		if ctx.get("input_bindings",{}).has(id):
+			var user_id: String = ctx.input_bindings[id].id
+			var users: Array = ctx.get("user_parameters",[]).filter(func(p): return p.id == user_id)
+			binding_source = "User."+str(users[0].name) if users.size() == 1 else "Missing User ["+user_id+"]"
+			tooltip += "\nSource: "+binding_source+"\nUser stable ID: "+user_id+"\nRead-only shared effect input; not an Attribute"
+			if users.size() == 1 and users[0].type != type: tooltip += "\nUser binding type mismatch"
+		else: tooltip += "\nSource: Constant (module instance value/default)"
+	return {"binding_source":binding_source,"namespace":scope_name,"raw_name":raw_name,"qualified":qualified,"display":display,"badge":badge,
 		"id":id,"type":type,"kind":kind,"role":role,"origin":origin,"readonly":readonly,
 		"missing":missing,"renderer":renderer,"output":output,"tooltip":tooltip}
 

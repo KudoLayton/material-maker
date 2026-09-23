@@ -6,6 +6,7 @@ const Library = preload("library.gd")
 const History = preload("history.gd")
 const Presentation = preload("res://addons/material_maker/particles/modular/presentation.gd")
 const ModuleLibrary = preload("res://addons/material_maker/particles/modular/module_library.gd")
+const Users = preload("res://addons/material_maker/particles/modular/user_parameters.gd")
 const Particles = preload("res://addons/mm_gpu_particles/particles_3d.gd")
 var document: Dictionary = Library.new_document()
 var save_path := ""
@@ -30,6 +31,7 @@ var _detail_kind := "module_read"
 var _detail_id := "position"
 var _presentation_pending := false
 var input_box: VBoxContainer
+var user_panel
 var status: RichTextLabel
 var viewport: SubViewport
 var scene: Node3D
@@ -113,6 +115,9 @@ func _ready() -> void:
 	left.add_child(actions)
 	button(actions,"Import .mmg",import_module)
 	button(actions,"Save .mmg",save_module)
+	user_panel = preload("user_panel.gd").new()
+	left.add_child(user_panel)
+	user_panel.setup(self)
 	var label := Label.new()
 	label.text = "Attributes (stable IDs)"
 	left.add_child(label)
@@ -246,7 +251,9 @@ func refresh_lists() -> void:
 		attribute_choice.set_item_metadata(attribute_choice.item_count-1,attribute)
 		if attribute.id == choice_id: attribute_choice.select(attribute_choice.item_count-1)
 		if attribute.id == tree_id: item.select(1)
-	refresh_attribute_labels(Presentation.context(document,current_module))
+	if is_instance_valid(user_panel): user_panel.refresh()
+	refresh_input_sources()
+	refresh_attribute_labels(Presentation.context(document,current_module,{},current_instance_id()))
 	queue_presentation_refresh()
 	update_title()
 
@@ -284,7 +291,7 @@ func refresh_binding_display(allow_loading: bool = false) -> void:
 	var graph: Dictionary = {}
 	if not current_module.is_empty() and graph_edit.top_generator != null and document.modules.get(current_module,{}).has("mm_graph"):
 		graph = graph_edit.top_generator.serialize()
-	var ctx := Presentation.context(document,current_module,graph)
+	var ctx := Presentation.context(document,current_module,graph,current_instance_id())
 	refresh_attribute_labels(ctx)
 	binding_details.text = Presentation.describe(_detail_kind,_detail_id,"","",ctx).tooltip
 	for row in input_box.get_children():
@@ -292,6 +299,7 @@ func refresh_binding_display(allow_loading: bool = false) -> void:
 		var info := Presentation.describe("module_parameter",str(row.get_meta("module_input_id")),"","",ctx)
 		var label: Label = row.get_node("InputLabel")
 		label.text = short_binding_label(info) + " : " + info.type
+		if info.get("binding_source","") not in ["","Constant"]: label.text += " ← " + info.binding_source
 		label.tooltip_text = info.tooltip
 	apply_display_context(graph_edit.top_generator,ctx)
 	for node in graph_edit.get_children():
@@ -322,30 +330,8 @@ func load_selected() -> void:
 		if module.has("mm_graph"):
 			await graph_edit.new_material(module.mm_graph.duplicate(true))
 			watch(graph_edit.top_generator)
-		for parameter in module.inputs:
-			var line := HBoxContainer.new()
-			line.set_meta("module_input_id",parameter.id)
-			input_box.add_child(line)
-			var label := Label.new()
-			label.name = "InputLabel"
-			label.text = "Module." + parameter.name
-			label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			label.custom_minimum_size.x = 120
-			label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-			label.mouse_filter = Control.MOUSE_FILTER_STOP
-			label.gui_input.connect(func(event):
-				if event is InputEventMouseButton and event.pressed: show_binding_details("module_parameter",parameter.id))
-			line.add_child(label)
-			var value := LineEdit.new()
-			value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			value.text = JSON.stringify(instance.get("parameters",{}).get(parameter.id,parameter.default))
-			line.add_child(value)
-			value.focus_entered.connect(func(): show_binding_details("module_parameter",parameter.id))
-			value.text_submitted.connect(func(text): set_input(instance.id,parameter.id,JSON.parse_string(text)))
-			button(line,"Read",func(): add_binding("module_parameter",parameter.id,parameter.type,parameter.name))
-			var remove := button(line,"Delete",func(): delete_input(instance.module,parameter.id))
-			remove.set_meta("module_input_id",parameter.id)
-			remove.tooltip_text = "Delete this shared module input and its instance values. Remove all referencing Read nodes first."
+		for parameter in module.inputs: build_input_row(instance,parameter)
+		refresh_input_sources()
 	else:
 		graph_edit.clear_material()
 	await get_tree().process_frame
@@ -696,6 +682,127 @@ func delete_input(module_id: String, input_id: String) -> bool:
 	changed(before,true)
 	return true
 
+func current_instance_id() -> String:
+	if selected < 0 or selected >= document.stages[stage].size(): return ""
+	var instance: Dictionary = document.stages[stage][selected]
+	return instance.id if instance.module == current_module else ""
+
+func build_input_row(instance: Dictionary, parameter: Dictionary) -> void:
+	var line := GridContainer.new()
+	line.columns = 3
+	line.set_meta("module_input_id",parameter.id)
+	line.set_meta("module_instance_id",instance.id)
+	input_box.add_child(line)
+	var label := Label.new()
+	label.name = "InputLabel"
+	label.text = "Module."+parameter.name
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.custom_minimum_size.x = 120
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.mouse_filter = Control.MOUSE_FILTER_STOP
+	label.gui_input.connect(func(event):
+		if event is InputEventMouseButton and event.pressed: show_binding_details("module_parameter",parameter.id))
+	line.add_child(label)
+	button(line,"Read",func(): add_binding("module_parameter",parameter.id,parameter.type,parameter.name))
+	var remove := button(line,"Delete",func(): delete_input(instance.module,parameter.id))
+	remove.set_meta("module_input_id",parameter.id)
+	remove.tooltip_text = "Delete this shared input, its constants and User bindings. Remove all referencing Read nodes first."
+	var value := LineEdit.new()
+	value.name = "InputValue"
+	value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	line.add_child(value)
+	value.focus_entered.connect(func(): show_binding_details("module_parameter",parameter.id))
+	value.text_submitted.connect(func(text): set_input(instance.id,parameter.id,JSON.parse_string(text)))
+	var source := OptionButton.new()
+	source.name = "InputSource"
+	source.fit_to_longest_item = false
+	source.custom_minimum_size.x = 90
+	line.add_child(source)
+	source.item_selected.connect(func(index):
+		var user_id: String = source.get_item_metadata(index)
+		if user_id.is_empty():
+			var item := Users.instance(document,instance.id)
+			if item.get("input_bindings",{}).has(parameter.id): user_operation("unbind",[instance.id,parameter.id])
+		else: user_operation("bind",[instance.id,parameter.id,user_id]))
+	var edit_user := button(line,"Edit User",func():
+		var item := Users.instance(document,instance.id)
+		var user_id: String = item.get("input_bindings",{}).get(parameter.id,{}).get("id","")
+		user_panel.select_user(user_id)
+		user_panel.show_dialog("Value",user_id))
+	edit_user.name = "EditUser"
+
+func refresh_input_sources() -> void:
+	if input_box == null: return
+	var item := Users.instance(document,current_instance_id())
+	if item.is_empty(): return
+	for row in input_box.get_children():
+		if row.is_queued_for_deletion() or row.get_meta("module_instance_id","") != item.id: continue
+		var id: String = row.get_meta("module_input_id","")
+		var parameter := Users.input(document,item,id)
+		if parameter.is_empty(): continue
+		var bound: bool = item.get("input_bindings",{}).has(id)
+		var user_id: String = item.get("input_bindings",{}).get(id,{}).get("id","")
+		var user := Users.definition(document,user_id)
+		var source: OptionButton = row.get_node("InputSource")
+		source.clear()
+		source.add_item("Constant")
+		source.set_item_metadata(0,"")
+		source.select(0)
+		var selected_source := -1
+		for definition in document.get("user_parameters",[]):
+			if definition.type != parameter.type: continue
+			source.add_item("User."+definition.name)
+			var index := source.item_count-1
+			source.set_item_metadata(index,definition.id)
+			source.set_item_tooltip(index,"User."+definition.name+" : "+definition.type+"\nID: "+definition.id)
+			source.set_item_disabled(index,not Users.definition_error(definition).is_empty())
+			if definition.id == user_id: selected_source = index
+		if bound and selected_source < 0:
+			source.add_item("Missing User ["+user_id.left(8)+"]")
+			selected_source = source.item_count-1
+			source.set_item_metadata(selected_source,user_id)
+			source.set_item_disabled(selected_source,true)
+		if bound: source.select(selected_source)
+		source.tooltip_text = "Choose Constant or an exactly matching User type. Unbinding restores the previous constant."
+		var value: LineEdit = row.get_node("InputValue")
+		value.editable = not bound
+		value.text = JSON.stringify(user.default) if bound and not user.is_empty() else ("[Missing]" if bound else JSON.stringify(item.get("parameters",{}).get(id,parameter.default)))
+		value.tooltip_text = "Shared User default; use Edit User to change it." if bound else "Module instance constant (JSON)"
+		row.get_node("EditUser").disabled = not bound or user.is_empty()
+
+func user_result(action: String, arguments: Array) -> Dictionary:
+	match action:
+		"add": return Users.add(document,arguments[0],arguments[1],arguments[2])
+		"change": return Users.change(document,arguments[0],arguments[1])
+		"remove": return Users.remove(document,arguments[0])
+		"bind": return Users.bind(document,arguments[0],arguments[1],arguments[2])
+		"unbind": return Users.unbind(document,arguments[0],arguments[1])
+	return Users.failure("Unknown User operation")
+
+func user_operation(action: String, arguments: Array) -> bool:
+	if _loading: return false
+	var result := user_result(action,arguments)
+	if not result.ok:
+		status.text = result.error
+		return false
+	if result.document == document: return true
+	capture_graph()
+	var before := document.duplicate(true)
+	result = user_result(action,arguments)
+	if not result.ok:
+		status.text = result.error
+		return false
+	document = result.document
+	if action == "add": user_panel.selected_id = result.user_id
+	if action == "change" and arguments[1].has("default") and is_instance_valid(preview):
+		var old := Users.definition(before,arguments[0])
+		var current := Users.definition(document,arguments[0])
+		if not old.is_empty() and old.type == current.type: preview.set_user_parameter_by_id(current.id,current.default)
+	changed(before)
+	refresh_input_sources()
+	queue_presentation_refresh()
+	return true
+
 func set_input(instance_id: String, parameter_id: String, value) -> void:
 	var before := document.duplicate(true)
 	for current_stage in ["spawn","update"]:
@@ -756,7 +863,7 @@ func compile_document() -> Dictionary:
 static func parameter_layout(effect: MMParticleEffect) -> Array:
 	# Unused input deletion can change the parameter buffer without changing
 	# shader text. Defaults/names are not layout, so live value edits stay cheap.
-	return effect.parameters.map(func(parameter): return [parameter.id,parameter.type,parameter.offset])
+	return effect.parameters.map(func(parameter): return [parameter.id,parameter.type,parameter.offset,parameter.get("user_id","")])
 
 func ready_text(effect: MMParticleEffect) -> String:
 	var text := "Ready — Godot 4.7.2 / GPU / " + str(effect.component_count) + " components"
@@ -780,7 +887,17 @@ func refresh_preview() -> void:
 		return
 	last_compiled = result.effect
 	if is_instance_valid(preview) and preview.effect.source_hash == result.effect.source_hash and parameter_layout(preview.effect) == parameter_layout(result.effect) and preview.effect.emitter == result.effect.emitter and preview.effect.render_settings == result.effect.render_settings and preview.capacity == int(document.get("preview_capacity",4096)):
-		for parameter in result.effect.parameters: preview.set_parameter(parameter.id,parameter.default)
+		# The preview owns its compiled resource. Update only parameter metadata,
+		# without assigning effect (which would rebuild/reset the GPU).
+		preview.effect.format_version = result.effect.format_version
+		preview.effect.parameters.assign(result.effect.parameters.duplicate(true))
+		preview.effect.user_parameters.assign(result.effect.user_parameters.duplicate(true))
+		preview.parameter_overrides.clear()
+		preview.user_parameter_overrides.clear()
+		for user in result.effect.user_parameters: preview.set_user_parameter_by_id(user.id,user.default)
+		for parameter in result.effect.parameters:
+			if not parameter.has("user_id"): preview.set_parameter(parameter.id,parameter.default)
+		preview.notify_property_list_changed()
 		status.text = ready_text(result.effect)
 		return
 	if is_instance_valid(candidate): candidate.queue_free()
