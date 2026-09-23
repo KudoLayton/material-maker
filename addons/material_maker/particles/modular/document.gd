@@ -18,7 +18,7 @@ static func create() -> Dictionary:
 	return {"type":"mm_particle_effect", "version":1, "target":"4.7.2", "attributes":[], "modules":{}, "stages":{"spawn":[], "update":[]}, "emitter":{"rate":64.0,"duration":1.0,"loop":true,"bursts":[],"lifetime":1.0}, "renderer":{"mode":"additive","billboard":true,"quad_size":0.1,"custom_attribute":"custom"}}
 
 static func shape_error(data: Dictionary) -> String:
-	if data.get("type") != "mm_particle_effect" or data.get("version") != 1 or data.get("target") != "4.7.2": return "Unsupported document format or target"
+	if data.get("type") != "mm_particle_effect" or (data.get("version") != 1 and data.get("version") != 2) or data.get("target") != "4.7.2": return "Unsupported document format or target"
 	for key in ["modules","stages","emitter","renderer"]:
 		if not data.get(key) is Dictionary: return "Expected object: " + key
 	if not data.get("attributes") is Array: return "Expected Attribute array"
@@ -36,6 +36,18 @@ static func shape_error(data: Dictionary) -> String:
 		if not data.stages.get(stage) is Array: return "Missing Stage"
 		for instance in data.stages[stage]:
 			if not instance is Dictionary or not identifier(instance.get("id")) or not instance.get("module") is String or not instance.get("parameters",{}) is Dictionary: return "Malformed module instance"
+			var bindings = instance.get("input_bindings",{})
+			if not bindings is Dictionary: return "Expected input_bindings object"
+			if data.version == 1 and not bindings.is_empty(): return "User bindings require document version 2"
+			for id in bindings:
+				var binding = bindings[id]
+				if not identifier(id) or not binding is Dictionary or binding.get("kind") != "user" or not identifier(binding.get("id")): return "Malformed User input binding"
+	if not data.get("user_parameters",[]) is Array: return "Expected User parameters array"
+	if data.version == 1 and not data.get("user_parameters",[]).is_empty(): return "User parameters require document version 2"
+	for parameter in data.get("user_parameters",[]):
+		if not parameter is Dictionary or not identifier(parameter.get("id")) or not parameter.get("name") is String or not parameter.get("type") is String or not parameter.has("default"): return "Malformed User parameter"
+	# Semantic User errors (including Missing references) are compiler diagnostics,
+	# not load errors: the editor must be able to show and repair those documents.
 	return ""
 
 static func uid() -> String:

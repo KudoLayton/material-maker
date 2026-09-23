@@ -1,6 +1,7 @@
 extends RefCounted
 ## Pure authoring operations. Never mutate the caller, bind by name, or load GPU resources.
 const Document = preload("document.gd")
+const Users = preload("user_parameters.gd")
 const ROOT := "res://material_maker/panels/modular_particles/standard/"
 const ROLES := {
 	"mm.standard.v1.acceleration":{"name":"Acceleration","type":"vec3","default":[0.0,0.0,0.0]},
@@ -113,7 +114,7 @@ static func merge_payload(document: Dictionary, data: Dictionary, independent: b
 			if mapping.has(id): module[key][index] = mapping[id]
 	var module_id: String = Document.uid() if independent else metadata.id
 	result.modules[module_id] = module
-	var shape := Document.shape_error(result)
+	var shape := Users.validation_error(result)
 	if not shape.is_empty(): return failure(shape)
 	return {"ok":true,"error":"","document":result,"module_id":module_id,"added_attributes":added}
 

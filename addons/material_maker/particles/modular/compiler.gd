@@ -4,6 +4,7 @@ const Document = preload("document.gd")
 const Effect = preload("res://addons/mm_gpu_particles/effect.gd")
 const Kernel = preload("kernel.gd")
 const StandardValidation = preload("standard_validation.gd")
+const Users = preload("user_parameters.gd")
 var errors: Array[Dictionary] = []
 var warnings: Array[Dictionary] = []
 var attributes: Dictionary = {}
@@ -33,10 +34,12 @@ func compile(document: Dictionary, prepared_graphs: Dictionary = {}) -> Dictiona
 	instance_id = ""
 	node_id = ""
 	var effect := Effect.new()
-	var shape_error := Document.shape_error(document)
+	var shape_error := Users.validation_error(document)
 	if not shape_error.is_empty():
 		fail(shape_error)
 		return result(effect)
+	effect.format_version = document.version
+	effect.user_parameters.assign(document.get("user_parameters",[]).duplicate(true))
 	for key in ["modules", "stages", "emitter", "renderer"]:
 		if not document.get(key) is Dictionary: fail("Expected object: " + key)
 	if not document.get("attributes") is Array: fail("Expected attributes array")
@@ -128,6 +131,8 @@ func compile(document: Dictionary, prepared_graphs: Dictionary = {}) -> Dictiona
 	for key in substitutions: code = code.replace("@" + key + "@", substitutions[key])
 	effect.compute_source = code
 	effect.source_hash = code.sha256_text()
+	var resource_error := effect.validation_error()
+	if not resource_error.is_empty(): fail(resource_error)
 	var lines := code.split("\n")
 	for line in lines.size():
 		if lines[line].begins_with("// MODULE "):
@@ -167,6 +172,9 @@ func compile_module(module: Dictionary, instance: Dictionary, effect: Resource) 
 			var last: Dictionary = effect.parameters.back()
 			offset = last.offset + Document.TYPES[last.type]
 		var definition := {"id":key,"name":input.get("name", id),"type":type,"default":value,"offset":offset}
+		if instance.get("input_bindings",{}).has(id):
+			definition.user_id = instance.input_bindings[id].id
+			definition.default = effect.user_parameter_by_id(definition.user_id).default
 		effect.parameters.append(definition)
 		parameters[key] = definition
 	for override_id in instance.get("parameters", {}):

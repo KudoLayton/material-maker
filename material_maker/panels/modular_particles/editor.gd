@@ -688,8 +688,11 @@ func delete_input(module_id: String, input_id: String) -> bool:
 	module.inputs = module.inputs.filter(func(input): return input.id != input_id)
 	for current_stage in ["spawn","update"]:
 		for instance in document.stages[current_stage]:
-			if instance.module == module_id and instance.has("parameters"):
-				instance.parameters.erase(input_id)
+			if instance.module == module_id:
+				if instance.has("parameters"): instance.parameters.erase(input_id)
+				if instance.has("input_bindings"):
+					instance.input_bindings.erase(input_id)
+					if instance.input_bindings.is_empty(): instance.erase("input_bindings")
 	changed(before,true)
 	return true
 
@@ -698,6 +701,9 @@ func set_input(instance_id: String, parameter_id: String, value) -> void:
 	for current_stage in ["spawn","update"]:
 		for instance in document.stages[current_stage]:
 			if instance.id != instance_id: continue
+			if instance.get("input_bindings",{}).has(parameter_id):
+				status.text = "Input is bound to a User parameter; edit User value or select Constant."
+				return
 			for input in document.modules[instance.module].inputs:
 				if input.id == parameter_id and Document.valid_value(input.type,value):
 					if not instance.has("parameters"): instance.parameters = {}
