@@ -67,7 +67,7 @@ def prepare(project, settings_name):
     shutil.copy2(ROOT / 'test/modular_particles/rename_checks.gd', validation / 'rename_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/input_delete_checks.gd', validation / 'input_delete_checks.gd')
     shutil.copy2(ROOT / 'test/modular_particles/namespace_checks.gd', validation / 'namespace_checks.gd')
-    for helper in ['standard_checks.gd', 'standard_ui_checks.gd']:
+    for helper in ['standard_checks.gd', 'standard_ui_checks.gd', 'user_ui_checks.gd']:
         shutil.copy2(ROOT / 'test/modular_particles' / helper, validation / helper)
     (validation / 'release_smoke.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://validation/release_smoke.gd" id="1"]\n[node name="ReleaseSmoke" type="Node"]\nscript = ExtResource("1")\n', encoding='utf-8')
 
@@ -130,7 +130,7 @@ application/modify_resources=false
     shutil.copy2(ROOT / 'MODULAR_PARTICLES.md', app / 'MODULAR_PARTICLES.md')
     shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md', app / 'STANDARD_PARTICLE_MODULES.md')
     shutil.copytree(ROOT / 'material_maker/panels/modular_particles/standard', app / 'modules/standard_particles', ignore=shutil.ignore_patterns('*.uid'))
-    for example in ['basic_fountain','box_turbulence','sphere_burst']:
+    for example in ['basic_fountain','box_turbulence','sphere_burst','user_parameters']:
         (app / ('Open ' + example + '.cmd')).write_text('@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0MaterialMaker.exe" --no-splash "%~dp0examples\\modular_particles\\' + example + '.mpfx"\r\n', encoding='ascii')
     (app / 'Open mmtest.cmd').write_text('@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0MaterialMaker.exe" --no-splash "%~dp0examples\\modular_particles\\mmtest.mpfx"\r\n', encoding='ascii')
     smoke = logs / 'app'
@@ -141,18 +141,21 @@ application/modify_resources=false
     if not report['passed'] or report['editor']: raise SystemExit('Release smoke verification did not pass')
     shutil.copytree(smoke / 'godot-example', output / 'GodotExample')
     shutil.copytree(smoke / 'godot-basic-example', output / 'GodotBasicExample')
+    shutil.copytree(smoke / 'godot-user-example', output / 'GodotUserParametersExample')
     shutil.copy2(smoke / 'basic-128.mpfx', app / 'examples/modular_particles/basic-128.mpfx')
     addon = output / 'GodotAddon' / 'addons' / 'mm_gpu_particles'
     shutil.copytree(output / 'GodotExample/addons/mm_gpu_particles', addon)
     guide = ROOT / 'GODOT_PARTICLES_PLUGIN.md'
     if guide.exists():
-        for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',app]:
+        for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',output / 'GodotUserParametersExample',app]:
             shutil.copy2(guide,target / guide.name)
             shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md',target / 'STANDARD_PARTICLE_MODULES.md')
+            shutil.copy2(ROOT / 'USER_PARTICLE_PARAMETERS.md',target / 'USER_PARTICLE_PARAMETERS.md')
     shutil.make_archive(str(output / 'GodotAddon'), 'zip', output / 'GodotAddon')
     (output / 'START_HERE.txt').write_text('''Modular GPU Particles — Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan
 
 실행: MaterialMaker/Open basic_fountain.cmd 또는 MaterialMaker/MaterialMaker.exe
+User 제어 예제: MaterialMaker/Open user_parameters.cmd
 기존 mmtest 예제는 MaterialMaker/Open mmtest.cmd로 열 수 있습니다.
 EXE만 복사하지 말고 MaterialMaker 폴더 전체를 유지하세요.
 
@@ -184,6 +187,16 @@ Particle.Custom.Position = 별도의 사용자 Attribute, Context.delta = 시뮬
 Attribute 트리의 Name 열만 편집하며, 선택 설명에서 Renderer/Module Output 상태를 확인하세요.
 긴 이름과 전체 ID는 툴팁으로 확인하고, 왼쪽 패널은 필요하면 스크롤하세요.
 
+User Parameters: 왼쪽 User 패널에서 이름/타입/기본값을 만들고,
+각 Module Input Source를 Constant에서 같은 타입의 User로 바꿉니다.
+User.Speed는 Cone Speed Min/Max를 공유하고 User.Gravity/Tint도 게임에서 제어합니다.
+User 변경은 Undo/Redo/Save를 지원하며, 값/이름 변경은 Preview 입자 상태를 유지합니다.
+사용 중인 User 삭제/타입 변경은 먼저 모든 참조를 해제해야 합니다.
+상세 사용법·Inspector·API·v1/v2 마이그레이션: USER_PARTICLE_PARAMETERS.md
+
+User 제어 Godot 예제: GodotUserParametersExample/project.godot
+같은 효과의 두 노드를 Left/Right로 독립 제어합니다. Reset은 선택한 노드만 복원합니다.
+Animate left User.Speed는 게임 코드의 실시간 갱신 예입니다.
 새 기본 모듈 Godot 예제: GodotBasicExample/project.godot (128개 burst)
 기존 mmtest Godot 예제: GodotExample/project.godot
 Godot 4.7.2에서 열고 F5로 실행하세요.
@@ -199,7 +212,7 @@ addons/mm_gpu_particles 및 effects/modular_particles를 복사하고 particles.
             'exe_sha256':hashlib.sha256((app / 'MaterialMaker.exe').read_bytes()).hexdigest()}
     (output / 'build-info.json').write_text(json.dumps(info,indent=2,ensure_ascii=False), encoding='utf-8')
     (output / 'BUILD_IN_PROGRESS.txt').unlink()
-    print(f'BUILT: {app / "MaterialMaker.exe"}\nGODOT: {output / "GodotExample/project.godot"}\nGODOT BASIC: {output / "GodotBasicExample/project.godot"}\nADDON: {output / "GodotAddon.zip"}', flush=True)
+    print(f'BUILT: {app / "MaterialMaker.exe"}\nGODOT: {output / "GodotExample/project.godot"}\nGODOT BASIC: {output / "GodotBasicExample/project.godot"}\nGODOT USER: {output / "GodotUserParametersExample/project.godot"}\nADDON: {output / "GodotAddon.zip"}', flush=True)
 
 
 if __name__ == '__main__': main()

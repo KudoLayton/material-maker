@@ -6,6 +6,7 @@ const DeleteChecks = preload("input_delete_checks.gd")
 const NamespaceChecks = preload("namespace_checks.gd")
 const StandardChecks = preload("standard_checks.gd")
 const StandardUI = preload("standard_ui_checks.gd")
+const UserUI = preload("user_ui_checks.gd")
 var failures := 0
 var checks := 0
 func check(value: bool, message: String) -> void:
@@ -130,10 +131,35 @@ func run() -> void:
 		check(exported.error.is_empty(),"standard module export from release EXE: "+exported.error)
 	await RenderingServer.frame_post_draw
 	get_tree().root.get_texture().get_image().save_png(output.path_join("standard-editor.png"))
+	var user = window.new_modular_particles()
+	await frames(50)
+	var user_state: Dictionary = await UserUI.run(user,get_tree(),check,output)
+	await UserUI.restore(user,user_state,get_tree())
+	var user_example_path := OS.get_executable_path().get_base_dir().path_join("examples/modular_particles/user_parameters.mpfx")
+	check(FileAccess.file_exists(user_example_path),"packaged User sidecar example exists")
+	check(await user.load_project(user_example_path),"packaged User example load")
+	await frames(60)
+	check(user.document.version == 2 and user.document.user_parameters.size() == 3,"packaged v2 User example metadata")
+	check(is_instance_valid(user.preview) and user.preview.ready_for_simulation and user.preview.effect.user_parameters.size() == 3,"packaged User example GPU preview")
+	user.save_path = output.path_join("user-example.mpfx")
+	check(await user.save(),"packaged User example authoring save")
+	check(await window.do_load_project(user.save_path),"packaged User example authoring reopen")
+	user = window.get_current_project()
+	await frames(40)
+	var user_compiled: Dictionary = await user.compile_document()
+	check(user_compiled.errors.is_empty() and user_compiled.effect != null and user_compiled.effect.format_version == 2,"packaged User compilation after reopen")
+	if user_compiled.effect != null:
+		var exported: Dictionary = await Exporter.new().export_bundle(user_compiled.effect,output.path_join("godot-user-example"),256)
+		check(exported.error.is_empty(),"User export from release EXE: "+exported.error)
+	var scroll: ScrollContainer = user.input_box.get_parent().get_parent()
+	scroll.scroll_vertical = 0
+	await frames(3)
+	await RenderingServer.frame_post_draw
+	get_tree().root.get_texture().get_image().save_png(output.path_join("user-example.png"))
 	var old = await window.new_particle_shader()
 	await frames(10)
 	check(old is MMGraphEdit and old.get_material_node() is MMGenParticleMaterial,"legacy ptex editor still opens")
-	var info := {"passed":failures == 0,"checks":checks,"engine":Engine.get_version_info().string,"editor":OS.has_feature("editor"),"export":output.path_join("godot-example"),"standard_export":output.path_join("godot-basic-example"),"userdata":OS.get_user_data_dir()}
+	var info := {"passed":failures == 0,"checks":checks,"engine":Engine.get_version_info().string,"editor":OS.has_feature("editor"),"export":output.path_join("godot-example"),"standard_export":output.path_join("godot-basic-example"),"user_export":output.path_join("godot-user-example"),"userdata":OS.get_user_data_dir()}
 	var file := FileAccess.open(output.path_join("release-smoke.json"),FileAccess.WRITE)
 	file.store_string(JSON.stringify(info,"\t"))
 	file.close()
