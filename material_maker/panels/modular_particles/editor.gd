@@ -7,7 +7,8 @@ const History = preload("history.gd")
 const Presentation = preload("res://addons/material_maker/particles/modular/presentation.gd")
 const ModuleLibrary = preload("res://addons/material_maker/particles/modular/module_library.gd")
 const Users = preload("res://addons/material_maker/particles/modular/user_parameters.gd")
-const Particles = preload("res://addons/mm_gpu_particles/particles_3d.gd")
+const Particles = preload("preview_particles.gd")
+const Emission = preload("emission.gd")
 var document: Dictionary = Library.new_document()
 var save_path := ""
 var need_save := false
@@ -32,9 +33,12 @@ var _detail_id := "position"
 var _presentation_pending := false
 var input_box: VBoxContainer
 var user_panel
+var emission_panel
+var preview_controls
 var status: RichTextLabel
 var viewport: SubViewport
 var scene: Node3D
+var camera: Camera3D
 var preview: MMGPUParticles3D
 var candidate: MMGPUParticles3D
 var refresh_timer := Timer.new()
@@ -43,10 +47,13 @@ var _loading := false
 var _building := false
 var _revision := 0
 var _display_graph_baseline: Dictionary = {}
+var _hidden_preview_pause := false
+var pane_home: Control
+var particle_panes: Dictionary = {}
 
 func _ready() -> void:
 	undoredo.owner_ref = weakref(self)
-	var toolbar := HBoxContainer.new()
+	var toolbar := HFlowContainer.new()
 	add_child(toolbar)
 	button(toolbar,"Save",save)
 	button(toolbar,"Export",export_effect)
@@ -59,17 +66,22 @@ func _ready() -> void:
 	button(toolbar,"Restart",func():
 		if is_instance_valid(preview): preview.restart())
 	button(toolbar,"Emitter settings",edit_emitter)
-	var split := HSplitContainer.new()
-	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	add_child(split)
-	var left_scroll := ScrollContainer.new()
-	left_scroll.custom_minimum_size.x = 380
-	left_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	left_scroll.follow_focus = true
-	split.add_child(left_scroll)
+	pane_home = Control.new()
+	pane_home.name = "InactiveParticlePanes"
+	pane_home.hide()
+	add_child(pane_home)
+	var stack_scroll := ScrollContainer.new()
+	stack_scroll.name = "ModuleStackContents"
+	stack_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	stack_scroll.follow_focus = true
+	pane_home.add_child(stack_scroll)
+	particle_panes["Module Stack"] = stack_scroll
 	var left := VBoxContainer.new()
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left_scroll.add_child(left)
+	stack_scroll.add_child(left)
+	emission_panel = preload("emission_panel.gd").new()
+	left.add_child(emission_panel)
+	emission_panel.setup(self)
 	stage_choice = OptionButton.new()
 	stage_choice.add_item("Particle Spawn")
 	stage_choice.add_item("Particle Update")
@@ -102,6 +114,7 @@ func _ready() -> void:
 	rename_button = button(actions,"Rename",show_rename_dialog)
 	rename_button.tooltip_text = "Rename the shared module definition (F2 in the stack)."
 	module_choice = OptionButton.new()
+	module_choice.fit_to_longest_item = false
 	left.add_child(module_choice)
 	actions = HBoxContainer.new()
 	left.add_child(actions)
@@ -115,9 +128,24 @@ func _ready() -> void:
 	left.add_child(actions)
 	button(actions,"Import .mmg",import_module)
 	button(actions,"Save .mmg",save_module)
+	var user_scroll := ScrollContainer.new()
+	user_scroll.name = "UserParameterContents"
+	user_scroll.follow_focus = true
+	pane_home.add_child(user_scroll)
+	particle_panes["User Parameters"] = user_scroll
 	user_panel = preload("user_panel.gd").new()
-	left.add_child(user_panel)
+	user_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	user_scroll.add_child(user_panel)
 	user_panel.setup(self)
+	var attribute_scroll := ScrollContainer.new()
+	attribute_scroll.name = "AttributeContents"
+	attribute_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	attribute_scroll.follow_focus = true
+	pane_home.add_child(attribute_scroll)
+	particle_panes["Attributes"] = attribute_scroll
+	left = VBoxContainer.new()
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	attribute_scroll.add_child(left)
 	var label := Label.new()
 	label.text = "Attributes (stable IDs)"
 	left.add_child(label)
@@ -162,38 +190,38 @@ func _ready() -> void:
 	binding_details.scroll_active = false
 	binding_details.selection_enabled = true
 	left.add_child(binding_details)
+	var input_scroll := ScrollContainer.new()
+	input_scroll.name = "ModuleInputContents"
+	# A very narrow user-resized dock must scroll, never widen into the graph.
+	input_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	input_scroll.follow_focus = true
+	pane_home.add_child(input_scroll)
+	particle_panes["Module Inputs"] = input_scroll
+	left = VBoxContainer.new()
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	input_scroll.add_child(left)
 	button(left,"Add Module Input",add_input_dialog)
 	input_box = VBoxContainer.new()
 	left.add_child(input_box)
-	var middle := VSplitContainer.new()
-	middle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	split.add_child(middle)
 	graph_edit = preload("res://material_maker/panels/graph_edit/graph_edit.tscn").instantiate()
 	graph_edit.node_factory = get_node("/root/MainWindow/NodeFactory")
-	graph_edit.custom_minimum_size.y = 300
-	middle.add_child(graph_edit)
+	graph_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	graph_edit.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_child(graph_edit)
 	graph_edit.graph_changed.connect(graph_changed)
 	graph_edit.view_updated.connect(func(_generator): queue_presentation_refresh())
-	var container := SubViewportContainer.new()
-	container.custom_minimum_size.y = 220
-	container.stretch = true
-	middle.add_child(container)
-	viewport = SubViewport.new()
-	viewport.own_world_3d = true
-	viewport.size = Vector2i(640,320)
-	container.add_child(viewport)
-	scene = Node3D.new()
-	viewport.add_child(scene)
-	var camera := Camera3D.new()
-	camera.position = Vector3(0,1,6)
-	scene.add_child(camera)
-	camera.look_at(Vector3.ZERO)
-	camera.current = true
-	container.gui_input.connect(func(event):
-		if event is InputEventMouseButton and event.pressed:
-			if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera.position *= 0.9
-			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera.position *= 1.1)
+	preview_controls = preload("preview_controls.gd").new()
+	pane_home.add_child(preview_controls)
+	particle_panes["Particle Preview"] = preview_controls
+	preview_controls.setup(self)
+	viewport = preview_controls.viewport
+	scene = preview_controls.scene
+	camera = preview_controls.camera
 	status = RichTextLabel.new()
+	tree_exiting.connect(func():
+		var layout = get_node_or_null("/root/MainWindow/VBoxContainer/Layout")
+		if layout != null and not get_node("/root/MainWindow").quitting and layout.has_method("bind_particle_editor") and layout.current_mode == "particle" and layout.get_panel("Module Stack").source == pane_home:
+			layout.bind_particle_editor(null))
 	status.custom_minimum_size.y = 55
 	status.fit_content = true
 	add_child(status)
@@ -202,7 +230,11 @@ func _ready() -> void:
 	refresh_timer.timeout.connect(refresh_preview)
 	add_child(refresh_timer)
 	visibility_changed.connect(func():
-		if is_instance_valid(preview): preview.clock.paused = not is_visible_in_tree())
+		if is_instance_valid(preview):
+			if is_visible_in_tree(): preview.clock.paused = _hidden_preview_pause
+			else:
+				_hidden_preview_pause = preview.clock.paused
+				preview.clock.paused = true)
 	refresh_lists()
 	load_selected()
 
@@ -227,6 +259,7 @@ func all_attributes() -> Array:
 
 func refresh_lists() -> void:
 	if stack == null: return
+	if emission_panel != null: emission_panel.refresh()
 	update_rename_button()
 	stack.clear()
 	for instance in document.stages[stage]:
@@ -402,10 +435,15 @@ func changed(before: Dictionary, reload_graph: bool = false) -> void:
 	else: schedule_preview()
 
 func apply_document(value: Dictionary) -> void:
+	var before_graph := document.duplicate(true)
+	var after_graph := value.duplicate(true)
+	before_graph.erase("emitter")
+	after_graph.erase("emitter")
 	document = value
 	need_save = true
 	refresh_lists()
-	load_selected()
+	if before_graph == after_graph: schedule_preview()
+	else: load_selected()
 
 func add_module(id: String) -> void:
 	capture_graph()
@@ -689,7 +727,7 @@ func current_instance_id() -> String:
 
 func build_input_row(instance: Dictionary, parameter: Dictionary) -> void:
 	var line := GridContainer.new()
-	line.columns = 3
+	line.columns = 2
 	line.set_meta("module_input_id",parameter.id)
 	line.set_meta("module_instance_id",instance.id)
 	input_box.add_child(line)
@@ -697,22 +735,22 @@ func build_input_row(instance: Dictionary, parameter: Dictionary) -> void:
 	label.name = "InputLabel"
 	label.text = "Module."+parameter.name
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.custom_minimum_size.x = 120
+	label.custom_minimum_size.x = 80
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.mouse_filter = Control.MOUSE_FILTER_STOP
 	label.gui_input.connect(func(event):
 		if event is InputEventMouseButton and event.pressed: show_binding_details("module_parameter",parameter.id))
 	line.add_child(label)
 	button(line,"Read",func(): add_binding("module_parameter",parameter.id,parameter.type,parameter.name))
-	var remove := button(line,"Delete",func(): delete_input(instance.module,parameter.id))
-	remove.set_meta("module_input_id",parameter.id)
-	remove.tooltip_text = "Delete this shared input, its constants and User bindings. Remove all referencing Read nodes first."
 	var value := LineEdit.new()
 	value.name = "InputValue"
 	value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	line.add_child(value)
 	value.focus_entered.connect(func(): show_binding_details("module_parameter",parameter.id))
 	value.text_submitted.connect(func(text): set_input(instance.id,parameter.id,JSON.parse_string(text)))
+	var remove := button(line,"Delete",func(): delete_input(instance.module,parameter.id))
+	remove.set_meta("module_input_id",parameter.id)
+	remove.tooltip_text = "Delete this shared input, its constants and User bindings. Remove all referencing Read nodes first."
 	var source := OptionButton.new()
 	source.name = "InputSource"
 	source.fit_to_longest_item = false
@@ -822,21 +860,43 @@ func set_input(instance_id: String, parameter_id: String, value) -> void:
 					return
 	status.text = "Invalid module input value"
 
+func set_emitter_settings(value: Dictionary) -> bool:
+	var problem := Emission.error(value)
+	if not problem.is_empty():
+		status.text = problem
+		return false
+	if document.emitter == value: return true
+	capture_graph()
+	var before := document.duplicate(true)
+	document.emitter = value.duplicate(true)
+	changed(before)
+	return true
+
 func edit_emitter() -> void:
 	var dialog := ConfirmationDialog.new()
 	dialog.title = "Emitter / Renderer settings (JSON)"
+	dialog.dialog_hide_on_ok = false
+	var box := VBoxContainer.new()
+	dialog.add_child(box)
+	var error := Label.new()
+	error.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(error)
 	var text := TextEdit.new()
 	text.custom_minimum_size = Vector2(540,300)
 	text.text = JSON.stringify({"emitter":document.emitter,"renderer":document.renderer},"\t")
-	dialog.add_child(text)
+	box.add_child(text)
 	dialog.confirmed.connect(func():
 		var value = JSON.parse_string(text.text)
-		if value is Dictionary and value.get("emitter") is Dictionary and value.get("renderer") is Dictionary:
-			var before := document.duplicate(true)
-			document.emitter = value.emitter
-			document.renderer = value.renderer
-			changed(before)
-		else: status.text = "Invalid settings JSON"
+		if not value is Dictionary or not value.get("emitter") is Dictionary or not value.get("renderer") is Dictionary:
+			error.text = "Invalid settings JSON"
+			return
+		error.text = Emission.error(value.emitter)
+		if not error.text.is_empty(): return
+		capture_graph()
+		var before := document.duplicate(true)
+		document.emitter = value.emitter.duplicate(true)
+		document.renderer = value.renderer.duplicate(true)
+		changed(before)
 		dialog.queue_free())
 	dialog.canceled.connect(dialog.queue_free)
 	add_child(dialog)
@@ -886,9 +946,12 @@ func refresh_preview() -> void:
 		status.text = "\n".join(messages)
 		return
 	last_compiled = result.effect
-	if is_instance_valid(preview) and preview.effect.source_hash == result.effect.source_hash and parameter_layout(preview.effect) == parameter_layout(result.effect) and preview.effect.emitter == result.effect.emitter and preview.effect.render_settings == result.effect.render_settings and preview.capacity == int(document.get("preview_capacity",4096)):
+	if is_instance_valid(preview) and preview.effect.source_hash == result.effect.source_hash and parameter_layout(preview.effect) == parameter_layout(result.effect) and preview.effect.render_settings == result.effect.render_settings and preview.capacity == int(document.get("preview_capacity",4096)):
 		# The preview owns its compiled resource. Update only parameter metadata,
 		# without assigning effect (which would rebuild/reset the GPU).
+		var restart_emission := Emission.needs_restart(preview.effect.emitter,result.effect.emitter)
+		preview.effect.emitter = result.effect.emitter.duplicate(true)
+		if restart_emission: preview.restart()
 		preview.effect.format_version = result.effect.format_version
 		preview.effect.parameters.assign(result.effect.parameters.duplicate(true))
 		preview.effect.user_parameters.assign(result.effect.user_parameters.duplicate(true))
@@ -917,6 +980,7 @@ func refresh_preview() -> void:
 			preview = pending
 			candidate = null
 			preview.show()
+			if not is_visible_in_tree(): preview.clock.paused = true
 			status.text = ready_text(result.effect))
 	scene.add_child(pending)
 

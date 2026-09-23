@@ -930,6 +930,9 @@ func quit() -> void:
 		if !result:
 			quitting = false
 			return
+	# Return particle-owned controls to their project tab before the dock tree
+	# is destroyed; SubViewport/GPU resources must not be orphaned at exit.
+	layout.bind_particle_editor(null)
 	await mm_renderer.stop_rendering_thread()
 	dim_window()
 	get_tree().quit()
@@ -1366,10 +1369,11 @@ func on_preview_changed(graph) -> void:
 
 func _on_Projects_tab_changed(_tab) -> void:
 	var project = get_current_project()
-	if project.has_method("project_selected"):
+	if project != null and project.has_method("project_selected"):
 		project.call("project_selected")
 	var new_tab = projects_panel.get_projects().get_current_tab_control()
 	if new_tab != current_tab:
+		layout.bind_particle_editor(null)
 		var new_graph_edit = null
 		if new_tab is GraphEdit:
 			new_graph_edit = new_tab
@@ -1377,10 +1381,11 @@ func _on_Projects_tab_changed(_tab) -> void:
 			if current_mesh and new_graph_edit.top_generator:
 				new_graph_edit.top_generator.set_current_mesh(current_mesh)
 		else:
-			if new_tab.has_method("get_graph_edit"):
+			if new_tab != null and new_tab.has_method("get_graph_edit"):
 				new_graph_edit = new_tab.get_graph_edit()
-			set_current_mode("material" if new_tab.has_method("get_project_type") and new_tab.get_project_type() == "modular_particles" else "paint")
+			set_current_mode("material" if new_tab == null else ("particle" if new_tab.has_method("get_project_type") and new_tab.get_project_type() == "modular_particles" else "paint"))
 		current_tab = new_tab
+		if current_mode == "particle": layout.bind_particle_editor(new_tab)
 		if new_graph_edit != null:
 			if ! new_graph_edit.is_connected("graph_changed", self.update_preview):
 				new_graph_edit.connect("graph_changed", self.update_preview)

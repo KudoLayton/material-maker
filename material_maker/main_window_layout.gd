@@ -27,11 +27,27 @@ var default_material_layout := {
 					&"Preview3D", &"Preview2D (2)", &"Reference"], &"current": 0 }
 			], &"dir": "v" }], &"dir": "h" }]}, &"windows": [] }
 
+var default_particle_layout := {
+	&"main": { &"type": "FlexTop", &"w": 1440.0, &"h": 900.0, &"children": [
+		{ &"type": "FlexSplit", &"dir": "h", &"w": 1440.0, &"h": 900.0, &"children": [
+			{ &"type": "FlexSplit", &"dir": "v", &"w": 280.0, &"h": 900.0, &"children": [
+				{ &"type": "FlexTab", &"w": 280.0, &"h": 460.0, &"children": [], &"tabs": [&"Module Inputs", &"Library", &"Hierarchy"], &"current": 0 },
+				{ &"type": "FlexTab", &"w": 280.0, &"h": 440.0, &"children": [], &"tabs": [&"User Parameters", &"Attributes"], &"current": 0 }
+			] },
+			{ &"type": "FlexMain", &"w": 860.0, &"h": 900.0, &"children": [] },
+			{ &"type": "FlexSplit", &"dir": "v", &"w": 300.0, &"h": 900.0, &"children": [
+				{ &"type": "FlexTab", &"w": 300.0, &"h": 440.0, &"children": [], &"tabs": [&"Module Stack"], &"current": 0 },
+				{ &"type": "FlexTab", &"w": 300.0, &"h": 460.0, &"children": [], &"tabs": [&"Particle Preview"], &"current": 0 }
+			] }
+		] }
+	]}, &"windows": [] }
+
 var default_paint_layout : Dictionary = { main={ children=[ { children=[ { children=[], current=0, h=766.0, tabs=["Brushes"], type="FlexTab", w=279.0 }, { children=[], h=766.0, type="FlexMain", w=844.0 }, { children=[ { children=[], current=0, h=370.0, tabs=["Parameters"], type="FlexTab", w=240.0 }, { children=[], current=0, h=386.0, tabs=["Layers"], type="FlexTab", w=240.0 }], dir="v", h=766.0, type="FlexSplit", w=240.0 }], dir="h", h=766.0, type="FlexSplit", w=1383.0 }], h=766.0, type="FlexTop", w=1383.0 }, windows=[] }
 
 const HIDE_PANELS : Dictionary[String, Array] = {
 	"material": [ "Brushes", "Layers", "Parameters" ],
-	"paint": [ "Preview3D", "Histogram", "Hierarchy" ]
+	"paint": [ "Preview3D", "Histogram", "Hierarchy" ],
+	"particle": [ "Preview2D", "Preview2D (2)", "Preview3D", "Histogram", "Brushes", "Layers", "Parameters", "Reference" ]
 }
 
 
@@ -69,13 +85,20 @@ func load_panels() -> void:
 		panels[panel.name] = node
 		$FlexibleLayout.add(panel.name, node)
 
-	for mode in [ "material", "paint" ]:
+	for mode in [ "material", "paint", "particle" ]:
 		if mm_globals.config.has_section_key("layout", mode):
 			layout[mode] = JSON.parse_string(mm_globals.config.get_value("layout", mode))
 		elif mode == "material":
 			layout[mode] = default_material_layout
 		elif mode == "paint":
 			layout[mode] = default_paint_layout
+		elif mode == "particle":
+			layout[mode] = default_particle_layout
+	for title in ["Module Inputs", "User Parameters", "Attributes", "Module Stack", "Particle Preview"]:
+		var dock = preload("res://material_maker/panels/modular_particles/dock.gd").new()
+		dock.name = title
+		panels[title] = dock
+		$FlexibleLayout.add(title,dock)
 	$FlexibleLayout.init(layout[current_mode] if layout.has(current_mode) else null)
 
 	# Restore layout presets
@@ -93,7 +116,7 @@ func save_config() -> void:
 	layout[current_mode] = $FlexibleLayout.serialize()
 	if not previous_layout.is_empty():
 		layout[current_mode] = previous_layout
-	for mode in [ "material", "paint" ]:
+	for mode in [ "material", "paint", "particle" ]:
 		if layout.has(mode):
 			mm_globals.config.set_value("layout", mode, JSON.stringify(layout[mode]))
 
@@ -123,6 +146,13 @@ func set_panel_visible(panel_name : String, v : bool) -> void:
 	$FlexibleLayout.show_panel(panel_name, v)
 	$FlexibleLayout.layout()
 
+func bind_particle_editor(editor: Control) -> void:
+	for title in ["Module Inputs", "User Parameters", "Attributes", "Module Stack", "Particle Preview"]:
+		var dock = panels.get(title)
+		if dock == null: continue
+		var content: Control = editor.particle_panes.get(title) if is_instance_valid(editor) else null
+		dock.show_editor(content,editor.pane_home if is_instance_valid(editor) else null)
+
 func change_mode(m : String) -> void:
 	if m == current_mode:
 		return
@@ -139,4 +169,6 @@ func reset_panels() -> void:
 		$FlexibleLayout.init(default_material_layout)
 	elif current_mode == "paint":
 		$FlexibleLayout.init(default_paint_layout)
+	elif current_mode == "particle":
+		$FlexibleLayout.init(default_particle_layout)
 	owner.view_center()
