@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--godot', required=True)
     parser.add_argument('--test', default='gpu_probe')
     parser.add_argument('--headless', action='store_true')
+    parser.add_argument('--runtime', type=Path, help='Test a flat addon checkout in the temporary project only')
     args = parser.parse_args()
     engine = Path(args.godot).resolve()
     version = subprocess.check_output([str(engine), '--version'], text=True).strip()
@@ -39,6 +40,15 @@ environment/defaults/default_clear_color=Color(0,0,0,1)
     for path in ['test/modular_particles', 'addons/mm_gpu_particles', 'addons/material_maker/particles/modular']:
         if (ROOT / path).exists():
             shutil.copytree(ROOT / path, project / path, ignore=shutil.ignore_patterns('.git', '.godot', '__pycache__'))
+    if args.runtime:
+        runtime = args.runtime.resolve()
+        required = ['effect.gd', 'particles_3d.gd', 'value_codec.gd', 'gpu_state.gd',
+                    'scheduler.gd', 'multimesh_lifetime.gd', 'plugin.gd', 'plugin.cfg']
+        if any(not (runtime / name).is_file() for name in required):
+            raise SystemExit('Incomplete runtime checkout: ' + str(runtime))
+        for source in [*runtime.glob('*.gd'), runtime / 'plugin.cfg']:
+            shutil.copy2(source, project / 'addons/mm_gpu_particles' / source.name)
+        print('RUNTIME OVERRIDE (temporary copy only):', runtime, flush=True)
     flags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
     commands = [
         [str(engine), '--headless', '--path', str(project), '--editor', '--import'],
