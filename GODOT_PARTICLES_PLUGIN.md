@@ -85,12 +85,12 @@ $Particles.set_user_parameter("User.Tint", Color(1, 0, 0, 1))
 $Particles.reset_user_parameter("User.Speed")
 ```
 
-ID 기반 `*_by_id` API도 지원합니다. User에 연결된 입력은 기존 `set_parameter()`로 덮어쓸 수 없으며 `false`를 반환합니다. 값 변경은 다음 Step에 기존 buffer로 전달하여 재시작/셰이더 재컴파일 없이 적용합니다. v1 효과는 계속 지원하지만 **v2 효과는 새 애드온과 함께** 배포해야 합니다. [User 편집·타입·마이그레이션 안내](USER_PARTICLE_PARAMETERS.md)를 참고하세요.
+ID 기반 `*_by_id` API도 지원합니다. User에 연결된 입력은 기존 `set_parameter()`로 덮어쓸 수 없으며 `false`를 반환합니다. 값 변경은 다음 Step에 기존 buffer로 전달하여 재시작/셰이더 재컴파일 없이 적용합니다. **v2 효과만 지원하며 호환 애드온과 함께** 배포해야 합니다. v1·버전 누락·미지원 미래 버전은 자동 변환 없이 거부합니다. [User 편집·타입·최신 포맷 안내](USER_PARTICLE_PARAMETERS.md)를 참고하세요.
 
 ## 주의 사항
 
 - `effect.res`에는 미리 컴파일한 SPIR-V가 포함됩니다. 게임에서는 Material Maker/원본 그래프/그래프 compiler가 필요 없습니다.
 - 일반 Godot Windows Export로 배포할 수 있습니다. `addons/mm_gpu_particles`와 효과 리소스를 export에 포함해야 합니다.
-- 가산/불투명/컷아웃을 지원합니다. 투명 depth sorting, 충돌, 서브이미터, 외부 텍스처/베이크 Buffer 입력은 v1 범위 밖입니다.
+- 가산/불투명/컷아웃을 지원합니다. 투명 depth sorting, 충돌, 서브이미터, 외부 텍스처/베이크 Buffer 입력은 지원 범위 밖입니다.
 - Capacity를 넘긴 새 입자는 버립니다. 32개 Attribute가 상한은 아니지만 GPU 메모리/버퍼 안전 한도가 있습니다.
 - Godot/Material Maker의 기존 설치 파일은 이 빌드로 교체하지 않습니다. 새 앱은 별도 사용자 설정 폴더를 사용합니다.

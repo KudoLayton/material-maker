@@ -24,7 +24,7 @@ def remap(graph, mapping):
 
 
 def effect(name, spawn, update, modules):
-    doc = dict(type='mm_particle_effect',version=1,target='4.7.2',attributes=[],modules={},
+    doc = dict(type='mm_particle_effect',version=2,target='4.7.2',user_parameters=[],attributes=[],modules={},
                stages=dict(spawn=[],update=[]),
                emitter=dict(rate=64.,duration=1.,loop=True,bursts=[],lifetime=1.),
                renderer=dict(mode='additive',billboard=True,quad_size=0.1,custom_attribute='custom'))

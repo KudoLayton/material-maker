@@ -119,9 +119,8 @@ func run() -> void:
 	editor.undoredo.undo()
 	await settle(editor)
 	check(editor.document.emitter == custom,"Undo restores exact original Custom schedule")
-	for version in [1,2]:
-		editor.document.version = version
-		if version == 2: editor.document.user_parameters = []
+	for version in [2]:
+		check(editor.document.version == version,"emission edits retain latest format")
 		editor.save_path = "res://emission-v%d.mpfx" % version
 		check(await editor.save(),"save emission v%d" % version)
 		var saved := Document.load_file(editor.save_path)

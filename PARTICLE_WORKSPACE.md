@@ -24,7 +24,7 @@ Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다.
 
 Rate/Duration은 유한한 양수, Count는 양의 uint32 정수여야 합니다. 잘못된 입력은 적용하지 않습니다. 모드·주기·Burst 변경은 Preview 시뮬레이션을 한 번 다시 시작하지만 카메라와 Pause 상태를 보존합니다. Rate만 변경하면 시뮬레이션 시간도 유지합니다. 방출만 바꿀 때는 그래프나 GPU 파이프라인을 다시 만들지 않습니다.
 
-설정은 `.mpfx`의 기존 `emitter`에 저장됩니다. 별도 모드 필드나 자동 v1→v2 변경이 없고, Undo/Redo·저장·재열기·Export가 같은 값을 사용합니다. 모듈 스택/Attribute/User 형식과 기존 예제는 그대로입니다.
+설정은 `.mpfx`의 기존 `emitter`에 저장됩니다. 별도 모드 필드 없이 Undo/Redo·저장·재열기·Export가 같은 값을 사용합니다. 현재 효과 원본과 런타임은 v2만 지원하며, 저장소 예제도 v2입니다. 구버전 자동 변환은 제공하지 않습니다.
 
 ## Particle Preview
 

@@ -27,18 +27,21 @@ func run() -> void:
 	var legacy := Fixtures.basic()
 	var untouched := legacy.duplicate(true)
 	var original := Compiler.new().compile(legacy)
-	check(original.errors.is_empty() and original.effect.format_version == 1,"v1 compilation")
-	check(legacy == untouched and not legacy.has("user_parameters"),"v1 validation/compilation is nonmutating")
-	check(Document.save_file("user://legacy.mpfx",legacy) == OK,"save v1")
-	var restored := Document.load_file("user://legacy.mpfx")
+	check(original.errors.is_empty() and original.effect.format_version == 2,"v2 compilation without Users")
+	check(legacy == untouched and legacy.user_parameters.is_empty(),"v2 validation/compilation is nonmutating")
+	var unsupported := legacy.duplicate(true)
+	unsupported.version = 1
+	check(not Users.add(unsupported,"Speed","float",1.0).ok and unsupported.version == 1,"adding User never upgrades unsupported documents")
+	check(Document.save_file("user://latest.mpfx",legacy) == OK,"save v2")
+	var restored := Document.load_file("user://latest.mpfx")
 	# JSON parses every number as float; compare normalized documents and GPU semantics.
-	check(restored == JSON.parse_string(JSON.stringify(legacy)) and not restored.has("user_parameters"),"v1 roundtrip unchanged")
-	check(Compiler.new().compile(restored).effect.source_hash == original.effect.source_hash,"JSON numeric representation preserves v1 shader")
+	check(restored == JSON.parse_string(JSON.stringify(legacy)) and restored.user_parameters.is_empty(),"v2 roundtrip unchanged")
+	check(Compiler.new().compile(restored).effect.source_hash == original.effect.source_hash,"JSON numeric representation preserves shader")
 	check(not Users.add(legacy,"Bad Name","float",1).ok,"invalid identifier rejected")
 	check(not Users.add(legacy,"Speed","uint",-1).ok,"invalid default rejected")
 	check(legacy == untouched,"failed adds unchanged")
 	var added := Users.add(legacy,"Speed","float",3.0)
-	check(added.ok and added.document.version == 2,"first User promotes v2")
+	check(added.ok and added.document.version == 2,"first User preserves v2")
 	var doc: Dictionary = added.document
 	var id: String = added.user_id
 	check(Document.identifier(id) and id.length() == 32,"stable UUID allocated")
@@ -99,7 +102,7 @@ func run() -> void:
 	check(not Users.bind(resized.document,"spawn1","speed",id).ok,"binding type must match exactly")
 	var removed := Users.remove(unbound.document,id)
 	check(removed.ok and removed.document.version == 2 and removed.document.user_parameters.is_empty(),"last deletion does not downgrade format")
-	check(legacy == untouched,"all pure actions preserve original v1")
+	check(legacy == untouched,"all pure actions preserve original document")
 	var bad := doc.duplicate(true)
 	bad.version = 1
 	check(not Document.shape_error(bad).is_empty() and errors(bad),"v1 cannot silently carry User data")

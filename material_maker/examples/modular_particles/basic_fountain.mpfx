@@ -1,7 +1,8 @@
 {
   "type": "mm_particle_effect",
-  "version": 1,
+  "version": 2,
   "target": "4.7.2",
+  "user_parameters": [],
   "attributes": [
     {
       "id": "basic_fountain_attr_acceleration",

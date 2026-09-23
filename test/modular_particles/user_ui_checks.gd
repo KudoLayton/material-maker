@@ -59,7 +59,7 @@ static func run(editor, tree: SceneTree, check: Callable, directory: String = "u
 	editor.selected = 0
 	editor.apply_document(doc)
 	await frames(tree,60)
-	check.call(editor.document.version == 1 and not editor.document.has("user_parameters"),"opening panel does not migrate v1")
+	check.call(editor.document.version == 2 and editor.document.user_parameters.is_empty(),"opening panel preserves latest empty User definitions")
 	var panel = editor.user_panel
 	check.call(panel.tree.get_root().get_child_count() == 0,"empty User panel")
 	editor.capture_graph()
@@ -87,7 +87,7 @@ static func run(editor, tree: SceneTree, check: Callable, directory: String = "u
 	panel.dialog.confirmed.emit()
 	await frames(tree)
 	var user_id: String = panel.selected_id
-	check.call(editor.document.version == 2 and editor.document.user_parameters.size() == 1,"successful add upgrades v2")
+	check.call(editor.document.version == 2 and editor.document.user_parameters.size() == 1,"successful add preserves v2")
 	check.call(editor.undoredo.cursor == cursor+1 and editor.need_save,"add is one undo operation")
 	check.call(editor.document.stages.spawn[0].get("input_bindings",{}).is_empty(),"same Module/User name never auto-binds")
 	check.call(editor.user_operation("add",["Intensity","float",2.0]),"add different User type")

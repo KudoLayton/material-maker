@@ -1,4 +1,4 @@
-# Modular GPU Particles (v1 / User Parameters v2)
+# Modular GPU Particles (최신 포맷 v2 전용)
 
 Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다. 기존 `.ptex` 파티클 셰이더 편집기는 유지하며, 새 `.mpfx` 문서는 별도 Compute 시뮬레이션과 `MMGPUParticles3D`를 사용합니다. 엔진 소스 변경은 없습니다.
 
@@ -10,7 +10,7 @@ Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다. 기존 `.ptex` 파�
 
 `Open user_parameters.cmd`로 Speed/Gravity/Tint 예제를 엽니다. 왼쪽 User 패널에서 값을 만들고 Module Input의 Source를 User로 연결합니다. 같은 이름만으로는 바인딩하지 않으며, 기본값/이름 변경은 정상 GPU Preview의 입자 상태를 유지합니다.
 
-Godot의 노드별 Inspector 또는 `set_user_parameter("User.Speed", 6.0)` 등으로 독립 제어합니다. 배포의 `GodotUserParametersExample/project.godot`에는 같은 효과를 쓰는 두 노드와 실시간 컨트롤이 있습니다. 기존 v1은 유지되며, User를 추가한 문서는 v2가 됩니다. **[User 편집·API·마이그레이션 안내](USER_PARTICLE_PARAMETERS.md)**를 먼저 참고하세요.
+Godot의 노드별 Inspector 또는 `set_user_parameter("User.Speed", 6.0)` 등으로 독립 제어합니다. 배포의 `GodotUserParametersExample/project.godot`에는 같은 효과를 쓰는 두 노드와 실시간 컨트롤이 있습니다. User 유무와 관계없이 새 문서·컴파일 효과는 v2입니다. v1·버전 누락·미지원 미래 버전은 자동 변환 없이 거부합니다. **[User 편집·API·최신 포맷 안내](USER_PARTICLE_PARAMETERS.md)**를 먼저 참고하세요.
 
 ## 소스 받기
 
@@ -126,7 +126,7 @@ $Particles.set_parameter("mmtest_initialize/velocity", 8.0)
 
 지원: 기존 Math/Vector/Random, Curve, FBM, 명시적 좌표 Evaluate Function, quaternion, 중첩 MM 서브그래프와 named module bindings.
 
-v1 제외: 기존 particle built-in 직접 참조, 외부 텍스처/베이크 Buffer·Sampler·배열, 충돌·서브이미터, 투명 depth sorting, 자동 `.ptex` 변환. 지원하지 않는 연결은 진단하며 조용히 다른 값으로 대체하지 않습니다. 하위 compiler의 명시적 write-step IR도 테스트하지만 UI 모듈은 하나의 Module Output으로 상태를 반영합니다.
+지원 범위 제외: 기존 particle built-in 직접 참조, 외부 텍스처/베이크 Buffer·Sampler·배열, 충돌·서브이미터, 투명 depth sorting, 자동 `.ptex` 변환. 지원하지 않는 연결은 진단하며 조용히 다른 값으로 대체하지 않습니다. 하위 compiler의 명시적 write-step IR도 테스트하지만 UI 모듈은 하나의 Module Output으로 상태를 반영합니다.
 
 렌더: 기본 쿼드/원형 알파 쿼드 또는 런타임 `mesh`, 다중 surface, Transform/Color/INSTANCE_CUSTOM, billboard, additive/opaque/cutout, 사용자 `draw_material` 및 `visibility_aabb`. AABB는 사용자가 충분히 크게 지정해야 합니다. Editor 내 시뮬레이션은 기본 비활성이고 `preview_in_editor`로 켭니다.
 

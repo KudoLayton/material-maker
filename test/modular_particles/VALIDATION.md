@@ -2,7 +2,16 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
-## 파티클 작업 공간 최신 검증 (2026-09-23)
+## 최신 효과 포맷 v2 전용 전환
+
+- GUI·compiler·runtime에서 v1/버전 누락/미지원 미래 버전을 거부합니다. User 추가로 자동 승격하지 않습니다. `.mmg`와 export manifest의 별도 version 1은 유지합니다.
+- 전체 앱 **48/48 PASS**, `mm-modular-app-lor3zwc0`: 신규 format editor **29 checks**, 실패한 파일 열기·clipboard·apply·save가 문서/탭/Undo/정상 GPU preview/저장 파일을 보존합니다. 기존 graph clipboard와 일반 Material 회귀도 통과했습니다.
+- compiler **35**, User model **68**, User GPU runtime **139 PASS** (`mm-modular-particles-a1tzevrl`, `_pvw5g86`, `fwgi1cqa`). invalid sentinel 기본값을 가진 effect v2의 binary serialization/reload 검사 포함.
+- private runtime `8ea4686`: 최신 v2 mmtest 재컴파일 + checksum 갱신. 독립 Godot editor/Windows Release **각 5 checks PASS**, `mm-modular-export-bw8193xs`, plugin enabled, ERROR/leak 없음.
+- 최신 emitter 독립 GPU **PASS**, `mm-emission-standalone-lm3qov42`: 저장 효과로 연속 12 + 지연 burst 3 = GPU 15개.
+- 기존 배포 파일과 외부 사용자 원본은 변경하지 않았습니다. 이 전환을 포함한 Material Maker 배포 EXE/CLI/스킬 설치 검증은 아직 진행 전입니다. 아래 구버전 지원 결과는 **과거 기록**이며 현재 지원 정책이 아닙니다.
+
+## 파티클 작업 공간 이전 검증 (2026-09-23)
 
 배포: **`build/modular-release-20260923-231142/MaterialMaker/MaterialMaker.exe`**. 사용법: [PARTICLE_WORKSPACE.md](../../PARTICLE_WORKSPACE.md).
 

@@ -2,6 +2,35 @@
   "type": "mm_particle_effect",
   "version": 2,
   "target": "4.7.2",
+  "user_parameters": [
+    {
+      "id": "1817a3c0f27bef728add735eef0d0188",
+      "name": "Speed",
+      "type": "float",
+      "default": 3.0
+    },
+    {
+      "id": "9ec8bd76b9287dcde2410845c603ff21",
+      "name": "Gravity",
+      "type": "vec3",
+      "default": [
+        0.0,
+        -9.81,
+        0.0
+      ]
+    },
+    {
+      "id": "24b878f1992b386f8bf218ad483c2cbb",
+      "name": "Tint",
+      "type": "vec4",
+      "default": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ],
   "attributes": [
     {
       "id": "user_parameters_attr_acceleration",
@@ -2038,34 +2067,5 @@
     "quad_size": 0.1,
     "custom_attribute": "custom"
   },
-  "preview_capacity": 256,
-  "user_parameters": [
-    {
-      "id": "1817a3c0f27bef728add735eef0d0188",
-      "name": "Speed",
-      "type": "float",
-      "default": 3.0
-    },
-    {
-      "id": "9ec8bd76b9287dcde2410845c603ff21",
-      "name": "Gravity",
-      "type": "vec3",
-      "default": [
-        0.0,
-        -9.81,
-        0.0
-      ]
-    },
-    {
-      "id": "24b878f1992b386f8bf218ad483c2cbb",
-      "name": "Tint",
-      "type": "vec4",
-      "default": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ]
-    }
-  ]
+  "preview_capacity": 256
 }

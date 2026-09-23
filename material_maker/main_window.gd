@@ -823,6 +823,13 @@ func do_load_project(file_name : String) -> bool:
 	var status : bool = false
 	match file_name.get_extension():
 		"mpfx":
+			# Validate before creating a tab: a rejected file must not disturb the
+			# current document, selection, undo history or running preview.
+			var format = preload("res://addons/material_maker/particles/modular/document.gd")
+			var problem: String = format.shape_error(format.load_file(file_name))
+			if not problem.is_empty():
+				mm_globals.set_tip_text(problem,10,1)
+				return false
 			var panel = new_modular_particles()
 			status = await panel.load_project(file_name)
 			if not status: projects_panel.get_projects().do_close_tab(panel.get_index())

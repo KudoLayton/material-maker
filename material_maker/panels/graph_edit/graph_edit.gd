@@ -1037,6 +1037,9 @@ func do_paste(data) -> void:
 func paste() -> void:
 	var data : String = DisplayServer.clipboard_get().strip_edges()
 	var parsed_data = await mm_globals.parse_paste_data(data)
+	if not parsed_data.get("error", "").is_empty():
+		mm_globals.set_tip_text(parsed_data.error,10,1)
+		return
 	if parsed_data.graph != null:
 		var graph = parsed_data.graph
 		if graph is Dictionary and graph.has("type") and graph.type == "graph":

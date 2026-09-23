@@ -79,12 +79,13 @@ static func success(document: Dictionary) -> Dictionary:
 	return {"ok":true,"error":"","document":document} if shape.is_empty() else failure(shape)
 
 static func add(document: Dictionary, name: String, type: String, value) -> Dictionary:
+	var shape := Document.shape_error(document)
+	if not shape.is_empty(): return failure(shape)
 	var parameter := {"id":Document.uid(),"name":name.strip_edges(),"type":type,"default":value.duplicate(true) if value is Array else value}
 	var error := definition_error(parameter)
 	if not error.is_empty(): return failure(error)
 	if document.get("user_parameters",[]).any(func(p): return p.name == parameter.name): return failure("Duplicate User name: User."+parameter.name)
 	var result := document.duplicate(true)
-	result.version = 2
 	if not result.has("user_parameters"): result.user_parameters = []
 	result.user_parameters.append(parameter)
 	var outcome := success(result)

@@ -18,6 +18,24 @@ func _initialize() -> void:
 	if result.effect == null:
 		quit(1)
 		return
+	check(doc.version == 2 and doc.user_parameters.is_empty(), "new documents are v2 without Users")
+	check(result.effect.format_version == 2, "compiled effects are v2")
+	for rejected_version in [0, 1, 3]:
+		var rejected := doc.duplicate(true)
+		rejected.version = rejected_version
+		check(not compiler.compile(rejected).errors.is_empty(), "reject document version " + str(rejected_version))
+	var missing_version := doc.duplicate(true)
+	missing_version.erase("version")
+	check(not compiler.compile(missing_version).errors.is_empty(), "reject missing document version")
+	check(not MMParticleEffect.new().validation_error().is_empty(), "unversioned runtime resource is invalid")
+	for rejected_version in [0, 1, 3]:
+		var rejected_effect = result.effect.duplicate()
+		rejected_effect.format_version = rejected_version
+		check(not rejected_effect.validation_error().is_empty(), "reject runtime version " + str(rejected_version))
+	var saved_path := "user://latest_effect.res"
+	check(ResourceSaver.save(result.effect, saved_path) == OK, "save latest effect")
+	var reloaded = ResourceLoader.load(saved_path, "", ResourceLoader.CACHE_MODE_IGNORE)
+	check(reloaded != null and reloaded.format_version == 2 and reloaded.validation_error().is_empty(), "v2 survives binary serialization with invalid default")
 	check(result.effect.validation_error().is_empty(), "effect hash/layout")
 	check(not "@" in result.effect.compute_source, "all kernel placeholders resolved")
 	check(result.effect.compute_source.contains("s.a0 = out_a0"), "module output commits")

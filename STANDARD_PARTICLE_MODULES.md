@@ -87,7 +87,7 @@ Curl은 기존 **TEX3D FBM / 비주기 Perlin / 2 octave / persistence 0.5**를 
 
 ## 저장·가져오기와 개발 인터페이스
 
-`.mpfx`와 `.mmg`의 version 1 및 runtime parameter API는 유지합니다. 선택적 저작 정보:
+`.mpfx`는 최신 version 2만 지원합니다. 별도 형식인 `.mmg`의 particle_module version 1, standard_role 버전과 runtime parameter API는 유지합니다. 선택적 저작 정보:
 - Attribute의 `standard_role`: `mm.standard.v1.acceleration`, `drag`, `initial_color`, `initial_scale`에 대응하는 versioned role 문자열.
 - definition의 `standard_module`: `{catalog_id, revision:1, bindings}`. bindings는 전체 role 문자열→실제 Attribute ID입니다.
 - definition의 `catalog_snapshot`: 카탈로그 복사본 표시. UI 로딩 정규화만으로 저장 데이터/Undo를 변경하지 않고 실제 그래프 편집부터 캡처합니다.

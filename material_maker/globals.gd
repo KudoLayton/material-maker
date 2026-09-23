@@ -157,6 +157,9 @@ func parse_paste_data(data : String):
 		var error = test_json_conv.parse(data)
 		if error == OK:
 			graph = test_json_conv.get_data()
+	if graph is Dictionary and graph.get("type", "") == "mm_particle_effect":
+		var problem: String = preload("res://addons/material_maker/particles/modular/document.gd").shape_error(graph)
+		return {"type":"none", "graph":null, "error":problem if not problem.is_empty() else "Open .mpfx effects with File/Load. Clipboard paste accepts graph nodes, not whole effects."}
 	if graph is Dictionary and graph.get("type", "") in ["particle_graph", "particle_selection"]:
 		return {"type": "none", "graph": {}}
 	if graph != null and graph is Dictionary:

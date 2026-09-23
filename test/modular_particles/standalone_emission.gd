@@ -6,7 +6,7 @@ func check(ok: bool, message: String) -> void:
 		failures += 1
 		print("FAIL: ",message)
 func run() -> void:
-	for version in [1,2]:
+	for version in [2]:
 		var particles = load("res://addons/mm_gpu_particles/particles_3d.gd").new()
 		particles.manual_processing = true
 		particles.capacity = 256

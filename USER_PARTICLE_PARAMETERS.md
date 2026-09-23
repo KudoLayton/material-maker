@@ -57,10 +57,10 @@ func restore_speed() -> void:
 - 기존 `set_parameter("instance_id/input_id", value)`는 **Constant 입력에만** 사용합니다. User에 연결된 입력에는 `false`를 반환합니다. User API가 모든 연결 입력에 같은 값을 전달합니다.
 - 값 설정은 CPU 측 작은 override를 변경하고 다음 시뮬레이션 Step에 기존 parameter buffer로 전달합니다. 셰이더 재컴파일, GPU 상태 재할당, 입자 재시작, 런타임 GPU readback을 하지 않습니다. Pause 상태에서는 다음 Step까지 입자 결과가 바뀌지 않습니다.
 
-## 저장·마이그레이션·문제 진단
+## 최신 포맷·저장·문제 진단
 
-- User를 사용하지 않는 기존 `.mpfx`/`MMParticleEffect` **v1은 그대로 읽고 실행**합니다. 패널을 열기만 해서는 마이그레이션하지 않습니다.
-- 최초 성공한 User 추가로 문서가 **v2**가 됩니다. v2 문서는 `user_parameters`, 인스턴스별 `input_bindings`를 저장하고 내보낸 효과도 format 2와 SPIR-V를 포함합니다. User를 모두 제거해도 자동으로 v1으로 낮추지 않습니다.
+- `.mpfx`/`MMParticleEffect`는 **v2만 지원**합니다. v1·버전 누락·미지원 미래 버전은 GUI·compiler·runtime에서 거부하며 자동 변환하지 않습니다. 기존 사용자 원본과 이전 배포물은 변경하지 않습니다.
+- User가 없어도 새 문서는 **v2**와 빈 `user_parameters` 배열로 생성합니다. 인스턴스별 `input_bindings`를 저장하고 내보낸 효과도 format 2와 SPIR-V를 포함합니다. User 추가·제거로 버전을 변경하지 않습니다.
 - 이전 런타임은 v2를 지원하지 않습니다. 새 `addons/mm_gpu_particles`와 효과 리소스를 함께 배포하세요. [설치 안내](GODOT_PARTICLES_PLUGIN.md)를 참고하세요.
 - Missing User/타입 불일치/잘못된 참조는 진단하고 컴파일·Export를 차단합니다. 조용히 Constant로 대체하지 않으며, 편집기의 마지막 정상 Preview는 유지합니다. 올바른 User로 다시 연결하거나 Constant로 명시적으로 해제하세요.
 - 새 빈 폴더에 Export하는 것이 안전합니다. 재내보내기는 manifest checksum으로 수정된 파일을 보호하며, 기존 `project.godot`은 덮어쓰지 않습니다. User demo 제어 스크립트도 보호 대상입니다.

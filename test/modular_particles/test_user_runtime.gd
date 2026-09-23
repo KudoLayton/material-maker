@@ -38,11 +38,10 @@ func fixture() -> MMParticleEffect:
 	# Multiple module instances plus both stages consume each User.
 	doc.stages.update.append({"id":"update_copy","module":"update_values"})
 	var result := Compiler.new().compile(doc)
-	check(result.errors.is_empty(),"legacy input fixture: "+str(result.errors))
+	check(result.errors.is_empty(),"latest input fixture: "+str(result.errors))
 	if result.effect == null: return null
 	var effect: MMParticleEffect = result.effect
-	check(effect.validation_error().is_empty() and effect.format_version == 1,"legacy effect remains valid")
-	effect.format_version = 2
+	check(effect.validation_error().is_empty() and effect.format_version == 2,"latest effect without Users validates")
 	for type in VALUES:
 		effect.user_parameters.append({"id":"user_"+type,"name":"Value_"+type,"type":type,"default":VALUES[type]})
 	for parameter in effect.parameters:

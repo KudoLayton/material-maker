@@ -435,6 +435,10 @@ func changed(before: Dictionary, reload_graph: bool = false) -> void:
 	else: schedule_preview()
 
 func apply_document(value: Dictionary) -> void:
+	var problem := Document.shape_error(value)
+	if not problem.is_empty():
+		status.text = problem
+		return
 	var before_graph := document.duplicate(true)
 	var after_graph := value.duplicate(true)
 	before_graph.erase("emitter")
@@ -986,6 +990,10 @@ func refresh_preview() -> void:
 
 func save() -> bool:
 	if save_path.is_empty(): return await save_as()
+	var problem := Document.shape_error(document)
+	if not problem.is_empty():
+		status.text = problem
+		return false
 	capture_graph()
 	var error := Document.save_file(save_path,document)
 	if error != OK:

@@ -12,13 +12,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--godot', required=True, type=Path)
     parser.add_argument('--effects', required=True, type=Path,
-                        help='Isolated test_emission_ui project containing emission-v1/v2.res')
+                        help='Isolated test_emission_ui project containing emission-v2.res')
     args = parser.parse_args()
     project = Path(tempfile.mkdtemp(prefix='mm-emission-standalone-'))
     print('PROJECT:', project, flush=True)
     shutil.copytree(ROOT / 'addons/mm_gpu_particles', project / 'addons/mm_gpu_particles',
                     ignore=shutil.ignore_patterns('.git', '__pycache__'))
-    for version in (1, 2):
+    for version in (2,):
         shutil.copy2(args.effects / f'emission-v{version}.res', project)
     shutil.copy2(ROOT / 'test/modular_particles/standalone_emission.gd', project / 'verify.gd')
     (project / 'project.godot').write_text('''config_version=5

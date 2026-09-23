@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--godot', required=True)
     parser.add_argument('--test', default='test_editor')
     parser.add_argument('--keep-going', action='store_true')
+    parser.add_argument('--runtime', type=Path, help='Flat addon checkout copied into the isolated test project only')
     args = parser.parse_args()
     engine = Path(args.godot).resolve()
     version = subprocess.check_output([str(engine), '--version'], text=True).strip()
@@ -25,6 +26,15 @@ def main():
     print('PROJECT:', project, flush=True)
     for directory in ['addons', 'material_maker', 'splash_screen', 'test', 'demo']:
         shutil.copytree(ROOT / directory, project / directory, ignore=shutil.ignore_patterns('.git', '.godot', '__pycache__'))
+    if args.runtime:
+        runtime = args.runtime.resolve()
+        required = ['effect.gd', 'particles_3d.gd', 'value_codec.gd', 'gpu_state.gd',
+                    'scheduler.gd', 'multimesh_lifetime.gd', 'plugin.gd', 'plugin.cfg']
+        if any(not (runtime / name).is_file() for name in required):
+            raise SystemExit('Incomplete runtime checkout: ' + str(runtime))
+        for name in required:
+            shutil.copy2(runtime / name, project / 'addons/mm_gpu_particles' / name)
+        print('RUNTIME OVERRIDE (temporary copy only):', runtime, flush=True)
     for source in ROOT.iterdir():
         if source.is_file() and source.suffix in ['.godot', '.gd', '.uid', '.tscn', '.tres', '.png', '.ico', '.import', '.cfg']:
             shutil.copy2(source, project / source.name)
@@ -38,7 +48,7 @@ def main():
     requested = args.test.split(',')
     if args.test in ['all', 'legacy:all']:
         requested = ['legacy:' + path.stem for path in sorted((ROOT / 'test/particles').glob('test_*.gd'))]
-        if args.test == 'all': requested = ['test_dock_layout', 'test_emission_ui', 'test_preview_controls', 'test_user_export', 'test_user_editor', 'test_user_binding_app', 'test_module_library', 'test_standard_validation', 'test_standard_gpu', 'test_standard_performance', 'test_standard_editor', 'test_standard_examples', 'test_namespace_model', 'test_namespace_editor', 'test_editor', 'test_module_rename', 'test_module_input_delete', 'test_graph_backend', 'test_mmtest', 'test_export'] + requested
+        if args.test == 'all': requested = ['test_format_editor', 'test_dock_layout', 'test_emission_ui', 'test_preview_controls', 'test_user_export', 'test_user_editor', 'test_user_binding_app', 'test_module_library', 'test_standard_validation', 'test_standard_gpu', 'test_standard_performance', 'test_standard_editor', 'test_standard_examples', 'test_namespace_model', 'test_namespace_editor', 'test_editor', 'test_module_rename', 'test_module_input_delete', 'test_graph_backend', 'test_mmtest', 'test_export'] + requested
     for test in requested:
         folder = 'test/particles' if test.startswith('legacy:') else 'test/modular_particles'
         name = test.removeprefix('legacy:')

@@ -103,7 +103,7 @@ def main():
         for i, node in enumerate(definition['mm_graph']['nodes']):
             node['node_position'] = dict(x=(i % 4)*300-500, y=(i // 4)*180)
         definition['mm_graph']['nodes'][-1]['node_position'] = dict(x=850,y=0)
-    document = dict(type='mm_particle_effect',version=1,target='4.7.2',preview_capacity=128,
+    document = dict(type='mm_particle_effect',version=2,target='4.7.2',user_parameters=[],preview_capacity=128,
         attributes=[field('direction','vec3',[0,0,0]),field('initial_velocity','vec3',[0,0,0]),field('initial_scale','vec3',[1,1,1]),
                     field('spherical_uv','vec2',[0,0]),field('normalized_age','float',0.0),field('curve_value','float',1.0),field('curl_velocity','vec3',[0,0,0])],
         modules=modules,stages={'spawn':[], 'update':[]},
