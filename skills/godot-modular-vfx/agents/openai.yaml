@@ -1,0 +1,6 @@
+interface:
+  display_name: "Godot Modular VFX"
+  short_description: "Create and integrate modular Godot GPU VFX"
+  default_prompt: "Use $godot-modular-vfx to create or edit a particle effect and integrate it safely into my Godot project."
+policy:
+  allow_implicit_invocation: true

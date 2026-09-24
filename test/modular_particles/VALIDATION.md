@@ -2,6 +2,12 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
+## 공용 편집 스킬·호출 helper 검증
+
+- `skills/godot-modular-vfx`: skill-creator `quick_validate.py` **PASS**; 모든 Markdown 내부 reference 파일 존재 및 Codex metadata 호출명/자동 발견 정책 검사 통과.
+- `Invoke-Vfx.ps1`: 실제 배포 앱을 사용한 8개 호출을 Windows PowerShell 5.1 (`mm-vfx-skill-nwp9utha`) / PowerShell 7 (`mm-vfx-skill-okhh4q_8`)에서 각각 통과했습니다. env 앱 발견, 한글·공백 경로, 생성/검사/실제GPU export, 파일·report 덮어쓰기 거부 포함.
+- 스킬은 소스 제작·모듈 그래프·User 바인딩·단독 게임 연결·설치 보호 reference와 두 PowerShell helper로 구성됩니다. 독립 에이전트 forward-test, 최종 스킬 동봉 배포 및 npx 설치/발견은 아직 수행 전입니다.
+
 ## 포터블 VFX CLI 검증
 
 - 소스 실행 **25/25 명령 시나리오 PASS**, `mm-vfx-cli-ifjtdvw3`.
