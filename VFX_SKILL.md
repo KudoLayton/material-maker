@@ -18,10 +18,10 @@
 node --version
 npm --version
 npx skills --help
-npx skills add KudoLayton/material-maker --skill godot-modular-vfx --agent codex pi
+npx skills add KudoLayton/material-maker --skill godot-modular-vfx --agent codex pi --copy
 ```
 
-대화형 확인에서 프로젝트 범위와 설치 대상을 확인하세요. Windows 링크 권한이 없으면 `--copy`를 사용합니다. 기존 동명 스킬이 있다면 비교·백업 후 명시적으로 결정하고 무조건 덮어쓰지 마세요. `--global`과 `--all`은 필요하지 않습니다.
+대화형 확인에서 프로젝트 범위와 설치 대상을 확인하세요. 위 명령은 Windows 링크 권한에 의존하지 않도록 `--copy`를 사용합니다. 기존 동명 스킬이 있다면 비교·백업 후 명시적으로 결정하고 무조건 덮어쓰지 마세요. `--global`과 `--all`은 필요하지 않습니다.
 
 공식 CLI 기준 설치 위치:
 - Codex: `.agents/skills/godot-modular-vfx/`
@@ -51,4 +51,17 @@ Codex를 새 세션으로 열어 `$godot-modular-vfx`를 호출합니다. Pi는 
 
 포터블 앱에 동봉된 helper는 그 앱을 상대 경로로 찾습니다. `npx`로 복사한 스킬에는 앱이 없으므로 `MM_VFX_APP` 또는 명시적 `-App`이 필요합니다. 원본 편집·호출 결과·충돌 복구 상세는 스킬의 `references/`와 [MODULAR_VFX_CLI.md](MODULAR_VFX_CLI.md)를 참고하세요.
 
-검증 기록과 실제 테스트한 CLI 버전/설치 경로는 [VALIDATION.md](test/modular_particles/VALIDATION.md)에 기록합니다. 네트워크·지원 에이전트·CLI 버전이 다르면 `--help`로 확인하고 미검증 결과를 성공으로 간주하지 마세요.
+## 실제 설치 검증
+
+`skills 1.7.0`, Node.js `v26.7.0`, npm `12.0.2`에서 아래 명령으로 **격리 프로젝트에만** 원격 설치했습니다. 이 자동 검증의 `--yes`는 기존 동명 스킬이 없는 새 프로젝트에서 사용했습니다.
+
+```powershell
+npx --yes skills@1.7.0 add KudoLayton/material-maker --skill godot-modular-vfx --agent codex pi --copy --yes --json
+npx --yes skills@1.7.0 list --agent codex pi --json
+```
+
+Codex `0.155.1`의 실제 skills/list와 Pi `0.87.1`의 실제 RPC get_commands에서 설치된 스킬의 발견·메타데이터 파싱을 확인했습니다. 사용자 전역 스킬/에이전트 설정은 변경하지 않았습니다. LLM 자율 제작 평가는 별개로 미실행입니다.
+
+설치된 스킬 helper로 효과 두 개를 제작·설치한 독립 게임이 Godot 편집기와 Windows Release에서 각각 **31개 GPU 검사**를 통과했습니다. Windows Git의 CRLF 변환은 LF 정규화로 비교했으며, 두 에이전트 설치본은 byte 단위로 동일합니다.
+
+검증 기록과 테스트 산출물 위치는 [VALIDATION.md](test/modular_particles/VALIDATION.md)에 기록합니다. 네트워크·지원 에이전트·CLI 버전이 다르면 `--help`로 확인하고 미검증 결과를 성공으로 간주하지 마세요.

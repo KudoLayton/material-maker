@@ -2,6 +2,16 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
+## 원격 게시·npx 설치·실제 에이전트 인식
+
+- 사용자 승인 후 private `main` **8ea4686**, public `master` **cdce9b06**까지 push한 뒤 GitHub 원격 설치를 수행했습니다. 이후 문서/검증 도구만 추가로 커밋합니다. 스킬 파일 내용은 동일합니다.
+- Node **v26.7.0**, npm **12.0.2**, `skills` **1.7.0**. `npx --yes skills@1.7.0 add KudoLayton/material-maker --skill godot-modular-vfx --agent codex pi --copy --yes --json` 성공; list에서도 project scope의 Codex/Pi를 확인했습니다.
+- 격리 설치 프로젝트: `mm-vfx-npx-bb2db777498240a3834f1380dc7746e2`; Codex `.agents/skills/godot-modular-vfx`, Pi `.pi/skills/godot-modular-vfx`. 사용자 실제 프로젝트나 전역 스킬을 설치·변경하지 않았습니다.
+- 실제 Codex **0.155.1** app-server `skills/list`: 스킬 enabled/repo scope 및 openai metadata 확인. 실제 Pi **0.87.1** RPC `get_commands`: `skill:godot-modular-vfx`, project/auto source 확인. 로그 `mm-vfx-discovery-9j4scd3x`; 별도 임시 agent home, 모델 요청 0회. 독립 LLM forward-test 결과로 해석하지 않습니다.
+- GitHub 설치본 8개 파일이 게시 Git blob과 LF 정규화 기준 일치합니다(Windows Git autocrlf). Codex/Pi 설치본끼리는 byte/hash가 동일합니다.
+- **npx 설치본 자체**로 capability→원본 제작/수정→검증/export→두 효과 설치→독립 게임 실행을 다시 수행했습니다. editor/release **각 31 checks PASS**, `mm-vfx-delivery-9hz6c4ub`, ERROR/leak 없음.
+- 재현 명령/전제 조건/에이전트 호출: [VFX_SKILL.md](../../VFX_SKILL.md). 전역 환경변수·Agent 설정은 수정하지 않았으며 npm 다운로드 캐시와 격리된 테스트 산출물만 추가됐습니다.
+
 ## 스킬 동봉 최종 배포·독립 게임 검증
 
 - 배포: **`build/modular-release-20260924-092533/MaterialMaker/MaterialMaker.exe`**. `skills/godot-modular-vfx/`, `vfx-package.json`, [VFX_SKILL.md](../../VFX_SKILL.md)를 동봉합니다. GUI Release **260 checks PASS**.
@@ -10,7 +20,7 @@
 - 독립 게임 **31 checks PASS/editor=true + 31 checks PASS/editor=false**, `mm-vfx-delivery-y__4xa93`. 두 설치 효과(fountain/burst), 공유 효과의 두 노드, GPU count/velocity/color readback, 실제 red/blue 렌더 픽셀, User Speed/Gravity/Tint·reset·독립성, Pause/Play/Stop/Restart·one-shot 확인. 모든 단계 ERROR/leak 없이 종료했습니다. 화면 `skill-game.png`도 확인했습니다.
 - 보호 감사 **PASS**: 이전 배포/원본 산출물 **175개 SHA-256 불변**, 레거시 mmtest 원본 해시 유지, skill 원본/배포 파일 일치, runtime ID/파일 checksum·private gitlink 일치, 세 Godot 예제 manifest와 addon ZIP 일치. `verification/skill-delivery-audit.json`.
 - 첫 독립 export 시 테스트 preset의 `include_filter` 누락을 발견해 테스트 harness만 수정하고 새 임시 프로젝트에서 전체 재검증했습니다. 제품 파일이나 실패 로그를 덮어쓰지 않았습니다.
-- 독립 에이전트 forward-test는 delegation 도구가 없어 수행하지 않았습니다. 원격 게시·npx 실제 설치 및 에이전트 인식은 다음 검증 단계입니다.
+- 독립 에이전트 forward-test는 delegation 도구가 없어 수행하지 않았습니다. 원격 게시·npx 실제 설치 및 에이전트 인식 결과는 위에 기록합니다.
 
 ## 공용 편집 스킬·호출 helper 검증
 
