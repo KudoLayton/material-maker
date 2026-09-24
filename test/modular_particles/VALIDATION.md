@@ -8,7 +8,15 @@
 - 실제 Windows EXE **25/25 PASS**, `mm-vfx-cli-q2ka_48b`: capabilities/create/inspect/validate/export, 한글·공백 경로, 구버전·JSON·바인딩·옵션 오류, GPU 부재, 실제 Vulkan SPIR-V, 효과별 참조 경로/checksum, 재내보내기·ID 충돌·사용자 수정 보호. ERROR/leak 없이 종료했고 기존 환경설정 bytes가 유지됐습니다.
 - 빌드 `build/modular-release-20260924-084846/MaterialMaker/MaterialMaker.exe`: GUI Release **260 checks PASS**, editor=false. CLI 사용법은 [MODULAR_VFX_CLI.md](../../MODULAR_VFX_CLI.md).
 - 앞선 `084342` 빌드는 CLI template의 source/sidecar 경로 차이를 발견한 중간 산출물입니다. 삭제·덮어쓰지 않았으며 CLI 검증 완료 빌드는 `084846`입니다.
-- 다중 효과 **게임 설치 helper**, 스킬 패키지 및 npx 설치는 아직 미완료입니다.
+- 스킬 패키지 및 npx 설치는 아직 미완료입니다. 게임 설치 helper 검증은 아래에 기록합니다.
+
+## 다중 효과 설치·복구 검증
+
+- `test_install_vfx.py`: Windows PowerShell 5.1 **PASS** (`mm-vfx-install-knweox__`), PowerShell 7 **PASS** (`mm-vfx-install-w5t0sfma`). 각 19개 CLI/설치 동작에 추가 mid-publish 강제 오류 검사를 수행했습니다.
+- 실제 배포 CLI로 fountain/burst를 export하고 한 프로젝트에 동시 설치, 첫 효과 수정·재설치, 다른 효과·공유 애드온·사용자 파일 checksum 불변을 검증했습니다.
+- dry-run 무쓰기, 동일 애드온 재사용, 수정 애드온/효과·미관리 충돌·junction·manifest traversal 거부를 확인했습니다.
+- manifest를 읽기 공유로 잠가 effect.res publish 후 Replace 실패를 유도했습니다. 자동 rollback으로 effect/manifest bytes 복구와 실패 journal 종료를 확인했습니다. 중단 journal 명시적 복구 및 이후 사용자 수정 보존도 확인했습니다.
+- 최종 게임 GPU 실행 및 스킬 동봉 배포 검증은 후속 독립 회귀 단계에서 수행합니다.
 
 ## 최신 효과 포맷 v2 전용 전환
 
