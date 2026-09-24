@@ -130,6 +130,9 @@ application/modify_resources=false
     shutil.copy2(ROOT / 'MODULAR_PARTICLES.md', app / 'MODULAR_PARTICLES.md')
     shutil.copy2(ROOT / 'PARTICLE_WORKSPACE.md', app / 'PARTICLE_WORKSPACE.md')
     shutil.copy2(ROOT / 'MODULAR_VFX_CLI.md', app / 'MODULAR_VFX_CLI.md')
+    shutil.copy2(ROOT / 'VFX_SKILL.md', app / 'VFX_SKILL.md')
+    shutil.copytree(ROOT / 'skills/godot-modular-vfx', app / 'skills/godot-modular-vfx',
+                    ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md', app / 'STANDARD_PARTICLE_MODULES.md')
     shutil.copytree(ROOT / 'material_maker/panels/modular_particles/standard', app / 'modules/standard_particles', ignore=shutil.ignore_patterns('*.uid'))
     for example in ['basic_fountain','box_turbulence','sphere_burst','user_parameters']:
@@ -147,6 +150,14 @@ application/modify_resources=false
     shutil.copy2(smoke / 'basic-128.mpfx', app / 'examples/modular_particles/basic-128.mpfx')
     addon = output / 'GodotAddon' / 'addons' / 'mm_gpu_particles'
     shutil.copytree(output / 'GodotExample/addons/mm_gpu_particles', addon)
+    runtime_files = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+                     for path in sorted(addon.iterdir()) if path.is_file() and path.suffix in ['.gd', '.cfg']}
+    runtime_id = hashlib.sha256(json.dumps(runtime_files, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    (app / 'vfx-package.json').write_text(json.dumps({
+        'format': 'mm_vfx_package', 'version': 1, 'cli_contract_version': 1,
+        'target': '4.7.2', 'document_version': 2, 'effect_version': 2,
+        'skill': 'skills/godot-modular-vfx', 'runtime_id': runtime_id,
+        'runtime_files': runtime_files}, indent=2), encoding='utf-8')
     guide = ROOT / 'GODOT_PARTICLES_PLUGIN.md'
     if guide.exists():
         for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',output / 'GodotUserParametersExample',app]:
@@ -197,6 +208,8 @@ User 변경은 Undo/Redo/Save를 지원하며, 값/이름 변경은 Preview 입�
 효과 원본/런타임은 최신 v2만 지원합니다. 구버전 자동 변환은 제공하지 않습니다.
 상세 사용법·Inspector·API·최신 포맷: USER_PARTICLE_PARAMETERS.md
 명령행 제작·검증·컴파일/Export: MaterialMaker/MODULAR_VFX_CLI.md
+Codex·Pi 편집 스킬·npx 설치 안내: MaterialMaker/VFX_SKILL.md
+동봉 스킬: MaterialMaker/skills/godot-modular-vfx (앱·런타임 계약: vfx-package.json)
 파티클 도크·Looping/Burst/Custom·카메라·HDRI: MaterialMaker/PARTICLE_WORKSPACE.md
 
 User 제어 Godot 예제: GodotUserParametersExample/project.godot

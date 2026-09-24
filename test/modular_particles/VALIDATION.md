@@ -2,6 +2,16 @@
 
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
 
+## 스킬 동봉 최종 배포·독립 게임 검증
+
+- 배포: **`build/modular-release-20260924-092533/MaterialMaker/MaterialMaker.exe`**. `skills/godot-modular-vfx/`, `vfx-package.json`, [VFX_SKILL.md](../../VFX_SKILL.md)를 동봉합니다. GUI Release **260 checks PASS**.
+- 최종 전체 앱 회귀 **48/48 PASS** (`mm-modular-app-hsfc7u14`), 배포 CLI **25/25 PASS** (`mm-vfx-cli-6d7h9d4z`). 소스/게임/앱 환경설정 보존 검사를 유지했습니다.
+- 배포 스킬의 **상대 경로 앱 발견**으로 capability→두 원본 생성→User 기본값/방출 수정→validate→GPU export→dry-run/apply를 수행했습니다. 개발 checkout을 설치 프로젝트에 복사하지 않았습니다.
+- 독립 게임 **31 checks PASS/editor=true + 31 checks PASS/editor=false**, `mm-vfx-delivery-y__4xa93`. 두 설치 효과(fountain/burst), 공유 효과의 두 노드, GPU count/velocity/color readback, 실제 red/blue 렌더 픽셀, User Speed/Gravity/Tint·reset·독립성, Pause/Play/Stop/Restart·one-shot 확인. 모든 단계 ERROR/leak 없이 종료했습니다. 화면 `skill-game.png`도 확인했습니다.
+- 보호 감사 **PASS**: 이전 배포/원본 산출물 **175개 SHA-256 불변**, 레거시 mmtest 원본 해시 유지, skill 원본/배포 파일 일치, runtime ID/파일 checksum·private gitlink 일치, 세 Godot 예제 manifest와 addon ZIP 일치. `verification/skill-delivery-audit.json`.
+- 첫 독립 export 시 테스트 preset의 `include_filter` 누락을 발견해 테스트 harness만 수정하고 새 임시 프로젝트에서 전체 재검증했습니다. 제품 파일이나 실패 로그를 덮어쓰지 않았습니다.
+- 독립 에이전트 forward-test는 delegation 도구가 없어 수행하지 않았습니다. 원격 게시·npx 실제 설치 및 에이전트 인식은 다음 검증 단계입니다.
+
 ## 공용 편집 스킬·호출 helper 검증
 
 - `skills/godot-modular-vfx`: skill-creator `quick_validate.py` **PASS**; 모든 Markdown 내부 reference 파일 존재 및 Codex metadata 호출명/자동 발견 정책 검사 통과.
