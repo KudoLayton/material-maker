@@ -15,7 +15,7 @@ Resolve the script relative to this skill directory (not the game's working dire
 
 Supports Windows PowerShell 5.1 and PowerShell 7. Python and a source checkout are not needed. Treat downloaded scripts and runtime bundles as executable code: inspect unfamiliar sources before running. Checksums detect changes; they are not publisher signatures.
 
-- Game runtime must be Godot **4.7.2 stable / Forward+ / Vulkan**. The helper rejects an explicitly incompatible renderer but does not prove the installed engine/GPU version. Verify those separately.
+- Game runtime must be Godot **4.7.2 stable / Windows x64 / Forward+ / Vulkan or D3D12**. The helper rejects an explicitly incompatible renderer but does not prove the installed engine/GPU version. Verify those separately.
 - Install `addons/mm_gpu_particles/` once. An existing **complete, byte-identical** addon is reusable. Missing/modified/different-version addon files are not automatically repaired or upgraded.
 - Each effect installs `effect.res`, `particles.tscn`, diagnostic `effect.glsl.txt` and `README.txt` below `effects/modular_particles/<id>/`.
 - `project.godot`, standalone `demo.tscn`/`user_demo.gd`, cameras, autoloads and main-scene settings are not installed or modified.

@@ -5,7 +5,8 @@
 - **효과 편집:** 별도 Material Maker 앱에서 `.mpfx` 모듈 그래프를 편집합니다.
 - **게임 실행:** Godot 애드온의 `MMGPUParticles3D` 노드가 내보낸 `MMParticleEffect`를 실행합니다.
 - Godot 안에 그래프 편집 Dock을 추가하는 플러그인은 아닙니다. `.mpfx`/`.ptex`를 Godot에서 직접 실행하지 않습니다.
-- **Godot 4.7.2 stable, Forward+, Vulkan**이 필요합니다. Compatibility/Mobile 또는 다른 Godot 버전은 지원하지 않습니다.
+- **Godot 4.7.2 stable, Windows x64, Forward+, Vulkan 또는 D3D12**가 지원·회귀 보장 대상입니다. Compatibility/Mobile 또는 다른 Godot 버전은 지원하지 않습니다.
+- D3D12는 Project Settings의 `rendering/rendering_device/driver.windows` 또는 `--rendering-driver d3d12`로 선택합니다. [실제 backend 확인·검증 범위](RENDERING_BACKENDS.md)를 참고하세요.
 
 ## 가장 빠른 시작: 완성된 Godot 예제
 

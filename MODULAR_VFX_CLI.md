@@ -15,11 +15,13 @@ $App = 'C:/Tools/MaterialMaker/MaterialMaker.exe'
 & $App --rendering-method forward_plus --rendering-driver vulkan -- --mpfx-command export --input C:/Work/fountain.mpfx --output C:/Work/staging-fountain --effect-id fountain --capacity 4096 --report C:/Work/export.json
 ```
 
+Windows에서는 위 export의 `--rendering-driver vulkan`을 `d3d12`로 바꿀 수 있습니다. 두 백엔드가 지원·검증 대상이며 실제 선택은 export report의 `data.rendering_driver`로 확인합니다. 스킬 helper에서는 `-RenderingDriver d3d12`를 사용합니다. [지원 계약](RENDERING_BACKENDS.md).
+
 폴더는 예시이며 실제 경로로 바꾸세요. GUI Windows exe를 스크립트에서 호출할 때에는 프로세스 종료를 기다리고 exit code와 report를 함께 확인하세요. `--` 뒤에는 CLI 인수만 넣습니다. Godot `--headless`/renderer 옵션은 앞에 넣습니다.
 
 ## 명령
 
-- `capabilities`: 앱/엔진 식별값, CLI 및 최신 포맷 계약, template 5종, 기본 모듈 12종, 공유 런타임 파일 checksum과 `runtime_id`.
+- `capabilities`: 앱/엔진 식별값, CLI 및 최신 포맷 계약, template 5종, 기본 모듈 12종, 공유 런타임 파일 checksum과 `runtime_id`, `supported_rendering_drivers`.
 - `create --template NAME --output ABSOLUTE_FILE`: 패키지 template를 최신 `.mpfx`로 복사합니다. 부모 폴더가 필요하며 기존 파일을 덮어쓰지 않습니다.
 - `inspect --input ABSOLUTE_FILE`: 형식 검사 후 원본 구조를 `data`로 반환합니다.
 - `validate --input ABSOLUTE_FILE`: 실제 loader/compiler로 그래프·타입·바인딩을 검사합니다. `gpu_compiled=false`이며 GPU 실행 가능성을 보장하지 않습니다.
@@ -35,7 +37,7 @@ Effect ID: 1~64자의 소문자 영문·숫자·`_`·`-`, Windows 예약 이름 
 
 - `contract_version: 1`, `command`, `ok`, `exit_code`, `diagnostics`, `data`.
 - diagnostics: `stage`, `message`, 가능한 경우 compiler의 `module`, `node`; 경고는 `severity: warning`.
-- export의 `data.manifest.files`는 파일별 SHA-256이며 `data.gpu_compiled=true`입니다.
+- export의 `data.manifest.files`는 파일별 SHA-256이며 `data.gpu_compiled=true`입니다. `data.rendering_driver`는 실제 `vulkan`/`d3d12`입니다. 요청값과 다르면 fallback 여부를 확인하고 해당 backend 검증으로 인정하지 마세요.
 - 잘못된 CLI 인수처럼 report 경로 검증 전 실패한 경우 JSON 보고서는 stdout만 제공될 수 있습니다. 종료코드가 성공이 아니면 산출물을 사용하지 마세요.
 
 | 코드 | 의미 |
@@ -53,7 +55,10 @@ Effect ID: 1~64자의 소문자 영문·숫자·`_`·`-`, Windows 예약 이름 
 ```powershell
 python tools/modular_particles/run_cli_tests.py --godot C:/Godot/Godot_v4.7.2-stable_win64_console.exe
 # 동일 계약을 실제 배포 EXE로 검사 (source checkout을 실행 프로젝트에 복사하지 않음)
-python tools/modular_particles/run_cli_tests.py --godot C:/Godot/Godot_v4.7.2-stable_win64_console.exe --app C:/Tools/MaterialMaker/MaterialMaker.exe
+foreach ($driver in @('vulkan', 'd3d12')) {
+    python tools/modular_particles/run_cli_tests.py --godot C:/Godot/Godot_v4.7.2-stable_win64_console.exe --app C:/Tools/MaterialMaker/MaterialMaker.exe --rendering-driver $driver
+    if ($LASTEXITCODE -ne 0) { throw "$driver CLI failed" }
+}
 ```
 
 Python은 개발 테스트에만 필요합니다. CLI 사용에는 필요하지 않습니다.

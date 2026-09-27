@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from render_backend import add_driver_argument, graphics, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -42,6 +43,7 @@ def main():
     parser.add_argument('--bundle', required=True, type=Path)
     parser.add_argument('--templates', type=Path, help='Optional installed 4.7.2.stable template directory (read-only)')
     parser.add_argument('--enable-plugin', action='store_true', help='Also exercise the optional Godot EditorPlugin during import')
+    add_driver_argument(parser)
     args = parser.parse_args()
     engine = args.godot.resolve()
     version = subprocess.check_output([str(engine), '--version'], text=True).strip()
@@ -88,16 +90,18 @@ application/modify_resources=false
                 if not template.is_file(): raise SystemExit('Missing template: ' + str(template))
                 preset.write(f'custom_template/{kind}="{template.as_posix()}"\n')
     base = [str(engine), '--path', str(project)]
-    graphics = ['--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--position', '-32000,-32000', '--max-fps', '60']
+    gpu_flags = graphics(args.rendering_driver)
     run(base + ['--headless', '--editor', '--import'], project, 'import')
-    run(base + graphics, project, 'editor-runtime', 'MODULAR_STANDALONE PASS')
+    run(base + gpu_flags, project, 'editor-runtime', 'MODULAR_STANDALONE PASS')
+    require_backend((project / 'editor-runtime.log').read_text(encoding='utf-8'), args.rendering_driver)
     (project / 'windows').mkdir()
     run(base + ['--headless', '--export-release', 'Windows Desktop'], project, 'export')
     executable = project / 'windows/ModularParticles.exe'
     # --log-file captures output even for the GUI Windows release template.
-    run([str(executable), '--log-file', str(project / 'release-engine.log'), *graphics], project, 'windows-runtime')
+    run([str(executable), '--log-file', str(project / 'release-engine.log'), *gpu_flags], project, 'windows-runtime')
     release_log = (project / 'release-engine.log').read_text(encoding='utf-8', errors='replace')
     print(release_log, flush=True)
+    require_backend(release_log, args.rendering_driver)
     if 'MODULAR_STANDALONE PASS' not in release_log or 'editor=false' not in release_log or 'ERROR:' in release_log or 'leaked' in release_log:
         raise SystemExit('Exported runtime did not pass')
     print('MODULAR_WINDOWS_EXPORT PASS plugin_enabled=' + str(args.enable_plugin), flush=True)

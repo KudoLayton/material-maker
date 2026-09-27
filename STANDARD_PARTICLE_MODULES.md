@@ -1,6 +1,6 @@
 # 기본 Particle 모듈 12종
 
-Godot **4.7.2 stable / Forward+ / Vulkan**용입니다. Niagara의 기본 에셋에서 모듈 역할·입력·설명을 참고하여 **독립 작성한 Material Maker 그래프**입니다. UE 에셋/코드를 이식하지 않았으며 Niagara와 수치 호환을 보장하지 않습니다. Godot 엔진·GPU 런타임 ABI는 변경하지 않습니다.
+Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**용입니다. [지원·검증 계약](RENDERING_BACKENDS.md)을 참고하세요. Niagara의 기본 에셋에서 모듈 역할·입력·설명을 참고하여 **독립 작성한 Material Maker 그래프**입니다. UE 에셋/코드를 이식하지 않았으며 Niagara와 수치 호환을 보장하지 않습니다. Godot 엔진·GPU 런타임 ABI는 변경하지 않습니다.
 
 ## 시작하기
 

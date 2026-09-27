@@ -76,7 +76,7 @@ position = Vector3(1.1,0,0)
 position = Vector3(0,0.8,6)
 current = true
 """.to_utf8_buffer()
-	files["effects/modular_particles/README.txt"] = """Godot 4.7.2 stable, Forward+, Vulkan. No Material Maker/autoload required.
+	files["effects/modular_particles/README.txt"] = """Godot 4.7.2 stable, Forward+, Vulkan or D3D12 (Windows x64). No Material Maker/autoload required.
 Instance particles.tscn in your scene, or run demo.tscn. The binary effect
 contains precompiled SPIR-V; effect.glsl.txt is diagnostic source only.
 MMGPUParticles3D: play/pause/stop/restart/emit_burst/set_parameter.

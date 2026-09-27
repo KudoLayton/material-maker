@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from render_backend import add_driver_argument, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -34,6 +35,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--godot', required=True, type=Path)
     parser.add_argument('--runtime', type=Path, default=ROOT / 'addons/mm_gpu_particles')
+    add_driver_argument(parser)
     args = parser.parse_args()
     engine = args.godot.resolve()
     version = subprocess.check_output([str(engine), '--version'], text=True).strip()
@@ -73,9 +75,10 @@ renderer/rendering_method="forward_plus"
     run(base + ['--headless', '--editor', '--import'], project, 'import')
     # The addon checkbox is deliberately OFF; @tool/class_name must suffice.
     (project / 'project.godot').write_text(config + '\n[editor_plugins]\nenabled=PackedStringArray("res://addons/inspector_test/plugin.cfg")\n', encoding='utf-8')
-    run(base + ['--editor', '--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan',
+    run(base + ['--editor', '--rendering-method', 'forward_plus', '--rendering-driver', args.rendering_driver,
                 '--position', '80,80', '--resolution', '1500x1000', '--max-fps', '60'],
         project, 'inspector', 'MODULAR_USER_INSPECTOR PASS')
+    require_backend((project / 'inspector.log').read_text(encoding='utf-8'), args.rendering_driver)
 
 
 if __name__ == '__main__':

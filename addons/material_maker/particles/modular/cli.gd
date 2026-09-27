@@ -134,7 +134,8 @@ func capabilities() -> Dictionary:
 		"module_version":1,"export_manifest_version":1,"templates":TEMPLATES,
 		"modules":Document.load_file("res://material_maker/panels/modular_particles/standard/catalog.json").get("modules",[]),
 		"runtime_id":JSON.stringify(checksums).sha256_text(),"runtime_files":checksums,
-		"gpu_export_requires":"Forward+ / Vulkan RenderingDevice"}
+		"supported_rendering_drivers":["vulkan","d3d12"],
+		"gpu_export_requires":"Forward+ RenderingDevice: Vulkan or D3D12 (Windows)"}
 
 func execute(options: Dictionary) -> void:
 	var command: String = report.command
@@ -182,8 +183,8 @@ func execute(options: Dictionary) -> void:
 		if FileAccess.file_exists(options.output):
 			fail(5,"export","Export destination is a file")
 			return
-		if RenderingServer.get_current_rendering_method() != "forward_plus" or RenderingServer.get_current_rendering_driver_name() != "vulkan" or RenderingServer.get_rendering_device() == null:
-			fail(4,"environment","Export requires Forward+ / Vulkan RenderingDevice; headless validation is not GPU compilation")
+		if RenderingServer.get_current_rendering_method() != "forward_plus" or RenderingServer.get_current_rendering_driver_name() not in ["vulkan","d3d12"] or RenderingServer.get_rendering_device() == null:
+			fail(4,"environment","Export requires Forward+ / Vulkan or D3D12 RenderingDevice; headless validation is not GPU compilation")
 			return
 	var compiled := await compile_document(document)
 	if report.exit_code != 0: return
@@ -198,7 +199,7 @@ func execute(options: Dictionary) -> void:
 		if not result.error.is_empty():
 			fail(3 if result.error.begins_with("Compute compilation failed") else 5,"export",result.error)
 			return
-		report.data.merge({"gpu_compiled":true,"output":options.output,"manifest":result.manifest,"effect_id":options["effect-id"]},true)
+		report.data.merge({"gpu_compiled":true,"rendering_driver":RenderingServer.get_current_rendering_driver_name(),"output":options.output,"manifest":result.manifest,"effect_id":options["effect-id"]},true)
 
 func run(args: PackedStringArray) -> void:
 	var options := parse(args)

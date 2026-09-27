@@ -10,6 +10,8 @@ func check(ok: bool, message: String) -> void:
 	checks += 1
 	if not ok:
 		failures += 1
+		RenderingServer.force_draw()
+		get_viewport().get_texture().get_image().save_png("res://inspector-failure-"+str(failures)+".png")
 		print("FAIL: ",message)
 
 func _enter_tree() -> void: run.call_deferred()
@@ -40,15 +42,18 @@ func property_control(name: String) -> EditorProperty:
 	return null
 
 func click_at(point: Vector2) -> void:
+	# Synthetic input must not depend on the physical cursor being over this
+	# temporary editor. get_global_rect() is in viewport, not screen, coordinates.
+	get_viewport().notify_mouse_entered()
 	var motion := InputEventMouseMotion.new()
 	motion.position = point
-	get_viewport().push_input(motion)
+	get_viewport().push_input(motion, true)
 	for pressed in [true,false]:
 		var event := InputEventMouseButton.new()
 		event.position = point
 		event.button_index = MOUSE_BUTTON_LEFT
 		event.pressed = pressed
-		get_viewport().push_input(event)
+		get_viewport().push_input(event, true)
 
 func edit_control(name: String, value) -> void:
 	var control := property_control(name)
@@ -83,6 +88,10 @@ func shortcut(shift: bool = false) -> void:
 	await frames()
 
 func run() -> void:
+	# Native-window hover routing relies on the OS cursor even for push_input.
+	# Embed test dialogs so injected viewport input exercises real widgets
+	# deterministically without moving the user's physical mouse.
+	get_tree().root.gui_embed_subwindows = true
 	get_tree().root.mode = Window.MODE_WINDOWED
 	get_tree().root.size = Vector2i(1500,1000)
 	get_tree().root.position = Vector2i(80,80)

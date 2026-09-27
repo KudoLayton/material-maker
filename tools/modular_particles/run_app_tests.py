@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from render_backend import add_driver_argument, graphics, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -17,6 +18,7 @@ def main():
     parser.add_argument('--test', default='test_editor')
     parser.add_argument('--keep-going', action='store_true')
     parser.add_argument('--runtime', type=Path, help='Flat addon checkout copied into the isolated test project only')
+    add_driver_argument(parser)
     args = parser.parse_args()
     engine = Path(args.godot).resolve()
     version = subprocess.check_output([str(engine), '--version'], text=True).strip()
@@ -53,7 +55,7 @@ def main():
         folder = 'test/particles' if test.startswith('legacy:') else 'test/modular_particles'
         name = test.removeprefix('legacy:')
         entry = [f'{folder}/{name}.tscn'] if (project / folder / (name + '.tscn')).exists() else ['--script', f'{folder}/{name}.gd']
-        commands.append((test, entry + ['--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--position', '-32000,-32000', '--max-fps', '60']))
+        commands.append((test, entry + graphics(args.rendering_driver)))
     outcomes = {}
     for index, (test, arguments) in enumerate(commands):
         # Each test gets fresh settings; no remembered project/layout/Library
@@ -78,13 +80,14 @@ def main():
             if not args.keep_going or index == 0: raise SystemExit(f'Failed; see {log}')
             continue
         if index:
+            require_backend(text, args.rendering_driver)
             print('\n'.join(line for line in text.splitlines() if 'MODULAR_' in line or 'PARTICLE_' in line), flush=True)
             legacy_pass = re.search(r'^PARTICLE_[^\n]*(?:passed|0 failures|failures=\[\s*\]|RUNTIME_TESTS:\s*\[\s*\])', text, re.MULTILINE)
             if 'PASS' not in text and not legacy_pass:
                 outcomes[test] = {'passed': False, 'log': str(log)}
                 if not args.keep_going: raise SystemExit('Test did not finish; see ' + str(log))
                 continue
-            outcomes[test] = {'passed': True, 'log': str(log)}
+            outcomes[test] = {'passed': True, 'log': str(log), 'driver': args.rendering_driver}
         # Full logs retain pre-existing MM import/HDR/MTL and shutdown warnings.
         # Standalone runtime tests use the stricter no-error/no-RID-leak runner.
     (project / 'app-results.json').write_text(json.dumps(outcomes, indent=2), encoding='utf-8')

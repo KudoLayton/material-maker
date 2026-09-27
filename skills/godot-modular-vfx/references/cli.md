@@ -15,7 +15,7 @@ The parent directory for `create` must already exist. Input/output/report paths 
 
 - `inspect` returns the original JSON structure after shape validation. It is not a semantic compile.
 - `validate` loads actual module graphs and compiles structure/types/bindings. It runs headlessly and reports `gpu_compiled=false`.
-- `export` requires Forward+ and Vulkan, compiles SPIR-V and reports `gpu_compiled=true`. Capacity defaults to the document's `preview_capacity`, otherwise 4096. GPU memory limits are checked.
+- `export` requires Forward+ and Vulkan or D3D12 (Windows), compiles SPIR-V and reports `gpu_compiled=true` plus the actual `rendering_driver`. The helper defaults to Vulkan; use `-RenderingDriver d3d12` for D3D12. A backend mismatch fails the helper rather than silently accepting fallback. This requires the matching D3D12-enabled CLI build. Capacity defaults to the document's `preview_capacity`, otherwise 4096. GPU memory limits are checked.
 - Each staging folder has one effect identity; separate folders allow multiple game effects. Reusing a folder with a different ID or locally modified managed files is refused.
 - The app never modifies its GUI preferences/recent files in CLI mode.
 
@@ -25,4 +25,4 @@ Exit codes: 0 success; 2 invalid arguments/path/ID; 3 unsupported format/JSON/ty
 
 `-Report` optionally selects a **new** report file; otherwise each invocation uses a unique temporary directory. Never overwrite an existing report/input file. The app also emits `MM_VFX_REPORT {JSON}` independently of engine logs. Early argument errors may only have this log report. A timeout stops the wrapper's own process and requires inspecting staging/logs before retry, not an automatic retry loop.
 
-Direct app flags are `-- --mpfx-command COMMAND --input FILE --output PATH --template NAME --effect-id ID --capacity N --report FILE` as applicable. Put engine `--headless` or `--rendering-method forward_plus --rendering-driver vulkan` **before** the `--` separator. Do not pass all command-specific options indiscriminately.
+Direct app flags are `-- --mpfx-command COMMAND --input FILE --output PATH --template NAME --effect-id ID --capacity N --report FILE` as applicable. Put engine `--headless` or `--rendering-method forward_plus --rendering-driver vulkan` (or `d3d12`) **before** the `--` separator. Do not pass all command-specific options indiscriminately.

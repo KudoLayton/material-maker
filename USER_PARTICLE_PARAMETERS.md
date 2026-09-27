@@ -1,6 +1,6 @@
 # User Parameters: 게임에서 효과 제어하기
 
-Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다. User 값은 **효과 노드 인스턴스 전체가 공유하는 읽기 전용 입력**입니다. 입자별 Attribute, Module Input, 게임 전역 변수와는 다릅니다.
+Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**를 지원합니다. [지원·검증 계약](RENDERING_BACKENDS.md)을 참고하세요. User 값은 **효과 노드 인스턴스 전체가 공유하는 읽기 전용 입력**입니다. 입자별 Attribute, Module Input, 게임 전역 변수와는 다릅니다.
 
 ## 바로 실행
 

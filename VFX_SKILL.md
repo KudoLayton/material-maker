@@ -5,7 +5,8 @@
 ## 준비
 
 - 이 포크의 CLI 지원 포터블 Material Maker **폴더 전체**. `MaterialMaker.exe`, 예제와 모듈 sidecar를 함께 유지하세요.
-- 게임 실행: Godot **4.7.2 stable / Forward+ / Vulkan**.
+- 게임 실행: Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**. [양쪽 백엔드 지원·검증](RENDERING_BACKENDS.md).
+- Export helper의 기본값은 Vulkan입니다. D3D12 컴파일은 `-RenderingDriver d3d12`를 사용하며 실제 backend가 다르면 성공으로 처리하지 않습니다.
 - CLI/스킬 실행: Windows PowerShell 5.1 또는 PowerShell 7. Python·개발 소스 checkout은 필요 없습니다.
 - `npx` 설치 단계에만 Node.js/npm과 네트워크가 필요합니다. 이 명령은 앱·Godot·효과 애드온을 설치하지 않습니다.
 - 효과 원본 `.mpfx`와 컴파일 리소스는 **v2만** 지원합니다. v1 자동 변환은 하지 않습니다.

@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from render_backend import add_driver_argument, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -15,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--godot', required=True, type=Path)
     parser.add_argument('--app', type=Path, help='Optional packaged executable; no source copy')
+    add_driver_argument(parser)
     args = parser.parse_args()
     root = Path(tempfile.mkdtemp(prefix='mm-vfx-cli-'))
     print('PROJECT:', root, flush=True)
@@ -55,7 +57,7 @@ def main():
         sequence += 1
         report_file = root / f'report-{sequence}.json'
         engine_log = root / f'engine-{sequence}.log'
-        graphics = ['--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--position', '-32000,-32000', '--max-fps', '60'] if gpu else ['--headless']
+        graphics = ['--rendering-method', 'forward_plus', '--rendering-driver', args.rendering_driver, '--position', '-32000,-32000', '--max-fps', '60'] if gpu else ['--headless']
         cmd = base + ['--log-file', str(engine_log), *graphics, '--', '--mpfx-command', command, *map(str, extra)]
         if report: cmd += ['--report', str(report_file)]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
@@ -65,7 +67,9 @@ def main():
         records = [line.removeprefix('MM_VFX_REPORT ') for line in output.splitlines() if line.startswith('MM_VFX_REPORT ')]
         if result.returncode != expected or not records or 'ERROR:' in output or 'leaked' in output:
             raise SystemExit(f'CLI {command} expected={expected} actual={result.returncode}: {root / ("run-"+str(sequence)+".log")}')
+        if gpu: require_backend(output, args.rendering_driver)
         data = json.loads(records[-1])
+        if gpu and expected == 0: assert data['data']['rendering_driver'] == args.rendering_driver
         assert data['exit_code'] == expected and data['ok'] == (expected == 0)
         if report and report_file.exists(): assert json.loads(report_file.read_text(encoding='utf-8')) == data
         print(f'PASS {sequence}: {command} exit={expected}', flush=True)
@@ -74,6 +78,7 @@ def main():
     cap = run('capabilities')['data']
     assert cap['document_version'] == cap['effect_version'] == 2 and len(cap['modules']) == 12
     assert len(cap['runtime_id']) == 64
+    assert cap['supported_rendering_drivers'] == ['vulkan', 'd3d12']
     run('create', ['--template', 'basic_fountain', '--output', source])
     assert json.loads(source.read_text(encoding='utf-8'))['version'] == 2
     before = source.read_bytes()

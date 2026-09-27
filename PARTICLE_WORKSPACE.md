@@ -1,6 +1,6 @@
 # 파티클 작업 공간
 
-Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다.
+Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**를 지원합니다. [지원·검증 계약](RENDERING_BACKENDS.md)을 참고하세요.
 
 ## 배치와 Module Inputs
 

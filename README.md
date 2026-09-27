@@ -10,7 +10,7 @@ described as interconnected nodes.
 
 ## Modular GPU Particles (this fork)
 
-This fork targets **Godot 4.7.2 stable / Forward+ / Vulkan** for modular particles.
+This fork supports **Godot 4.7.2 stable / Forward+ / Vulkan and D3D12 (Windows x64)** for modular particles. Both backends are regression gates; see [support and verification](RENDERING_BACKENDS.md).
 Source builds require access to the **private** runtime repository and its pinned
 submodule; the addon source is not published in this public repository.
 

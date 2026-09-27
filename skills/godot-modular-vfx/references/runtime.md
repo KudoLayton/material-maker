@@ -1,6 +1,6 @@
 # Godot integration and external parameters
 
-The supported environment is Godot **4.7.2 stable / Forward+ / Vulkan**. `effect.res` contains compiled SPIR-V; Material Maker/graphs/CLI are not game dependencies. Do not modify engine source or replace normal Godot particle nodes with guessed APIs.
+The supported environment is Godot **4.7.2 stable / Windows x64 / Forward+ / Vulkan or D3D12**. Both are regression targets. Select D3D12 with `rendering/rendering_device/driver.windows="d3d12"` (restart editor) or `--rendering-driver d3d12`. Verify the actual driver via `RenderingServer.get_current_rendering_driver_name()`; Vulkan fallback is not D3D12 validation. Other platforms/backends and universal hardware/performance guarantees are outside the tested contract. `effect.res` contains compiled SPIR-V; Material Maker/graphs/CLI are not game dependencies. Do not modify engine source or replace normal Godot particle nodes with guessed APIs.
 
 Install the generated addon/effect using [installation.md](installation.md). Instance the generated `particles.tscn` in the user's scene, keeping a suitable Camera3D elsewhere. Alternatively create `MMGPUParticles3D` and assign `Effect` to the effect resource. Plugin checkbox activation is optional for class_name registration; no new autoload/Dock is required.
 

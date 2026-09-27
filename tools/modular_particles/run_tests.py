@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from render_backend import add_driver_argument, graphics, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -17,7 +18,10 @@ def main():
     parser.add_argument('--test', default='gpu_probe')
     parser.add_argument('--headless', action='store_true')
     parser.add_argument('--runtime', type=Path, help='Test a flat addon checkout in the temporary project only')
+    add_driver_argument(parser)
     args = parser.parse_args()
+    if args.headless and args.rendering_driver != 'vulkan':
+        parser.error('--headless cannot verify a GPU backend')
     engine = Path(args.godot).resolve()
     version = subprocess.check_output([str(engine), '--version'], text=True).strip()
     if not version.startswith('4.7.2.stable.'):
@@ -54,13 +58,14 @@ environment/defaults/default_clear_color=Color(0,0,0,1)
         [str(engine), '--headless', '--path', str(project), '--editor', '--import'],
         [str(engine), '--path', str(project), '--script', f'test/modular_particles/{args.test}.gd'],
     ]
-    commands[1] += ['--headless'] if args.headless else ['--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--position', '-32000,-32000', '--max-fps', '60']
+    commands[1] += ['--headless'] if args.headless else graphics(args.rendering_driver)
     for i, command in enumerate(commands):
         result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=flags, timeout=120)
         (project / f'run-{i}.log').write_text(result.stdout, encoding='utf-8')
         print(result.stdout, flush=True)
         if result.returncode or 'SCRIPT ERROR:' in result.stdout or 'ERROR:' in result.stdout or 'was leaked' in result.stdout or 'were leaked' in result.stdout:
             raise SystemExit(result.returncode or 1)
+    if not args.headless: require_backend(result.stdout, args.rendering_driver)
     if 'PASS' not in result.stdout:
         raise SystemExit('Test did not report PASS')
 

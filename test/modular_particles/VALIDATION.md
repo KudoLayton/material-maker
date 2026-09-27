@@ -1,10 +1,40 @@
 # 검증 기록
 
-대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows, Forward+, Vulkan 1.4.341, NVIDIA GeForce RTX 3070.
+대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows x64, Forward+, **Vulkan 1.4.341 및 D3D12 12_0**, NVIDIA GeForce RTX 3070.
 
-## 원격 게시·npx 설치·실제 에이전트 인식
+## D3D12 지원·필수 양쪽 백엔드 게이트 (2026-09-27)
 
-- 사용자 승인 후 private `main` **8ea4686**, public `master` **cdce9b06**까지 push한 뒤 GitHub 원격 설치를 수행했습니다. 이후 문서/검증 도구만 추가로 커밋합니다. 스킬 파일 내용은 동일합니다.
+최신 배포: **`build/modular-release-20260927-195631/`**. 지원 계약과 재현 명령은 [RENDERING_BACKENDS.md](../../RENDERING_BACKENDS.md). private runtime commit **d7b817d**를 고정했습니다. 런타임/엔진 구현과 효과 ABI는 그대로이며 검증 도구·지원 문서를 확장했습니다.
+
+- 장비: Windows 11 Pro `10.0.26200` x64, RTX 3070, GPU driver `32.0.16.1088`. AMD/Intel/다른 OS는 이번 장비에서 검증하지 않았습니다.
+- `build_windows.py --rendering-driver d3d12`로 새 EXE를 만들고 실제 D3D12 앱 Release **260 checks PASS**를 확인했습니다.
+- 빌드가 **Vulkan + D3D12 전체 매트릭스를 필수 실행**합니다. 23/23 gates PASS. 한쪽 실패/skip/불완료 시 빌드를 완료 처리하지 않으며 `BUILD_IN_PROGRESS.txt`를 남깁니다. 성공 시 `build-info.json.backend_verification`과 완료된 results를 기록합니다.
+- 최종 증거: `verification/backend-matrix/results.json`의 `passed=true`, `complete=true`. 실제 engine 로그·Inspector 화면·게임 화면도 backend별 하위 폴더에 보존했습니다. headless import만으로 GPU 성공을 주장하지 않습니다.
+
+| 검사 | Vulkan | D3D12 |
+|---|---:|---:|
+| 실제 GPU probe / shader 생성 | PASS | PASS |
+| Runtime / Render | 31 / 31 | 31 / 31 |
+| User GPU | 139 | 139 |
+| 10만 입자・32 custom vec4 | 132 | 132 |
+| 기본 모듈 GPU / 성능 / 예제 | 155 / 10 / 42 | 155 / 10 / 42 |
+| 실제 Inspector 위젯・Undo/Redo・저장 | 56 | 56 |
+| 독립 애드온 editor / Windows Release | 7 / 7 | 7 / 7 |
+| 배포 EXE CLI 계약 | 25 | 25 |
+| 동봉 스킬→두 효과→독립 게임 editor / Release | 31 / 31 | 31 / 31 |
+
+- backend guard 단위 테스트 **4개 PASS**(fallback/headless/Mobile/요청 문자열·PASS marker만 있는 경우 등 8개 거부 사례 포함). 검사 도구는 실제 RD 시작 header를 확인하고, 독립 애드온은 RenderingServer의 driver/method와 프로젝트 요청값도 비교합니다. D3D12→Vulkan fallback은 D3D12 통과가 아닙니다.
+- CLI의 Vulkan-only 조건을 제거하고 `supported_rendering_drivers` 및 export의 실제 `rendering_driver`를 보고합니다. helper `-RenderingDriver d3d12` 지원, 다른 backend로 실행되면 실패. 단순 문서 수정만으로 지원을 선언하지 않았습니다.
+- **교차 backend**: 최종 빌드의 D3D12 export→Vulkan 게임(`mm-vfx-delivery-ep3_s59y`), Vulkan export→D3D12 게임(`mm-vfx-delivery-ra5p8fww`) 모두 editor/Release 각각 **31 PASS**. SPIR-V를 backend별로 다시 저작하지 않습니다.
+- 스킬 helper **8/8 PASS**(`mm-vfx-skill-uwudhy_1`), 스킬 링크 검사 PASS. 원격 npx 재설치/새 에이전트 LLM 실행은 이번 변경의 검증에 포함하지 않았습니다(아래 기록은 이전 시점).
+- 패키징 audit PASS: 스킬 8개 원본=배포, runtime checksum/ID 동일, 예제 13/13/14 manifest, addon ZIP 일치, gitlink 일치, 기존 보호 파일 **175개**와 legacy 원본 checksum 유지.
+- 첫 Inspector 재검증에서 OS 커서가 임시 editor 밖에 있으면 합성 클릭이 전달되지 않는 **기존 test harness 문제**를 발견했습니다. 테스트 전용 embedded-window routing, viewport-local 입력 및 실패 screenshot을 추가한 뒤 실제 native checkbox/revert/Undo/Redo를 양쪽에서 통과했습니다. 애드온 값을 직접 설정해 클릭 검사를 우회하지 않았습니다.
+- 독립 runtime/Release/CLI 검사 ERROR·누수 없음. 전체 MM 기본 모듈 통합 검사는 기존 import/HDR/MTL 로그를 별도 보관하며, 전체 legacy 48개 앱 테스트를 이번에 모두 재실행한 것으로 해석하지 않습니다.
+- 성능은 장비별 관측값입니다. 최종 100k/32vec4 GPU median Vulkan **1.564640 ms**, D3D12 **1.133568 ms**; 표준 Curl OFF/ON median Vulkan **0.193568/1.056672 ms**, D3D12 **2.372608/2.476032 ms**. backend별 동일 FPS 보장은 하지 않습니다.
+
+## 원격 게시·npx 설치·실제 에이전트 인식 (2026-09-24 기록)
+
+- 사용자 승인 후 private `main` **8ea4686**, public `master` **cdce9b06**까지 push한 뒤 GitHub 원격 설치를 수행했습니다. 당시 후속 커밋은 문서/검증 도구만 추가했고, 그 시점의 스킬 파일 내용은 동일했습니다.
 - Node **v26.7.0**, npm **12.0.2**, `skills` **1.7.0**. `npx --yes skills@1.7.0 add KudoLayton/material-maker --skill godot-modular-vfx --agent codex pi --copy --yes --json` 성공; list에서도 project scope의 Codex/Pi를 확인했습니다.
 - 격리 설치 프로젝트: `mm-vfx-npx-bb2db777498240a3834f1380dc7746e2`; Codex `.agents/skills/godot-modular-vfx`, Pi `.pi/skills/godot-modular-vfx`. 사용자 실제 프로젝트나 전역 스킬을 설치·변경하지 않았습니다.
 - 실제 Codex **0.155.1** app-server `skills/list`: 스킬 enabled/repo scope 및 openai metadata 확인. 실제 Pi **0.87.1** RPC `get_commands`: `skill:godot-modular-vfx`, project/auto source 확인. 로그 `mm-vfx-discovery-9j4scd3x`; 별도 임시 agent home, 모델 요청 0회. 독립 LLM forward-test 결과로 해석하지 않습니다.

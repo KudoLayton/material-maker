@@ -8,6 +8,7 @@ param(
     [string]$Template,
     [string]$EffectId,
     [int]$Capacity,
+    [ValidateSet('vulkan','d3d12')][string]$RenderingDriver = 'vulkan',
     [string]$Report
 )
 Set-StrictMode -Version Latest
@@ -28,7 +29,7 @@ try {
     if (-not $Report) { $Report = Join-Path $run 'report.json' }
     if (-not [IO.Path]::IsPathRooted($Report) -or [IO.File]::Exists($Report) -or [IO.Directory]::Exists($Report)) { throw 'Report must be a new absolute file path.' }
     $arguments = @('--log-file',(Join-Path $run 'engine.log'))
-    if ($Command -eq 'export') { $arguments += @('--rendering-method','forward_plus','--rendering-driver','vulkan','--position','-32000,-32000') }
+    if ($Command -eq 'export') { $arguments += @('--rendering-method','forward_plus','--rendering-driver',$RenderingDriver,'--position','-32000,-32000') }
     else { $arguments += '--headless' }
     $arguments += @('--','--mpfx-command',$Command)
     $values = @{input=$InputFile;output=$Output;template=$Template;'effect-id'=$EffectId;report=$Report}
@@ -59,6 +60,7 @@ try {
         $json = [IO.File]::ReadAllText($Report)
         $result = ConvertFrom-Json $json
         if ($result.contract_version -ne 1 -or $result.command -ne $Command -or $result.exit_code -ne $code) { throw "CLI report mismatch; inspect $run" }
+        if ($Command -eq 'export' -and $result.ok -and $result.data.rendering_driver -ne $RenderingDriver) { throw "GPU backend mismatch: requested $RenderingDriver; inspect staging/logs before retry: $run" }
         $json
     } else {
         # Early argument/report-path errors may only be in the engine log.

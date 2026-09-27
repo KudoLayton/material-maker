@@ -189,7 +189,7 @@ try {
     }
     $installed.runtime = $runtime
     $installed.effects[$id] = @{files=$newFiles;source_hash=$incoming.source_hash}
-    $result = @{ok=$true;action='dry-run';effect_id=$id;project=$root;files=@($operations | ForEach-Object { $_.path });requires='Godot 4.7.2 stable / Forward+ / Vulkan'}
+    $result = @{ok=$true;action='dry-run';effect_id=$id;project=$root;files=@($operations | ForEach-Object { $_.path });requires='Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan or D3D12'}
     if (-not $Apply) { $result | ConvertTo-Json -Depth 8; exit 0 }
     if ((Hash $sourceManifest) -ne $sourceManifestHash -or (Hash $manifestPath) -ne $manifestBefore) { throw 'Manifest changed during preflight.' }
     if ([IO.Directory]::Exists($transaction)) { throw 'Another transaction appeared during preflight.' }

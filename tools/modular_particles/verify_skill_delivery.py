@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 from verify_export import run
+from render_backend import add_driver_argument, graphics, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -23,6 +24,8 @@ def main():
     parser.add_argument('--godot', type=Path, required=True)
     parser.add_argument('--templates', type=Path, required=True)
     parser.add_argument('--skill', type=Path, help='Optional npx-installed skill instead of bundled copy')
+    add_driver_argument(parser)
+    parser.add_argument('--export-driver', choices=['vulkan','d3d12'], default='vulkan', help='CLI compilation backend, independent of game backend')
     args = parser.parse_args()
     app = args.build.resolve() / 'MaterialMaker/MaterialMaker.exe'
     skill = args.skill.resolve() if args.skill else app.parent / 'skills/godot-modular-vfx'
@@ -80,7 +83,8 @@ environment/defaults/default_clear_color=Color(0,0,0,1)
         source.write_text(json.dumps(document,indent=2)+'\n',encoding='utf-8')
         invoke('Invoke-Vfx.ps1','-Command','validate','-InputFile',source)
         bundle = root / ('staging-' + name)
-        invoke('Invoke-Vfx.ps1','-Command','export','-InputFile',source,'-Output',bundle,'-EffectId',name,'-Capacity','256')
+        exported = invoke('Invoke-Vfx.ps1','-Command','export','-InputFile',source,'-Output',bundle,'-EffectId',name,'-Capacity','256','-RenderingDriver',args.export_driver)
+        assert exported['data']['rendering_driver'] == args.export_driver
         invoke('Install-VfxEffect.ps1','-Bundle',bundle,'-Project',game)
         invoke('Install-VfxEffect.ps1','-Bundle',bundle,'-Project',game,'-Apply')
     assert sha(game / 'project.godot') == project_hash
@@ -91,9 +95,10 @@ environment/defaults/default_clear_color=Color(0,0,0,1)
     shutil.copy2(ROOT / 'test/modular_particles/standalone_skill_smoke.gd',game / 'verify.gd')
     (game / 'verify.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://verify.gd" id="1"]\n[node name="Verify" type="Node"]\nscript=ExtResource("1")\n',encoding='utf-8')
     base = [str(args.godot.resolve()),'--path',str(game)]
-    graphics = ['--rendering-method','forward_plus','--rendering-driver','vulkan','--position','-32000,-32000','--max-fps','60']
+    gpu_flags = graphics(args.rendering_driver)
     run(base + ['--headless','--editor','--import'],game,'import')
-    run(base + graphics,game,'editor-runtime','MODULAR_SKILL_GAME PASS')
+    run(base + gpu_flags,game,'editor-runtime','MODULAR_SKILL_GAME PASS')
+    require_backend((game / 'editor-runtime.log').read_text(encoding='utf-8'),args.rendering_driver)
     assert (args.templates / 'version.txt').read_text().strip() == '4.7.2.stable'
     (game / 'windows').mkdir()
     (game / 'export_presets.cfg').write_text('''[preset.0]
@@ -111,13 +116,14 @@ application/modify_resources=false
 ''' + ''.join(f'custom_template/{kind}="{(args.templates.resolve() / ("windows_"+kind+"_x86_64.exe")).as_posix()}"\n' for kind in ['debug','release']),encoding='utf-8')
     run(base + ['--headless','--export-release','Windows'],game,'export')
     release_log = game / 'release-engine.log'
-    run([str(game / 'windows/SkillGame.exe'),'--log-file',str(release_log),*graphics],game,'windows-runtime')
+    run([str(game / 'windows/SkillGame.exe'),'--log-file',str(release_log),*gpu_flags],game,'windows-runtime')
     text = release_log.read_text(encoding='utf-8')
+    require_backend(text,args.rendering_driver)
     assert 'MODULAR_SKILL_GAME PASS' in text and 'editor=false' in text and 'ERROR:' not in text and 'leaked' not in text
     assert sha(game / 'project.godot') == project_hash
     image = Path(os.environ['APPDATA']) / settings / 'skill-game.png'
     shutil.copy2(image,root / 'skill-game.png')
-    summary = {'passed':True,'app':str(app),'skill':str(skill),'package':package,'project':str(game),'steps':steps,'source_free_game':True,'project_settings_unchanged':True,'editor_runtime':True,'windows_release':True}
+    summary = {'passed':True,'app':str(app),'skill':str(skill),'package':package,'project':str(game),'steps':steps,'driver':args.rendering_driver,'export_driver':args.export_driver,'source_free_game':True,'project_settings_unchanged':True,'editor_runtime':True,'windows_release':True}
     (root / 'verification.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
     print('MODULAR_SKILL_DELIVERY PASS',root,flush=True)
 

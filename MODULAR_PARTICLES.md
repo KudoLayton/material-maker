@@ -1,6 +1,6 @@
 # Modular GPU Particles (최신 포맷 v2 전용)
 
-Godot **4.7.2 stable / Forward+ / Vulkan** 전용입니다. 기존 `.ptex` 파티클 셰이더 편집기는 유지하며, 새 `.mpfx` 문서는 별도 Compute 시뮬레이션과 `MMGPUParticles3D`를 사용합니다. 엔진 소스 변경은 없습니다.
+Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**를 지원합니다. [지원·검증 계약](RENDERING_BACKENDS.md)을 참고하세요. 기존 `.ptex` 파티클 셰이더 편집기는 유지하며, 새 `.mpfx` 문서는 별도 Compute 시뮬레이션과 `MMGPUParticles3D`를 사용합니다. 엔진 소스 변경은 없습니다.
 
 ## 파티클 도킹 작업 공간
 

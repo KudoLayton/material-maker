@@ -11,8 +11,10 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
+from render_backend import add_driver_argument, require_backend
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -78,6 +80,7 @@ def main():
     parser.add_argument('--templates', required=True, type=Path)
     parser.add_argument('--output', type=Path, help='Must not already exist')
     parser.add_argument('--docs', type=Path, help='Optional existing compiled HTML docs, copied read-only')
+    add_driver_argument(parser)
     args = parser.parse_args()
     engine = args.godot.resolve()
     version = subprocess.check_output([str(engine),'--version'], text=True).strip()
@@ -131,6 +134,7 @@ application/modify_resources=false
     shutil.copy2(ROOT / 'PARTICLE_WORKSPACE.md', app / 'PARTICLE_WORKSPACE.md')
     shutil.copy2(ROOT / 'MODULAR_VFX_CLI.md', app / 'MODULAR_VFX_CLI.md')
     shutil.copy2(ROOT / 'VFX_SKILL.md', app / 'VFX_SKILL.md')
+    shutil.copy2(ROOT / 'RENDERING_BACKENDS.md', app / 'RENDERING_BACKENDS.md')
     shutil.copytree(ROOT / 'skills/godot-modular-vfx', app / 'skills/godot-modular-vfx',
                     ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md', app / 'STANDARD_PARTICLE_MODULES.md')
@@ -140,8 +144,9 @@ application/modify_resources=false
     (app / 'Open mmtest.cmd').write_text('@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0MaterialMaker.exe" --no-splash "%~dp0examples\\modular_particles\\mmtest.mpfx"\r\n', encoding='ascii')
     smoke = logs / 'app'
     smoke.mkdir()
-    graphics = ['--rendering-method','forward_plus','--rendering-driver','vulkan','--position','-32000,-32000','--max-fps','60']
+    graphics = ['--rendering-method','forward_plus','--rendering-driver',args.rendering_driver,'--position','-32000,-32000','--max-fps','60']
     run([app / 'MaterialMaker.exe','--no-splash',app / 'examples/modular_particles/mmtest.mpfx','--log-file',logs / 'app-engine.log',*graphics,'--','--modular-build-check',smoke], app, logs / 'app-process.log', 'MODULAR_RELEASE PASS')
+    require_backend((logs / 'app-engine.log').read_text(encoding='utf-8'), args.rendering_driver)
     report = json.loads((smoke / 'release-smoke.json').read_text(encoding='utf-8'))
     if not report['passed'] or report['editor']: raise SystemExit('Release smoke verification did not pass')
     shutil.copytree(smoke / 'godot-example', output / 'GodotExample')
@@ -156,16 +161,18 @@ application/modify_resources=false
     (app / 'vfx-package.json').write_text(json.dumps({
         'format': 'mm_vfx_package', 'version': 1, 'cli_contract_version': 1,
         'target': '4.7.2', 'document_version': 2, 'effect_version': 2,
+        'supported_rendering_drivers': ['vulkan', 'd3d12'],
         'skill': 'skills/godot-modular-vfx', 'runtime_id': runtime_id,
         'runtime_files': runtime_files}, indent=2), encoding='utf-8')
     guide = ROOT / 'GODOT_PARTICLES_PLUGIN.md'
     if guide.exists():
         for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',output / 'GodotUserParametersExample',app]:
             shutil.copy2(guide,target / guide.name)
+            shutil.copy2(ROOT / 'RENDERING_BACKENDS.md',target / 'RENDERING_BACKENDS.md')
             shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md',target / 'STANDARD_PARTICLE_MODULES.md')
             shutil.copy2(ROOT / 'USER_PARTICLE_PARAMETERS.md',target / 'USER_PARTICLE_PARAMETERS.md')
     shutil.make_archive(str(output / 'GodotAddon'), 'zip', output / 'GodotAddon')
-    (output / 'START_HERE.txt').write_text('''Modular GPU Particles — Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan
+    (output / 'START_HERE.txt').write_text('''Modular GPU Particles — Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan + D3D12
 
 실행: MaterialMaker/Open basic_fountain.cmd 또는 MaterialMaker/MaterialMaker.exe
 User 제어 예제: MaterialMaker/Open user_parameters.cmd
@@ -208,6 +215,7 @@ User 변경은 Undo/Redo/Save를 지원하며, 값/이름 변경은 Preview 입�
 효과 원본/런타임은 최신 v2만 지원합니다. 구버전 자동 변환은 제공하지 않습니다.
 상세 사용법·Inspector·API·최신 포맷: USER_PARTICLE_PARAMETERS.md
 명령행 제작·검증·컴파일/Export: MaterialMaker/MODULAR_VFX_CLI.md
+Vulkan·D3D12 지원 범위·실제 backend 확인·필수 회귀: RENDERING_BACKENDS.md
 Codex·Pi 편집 스킬·npx 설치 안내: MaterialMaker/VFX_SKILL.md
 동봉 스킬: MaterialMaker/skills/godot-modular-vfx (앱·런타임 계약: vfx-package.json)
 파티클 도크·Looping/Burst/Custom·카메라·HDRI: MaterialMaker/PARTICLE_WORKSPACE.md
@@ -226,8 +234,20 @@ addons/mm_gpu_particles 및 effects/modular_particles를 복사하고 particles.
 검증 결과: verification/ 및 build-info.json
 ''', encoding='utf-8-sig')
     info = {'engine':version,'templates':str(templates),'workspace':str(project),'executable':str(app / 'MaterialMaker.exe'),
-            'user_settings':settings,'release_smoke':report,'script_export_mode':'text (runtime sources available)',
+            'user_settings':settings,'release_smoke':report,'release_smoke_driver':args.rendering_driver,'script_export_mode':'text (runtime sources available)',
             'exe_sha256':hashlib.sha256((app / 'MaterialMaker.exe').read_bytes()).hexdigest()}
+    (output / 'build-info.json').write_text(json.dumps(info,indent=2,ensure_ascii=False), encoding='utf-8')
+    # A release is not complete until BOTH backends pass every gate, including
+    # the packaged CLI and source-free exported games. No optional skip flag.
+    matrix = logs / 'backend-matrix'
+    run([sys.executable, '-B', ROOT / 'tools/modular_particles/verify_backends.py',
+         '--godot', engine, '--templates', templates, '--build', output, '--evidence', matrix],
+        ROOT, logs / 'backend-matrix.log', 'MODULAR_BACKEND_MATRIX PASS', timeout=2400)
+    backend_report = json.loads((matrix / 'results.json').read_text(encoding='utf-8'))
+    if not backend_report.get('complete') or not backend_report.get('passed'):
+        raise SystemExit('Backend matrix incomplete; build is NOT verified')
+    info['backend_verification'] = {'passed': True, 'drivers': backend_report['drivers'],
+                                    'gates': len(backend_report['results']), 'evidence': str(matrix)}
     (output / 'build-info.json').write_text(json.dumps(info,indent=2,ensure_ascii=False), encoding='utf-8')
     (output / 'BUILD_IN_PROGRESS.txt').unlink()
     print(f'BUILT: {app / "MaterialMaker.exe"}\nGODOT: {output / "GodotExample/project.godot"}\nGODOT BASIC: {output / "GodotBasicExample/project.godot"}\nGODOT USER: {output / "GodotUserParametersExample/project.godot"}\nADDON: {output / "GodotAddon.zip"}', flush=True)
