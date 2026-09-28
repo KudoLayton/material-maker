@@ -9,7 +9,12 @@ param(
     [string]$EffectId,
     [int]$Capacity,
     [ValidateSet('vulkan','d3d12')][string]$RenderingDriver = 'vulkan',
-    [string]$Report
+    [string]$Report,
+    [ValidateSet('3d','2d')][string]$RenderTarget,
+    [double]$PixelsPerUnit,
+    [ValidateSet('true','false')][string]$FlipY,
+    [ValidateSet('effect','alpha','additive','opaque','cutout')][string]$BlendMode,
+    [string]$Sprite
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -37,6 +42,15 @@ try {
         if ($values[$name]) { $arguments += @(('--' + $name),([string]$values[$name])) }
     }
     if ($PSBoundParameters.ContainsKey('Capacity')) { $arguments += @('--capacity',[string]$Capacity) }
+    # Forward only explicit options; the app owns command/target validation and defaults.
+    $outputOptions = [ordered]@{RenderTarget='render-target';PixelsPerUnit='pixels-per-unit';FlipY='flip-y';BlendMode='blend-mode';Sprite='sprite'}
+    foreach ($name in $outputOptions.Keys) {
+        if (-not $PSBoundParameters.ContainsKey($name)) { continue }
+        $value = [string]$PSBoundParameters[$name]
+        if ($name -eq 'PixelsPerUnit') { $value = $PixelsPerUnit.ToString('R',[Globalization.CultureInfo]::InvariantCulture) }
+        elseif ($name -ne 'Sprite') { $value = $value.ToLowerInvariant() }
+        $arguments += @(('--' + $outputOptions[$name]),$value)
+    }
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = $App
     $start.Arguments = ($arguments | ForEach-Object { Quote-Argument $_ }) -join ' '

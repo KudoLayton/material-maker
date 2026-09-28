@@ -2,7 +2,7 @@
 
 ## Latest document contract
 
-`.mpfx` is JSON: `type: mm_particle_effect`, `version: 2`, `target: 4.7.2`, plus `attributes`, `modules`, `stages`, `emitter`, `renderer`, `user_parameters`. Optional `preview_capacity` controls the default export/preview allocation. Create a packaged template rather than reconstructing every required field. Reject v1, missing versions and unknown future versions; changing their version field is not a supported migration.
+`.mpfx` is JSON: `type: mm_particle_effect`, `version: 2`, `target: 4.7.2`, plus `attributes`, `modules`, `stages`, `emitter`, `renderer`, `user_parameters`. Optional `preview_capacity` controls the default export/preview allocation. Create a packaged template rather than reconstructing every required field. Reject v1, missing versions and unknown future document versions; changing their version field is not a supported migration. This document version is separate from the newly compiled `MMParticleEffect` **v3**. Do not write `version: 3` into a .mpfx.
 
 - `modules` maps stable definition IDs to `name`, allowed `stages`, `inputs`, `reads`, `writes` and an editable `mm_graph`.
 - `stages.spawn` / `stages.update` contain ordered instances `{id, module, enabled, parameters, input_bindings}`. Instance ID and module definition ID differ. Several instances can reuse a definition; modifying that definition changes all its instances.
@@ -21,6 +21,12 @@ Namespaces are a UI/API distinction, not strings to insert indiscriminately into
 | `Context.delta` | Simulation step seconds, not a User or stored Attribute |
 
 Builtin IDs/types: position/velocity/scale vec3, rotation/color/custom vec4, age/lifetime float, alive bool, particle_id uint. Age and particle_id are readonly. Custom attributes live in `attributes` as `{id,name,type,default}`. Renderer `custom_attribute` must refer to a vec4 attribute. No automatic matching by name.
+
+## One source for 2D and 3D
+
+Use the same templates, graphs, Spawn/Update modules, Attributes and User bindings for either output. Position, velocity and gravity remain vec3; rotation remains a quaternion (vec4). Do not invent vec2 replacements for builtins or rewrite a vec3 User because the game is 2D. For an XY-only effect, keep the appropriate Z inputs zero without changing their types.
+
+Export target, Pixels Per Unit, Flip Y, blend override and PNG are output options, not document fields or new simulation modules. A v3 effect contains common simulation/SPIR-V usable by both runtime nodes; the output packing differs. The GUI authoring preview remains 3D. Validate 2D projection and appearance in the exported game scene; see [runtime.md](runtime.md).
 
 ## Emission and standard module order
 
@@ -65,8 +71,8 @@ Useful nodes:
 - Same type with `kind:module_output`, `fields:[{id:ATTRIBUTE_ID,name:LABEL,type:TYPE}]` writes connected ports in field order. Declare writes on the module; do not write readonly attributes. Outputs are the explicit binding, not label-based inference.
 - `type:particle_node`, `settings:{kind:"custom",data_type:"vec3",code:"return a+b;",editor_profile:"standard_module_v1",input_ports:[{name:"a",type:"vec3"},{name:"b",type:"vec3"}]}` is a typed Code node. Feed its named input ports and connect output port 0 to the appropriate output field.
 
-When importing a standard `.mmg`, its `particle_module` envelope is version 1 independently of effect v2. Copy the graph without the envelope into `mm_graph`; copy definition metadata and merge required attribute snapshots. Reuse an existing attribute only when its `standard_role`, type and compatible definition match. Remap all attribute references, output fields and `standard_module.bindings`; do not collapse distinct attributes just because their names match. A custom graph should not pretend to be a standard module by retaining incorrect catalog metadata.
+When importing a standard `.mmg`, its `particle_module` envelope is version 1 independently of document v2 and compiled effect v3. Copy the graph without the envelope into `mm_graph`; copy definition metadata and merge required attribute snapshots. Reuse an existing attribute only when its `standard_role`, type and compatible definition match. Remap all attribute references, output fields and `standard_module.bindings`; do not collapse distinct attributes just because their names match. A custom graph should not pretend to be a standard module by retaining incorrect catalog metadata.
 
 Reusable `.mmg` modules contain no effect-specific User definitions/bindings. User links belong on effect instances. Preserve any nested graph and its connection indexes. Validate every graph edit through the real CLI and inspect it in the GUI when layout/readability matters.
 
-Unsupported scope: collision/subemitters, transparent depth sorting, external textures/baked buffers and automatic Unreal/.ptex conversion. Do not fabricate unsupported nodes or APIs to satisfy a visual request; offer a supported approximation explicitly.
+Supported texture input is a single optional PNG for 2D export, embedded as `sprite.res`; it is not a simulation texture/baked buffer input. Unsupported scope: collision/subemitters, per-particle transparent depth/Y sorting, sprite sheets, simulation texture/baked buffer inputs, automatic vec2 graph conversion, 2D authoring preview and automatic Unreal/.ptex conversion. Do not fabricate unsupported nodes or APIs to satisfy a visual request; offer a supported approximation explicitly.

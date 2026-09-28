@@ -1,5 +1,38 @@
 # 검증 기록
 
+## 스킬 원본의 2D·v3 후속 보완
+
+대상은 워크스페이스 `skills/godot-modular-vfx/` 원본입니다. `SKILL.md`, 참조 문서 4개, 에이전트 메타데이터와 `VFX_SKILL.md`를 문서 v2 / 공통 컴파일 효과 v3 / 2D·3D 기준으로 수정했습니다. `Invoke-Vfx.ps1`에는 선택적 `-RenderTarget`, `-PixelsPerUnit`, `-FlipY`, `-BlendMode`, `-Sprite` 전달을 추가했습니다. 기존 인수 순서와 3D 기본값은 유지합니다.
+
+실행 앱: `build/modular-release-20260929-010841/MaterialMaker/MaterialMaker.exe`. 갱신한 **원본 helper**로 이 앱을 호출했으며, 기존 배포에 동봉된 스킬이나 다른 게임 프로젝트의 설치본을 수정한 것은 아닙니다.
+
+| 검사 | 관측 결과 |
+|---|---|
+| 구조·문서 | Markdown 6개, 로컬 링크 12개, frontmatter description 352자·2D/3D 라우팅, 실제 capabilities의 계약1/문서2/효과3 확인. `git diff --check` PASS |
+| helper / PS 5.1 / Vulkan | `check_vfx_skill.py`: 28 호출 PASS, `%TEMP%/mm-vfx-skill-k5jg06vk/` |
+| helper / PS 5.1 / D3D12 | 28 호출 PASS, `%TEMP%/mm-vfx-skill-qv9_kqd4/` |
+| helper / PS 7 / Vulkan | 28 호출 PASS, `%TEMP%/mm-vfx-skill-njaq9p8o/` |
+| helper / PS 7 / D3D12 | 28 호출 PASS, `%TEMP%/mm-vfx-skill-1reqn1wh/` |
+| 설치 / PS 5.1·7 | `test_install_vfx.py`: 각각 24 operations PASS. `%TEMP%/mm-vfx-install-ii79lkmf/`, `%TEMP%/mm-vfx-install-fk40iycv/` |
+
+helper 회귀는 3D 기본/명시 출력, 2D 기본값, 한글·공백 경로 PNG, 대문자 enum 정규화, `FlipY=false`, `de-DE` 문화권의 `123.5` 전달, v3 source hash 공유·manifest checksum, 잘못된 수치/명령/3D 옵션 조합 거부, 누락 PNG, 출력 차원·사용자 수정 충돌, 원본·report 보호를 확인합니다. 실제 GPU 컴파일과 보고된 Vulkan/D3D12 backend도 검사합니다. 설치 검사는 2D PNG 의존성·3D와의 공존·checksum 충돌·rollback/recovery를 포함합니다.
+
+재실행 (저장소 루트, Python은 개발 검사에만 필요):
+
+```powershell
+$App = (Resolve-Path build/modular-release-20260929-010841/MaterialMaker/MaterialMaker.exe).Path
+foreach ($shell in @('powershell.exe', 'pwsh.exe')) {
+    foreach ($driver in @('vulkan', 'd3d12')) {
+        python -B tools/modular_particles/check_vfx_skill.py --app $App --shell $shell --rendering-driver $driver
+        if ($LASTEXITCODE -ne 0) { throw "helper failed: $shell/$driver" }
+    }
+    python -B tools/modular_particles/test_install_vfx.py --app $App --shell $shell
+    if ($LASTEXITCODE -ne 0) { throw "installer failed: $shell" }
+}
+```
+
+범위: 이번 변경에서 배포 재빌드, 원격 npx 재설치, 실제 에이전트/LLM 제작 평가 및 새 시각 검사는 수행하지 않았습니다. 아래의 기존 배포·에이전트 검증 이력과 구분합니다.
+
 ## 공통 v3 시뮬레이션과 2D 출력 (2026-09-29)
 
 검증 배포: **`build/modular-release-20260929-010841/`**. MaterialMaker EXE, GodotAddon.zip, Godot2DExample(PNG 포함), Godot2DUserParametersExample 및 기존 3D 예제를 포함합니다. `build-info.json`과 `verification/backend-matrix/results.json`의 complete/passed 및 34개 게이트 PASS를 확인했습니다. 기존 설치·빌드·사용자 설정은 덮어쓰지 않았습니다.
