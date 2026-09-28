@@ -38,7 +38,8 @@ func compile(document: Dictionary, prepared_graphs: Dictionary = {}) -> Dictiona
 	if not shape_error.is_empty():
 		fail(shape_error)
 		return result(effect)
-	effect.format_version = document.version
+	# Document v2 is unchanged; compiled v3 shares one kernel across 2D and 3D.
+	effect.format_version = 3
 	effect.user_parameters.assign(document.get("user_parameters",[]).duplicate(true))
 	for key in ["modules", "stages", "emitter", "renderer"]:
 		if not document.get(key) is Dictionary: fail("Expected object: " + key)

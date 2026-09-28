@@ -76,7 +76,8 @@ def main():
         return data
 
     cap = run('capabilities')['data']
-    assert cap['document_version'] == cap['effect_version'] == 2 and len(cap['modules']) == 12
+    assert cap['document_version'] == 2 and cap['effect_version'] == 3 and len(cap['modules']) == 12
+    assert cap['render_targets'] == ['3d', '2d'] and cap['runtime_effect_versions'] == {'3d': [2, 3], '2d': [3]}
     assert len(cap['runtime_id']) == 64
     assert cap['supported_rendering_drivers'] == ['vulkan', 'd3d12']
     run('create', ['--template', 'basic_fountain', '--output', source])
@@ -86,7 +87,7 @@ def main():
     assert source.read_bytes() == before
     inspected = run('inspect', ['--input', source])['data']
     validated = run('validate', ['--input', source])['data']
-    assert not validated['gpu_compiled'] and validated['effect_version'] == 2
+    assert not validated['gpu_compiled'] and validated['effect_version'] == 3
     for version in [None, 1, 3]:
         invalid = dict(inspected)
         if version is None: invalid.pop('version')
@@ -115,6 +116,20 @@ def main():
     scene = (out / 'effects/modular_particles/fountain/particles.tscn').read_text(encoding='utf-8')
     assert 'res://effects/modular_particles/fountain/effect.res' in scene
     run('export', ['--input', source, '--output', out, '--effect-id', 'fountain'], gpu=True)
+    out2d = root / 'export-2d'
+    args2d = ['--input', source, '--output', out2d, '--effect-id', 'fountain', '--render-target', '2d']
+    exported2d = run('export', args2d + ['--pixels-per-unit', '120', '--flip-y', 'false', '--blend-mode', 'alpha'], gpu=True)['data']
+    assert exported2d['source_hash'] == export['source_hash'], '2D and 3D must use identical compute source'
+    assert exported2d['manifest']['render_target'] == '2d'
+    scene2d = (out2d / 'effects/modular_particles/fountain/particles.tscn').read_text(encoding='utf-8')
+    assert 'particles_2d.gd' in scene2d and 'pixels_per_unit = 120' in scene2d and 'flip_y = false' in scene2d
+    for key, value in [('pixels-per-unit', '0'), ('pixels-per-unit', 'no'), ('flip-y', 'yes'), ('blend-mode', 'invalid')]:
+        run('export', args2d + ['--' + key, value], 2)
+    run('export', ['--input', source, '--output', out2d, '--effect-id', 'fountain', '--flip-y', 'true'], 2)
+    run('export', args2d + ['--sprite', root / 'missing.png'], 5, gpu=True)
+    protected = {str(p.relative_to(out)): p.read_bytes() for p in out.rglob('*') if p.is_file()}
+    run('export', ['--input', source, '--output', out, '--effect-id', 'fountain', '--render-target', '2d'], 5, gpu=True)
+    assert protected == {str(p.relative_to(out)): p.read_bytes() for p in out.rglob('*') if p.is_file()}
     # A bound User type mismatch is a located compiler diagnostic, not a crash.
     user_source = root / 'users.mpfx'
     run('create', ['--template', 'user_parameters', '--output', user_source])

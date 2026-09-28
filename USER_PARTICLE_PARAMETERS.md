@@ -59,9 +59,9 @@ func restore_speed() -> void:
 
 ## 최신 포맷·저장·문제 진단
 
-- `.mpfx`/`MMParticleEffect`는 **v2만 지원**합니다. v1·버전 누락·미지원 미래 버전은 GUI·compiler·runtime에서 거부하며 자동 변환하지 않습니다. 기존 사용자 원본과 이전 배포물은 변경하지 않습니다.
-- User가 없어도 새 문서는 **v2**와 빈 `user_parameters` 배열로 생성합니다. 인스턴스별 `input_bindings`를 저장하고 내보낸 효과도 format 2와 SPIR-V를 포함합니다. User 추가·제거로 버전을 변경하지 않습니다.
-- 이전 런타임은 v2를 지원하지 않습니다. 새 `addons/mm_gpu_particles`와 효과 리소스를 함께 배포하세요. [설치 안내](GODOT_PARTICLES_PLUGIN.md)를 참고하세요.
+- `.mpfx`는 **v2**, 신규 `MMParticleEffect`는 **v3**입니다. 기존 v2 효과는 3D 노드에서 계속 실행하며 2D에는 재내보내기가 필요합니다. 버전 누락·미지원 버전은 거부합니다.
+- User가 없어도 새 문서는 v2와 빈 `user_parameters` 배열로 생성합니다. 인스턴스별 `input_bindings`를 저장하고 내보낸 효과는 공통 2D/3D v3 SPIR-V를 포함합니다. User 추가·제거로 버전을 변경하지 않습니다.
+- 이전 런타임은 v3를 지원하지 않습니다. 새 `addons/mm_gpu_particles`와 효과 리소스를 함께 배포하세요. [설치 안내](GODOT_PARTICLES_PLUGIN.md)를 참고하세요.
 - Missing User/타입 불일치/잘못된 참조는 진단하고 컴파일·Export를 차단합니다. 조용히 Constant로 대체하지 않으며, 편집기의 마지막 정상 Preview는 유지합니다. 올바른 User로 다시 연결하거나 Constant로 명시적으로 해제하세요.
 - 새 빈 폴더에 Export하는 것이 안전합니다. 재내보내기는 manifest checksum으로 수정된 파일을 보호하며, 기존 `project.godot`은 덮어쓰지 않습니다. User demo 제어 스크립트도 보호 대상입니다.
-- User 정의가 있는 v2 내보내기의 demo는 두 노드와 제어 UI를 제공합니다. Speed/Gravity/Tint에는 전용 컨트롤을, 다른 User에는 JSON 입력을 사용합니다. 실제 게임에는 `particles.tscn`만 배치하고 게임 로직에서 API를 호출해도 됩니다.
+- User 정의가 있는 2D/3D 내보내기의 demo는 두 노드와 제어 UI를 제공합니다. Speed/Gravity/Tint에는 전용 컨트롤을, 다른 User에는 JSON 입력을 사용합니다. 실제 게임에는 `particles.tscn`만 배치하고 게임 로직에서 API를 호출해도 됩니다.

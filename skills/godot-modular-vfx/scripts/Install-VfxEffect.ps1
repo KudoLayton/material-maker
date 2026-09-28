@@ -82,7 +82,7 @@ function Recover-Transaction([string]$Root,[string]$Tx) {
     # A journal can only own generated VFX paths, never arbitrary project files.
     $seen = @{}
     foreach ($entry in $journal.entries) {
-        if ($entry -isnot [hashtable] -or $entry.path -notmatch '^(\.mm-vfx/manifest\.json|addons/mm_gpu_particles/(effect\.gd|gpu_state\.gd|multimesh_lifetime\.gd|particles_3d\.gd|scheduler\.gd|value_codec\.gd|plugin\.gd|plugin\.cfg)|effects/modular_particles/[a-z0-9_-]{1,64}/(effect\.res|effect\.glsl\.txt|particles\.tscn|README\.txt))$' -or $seen.ContainsKey($entry.path) -or $entry.before -cnotmatch '^([0-9a-f]{64})?$' -or $entry.after -cnotmatch '^[0-9a-f]{64}$') { throw 'Invalid recovery entry.' }
+        if ($entry -isnot [hashtable] -or $entry.path -notmatch '^(\.mm-vfx/manifest\.json|addons/mm_gpu_particles/(effect\.gd|gpu_state\.gd|multimesh_lifetime\.gd|particles_3d\.gd|particles_2d\.gd|parameter_access\.gd|scheduler\.gd|value_codec\.gd|plugin\.gd|plugin\.cfg)|effects/modular_particles/[a-z0-9_-]{1,64}/(effect\.res|effect\.glsl\.txt|particles\.tscn|README\.txt|sprite\.res))$' -or $seen.ContainsKey($entry.path) -or $entry.before -cnotmatch '^([0-9a-f]{64})?$' -or $entry.after -cnotmatch '^[0-9a-f]{64}$') { throw 'Invalid recovery entry.' }
         $seen[$entry.path] = $true
     }
     # Preflight the whole rollback before restoring any file.
@@ -141,15 +141,16 @@ try {
     if ($incoming.source_hash -cnotmatch '^[0-9a-f]{64}$') { throw 'Invalid effect source hash.' }
     $id = [string]$incoming.effect_id
     $effectRoot = "effects/modular_particles/$id/"
-    $runtimeNames = @('effect.gd','gpu_state.gd','multimesh_lifetime.gd','particles_3d.gd','scheduler.gd','value_codec.gd','plugin.gd','plugin.cfg')
+    $runtimeNames = @('effect.gd','gpu_state.gd','multimesh_lifetime.gd','particles_3d.gd','particles_2d.gd','parameter_access.gd','scheduler.gd','value_codec.gd','plugin.gd','plugin.cfg')
     $runtimePaths = @($runtimeNames | ForEach-Object { 'addons/mm_gpu_particles/' + $_ })
     $effectPaths = @('effect.res','effect.glsl.txt','particles.tscn','README.txt' | ForEach-Object { $effectRoot + $_ })
-    $allowed = $runtimePaths + $effectPaths + @(($effectRoot + 'demo.tscn'), ($effectRoot + 'user_demo.gd'))
+    $allowed = $runtimePaths + $effectPaths + @(($effectRoot + 'demo.tscn'), ($effectRoot + 'user_demo.gd'), ($effectRoot + 'sprite.res'))
     if ($incoming.files -isnot [hashtable]) { throw 'Invalid export files.' }
     foreach ($path in $incoming.files.Keys) {
         if ($path -cnotin $allowed -or $incoming.files[$path] -cnotmatch '^[0-9a-f]{64}$' -or (Hash (Child $source $path)) -ne $incoming.files[$path]) { throw "Invalid export path/checksum: $path" }
     }
     foreach ($path in ($runtimePaths + $effectPaths)) { if (-not $incoming.files.ContainsKey($path)) { throw "Incomplete bundle: $path" } }
+    if ($incoming.files.ContainsKey($effectRoot + 'sprite.res')) { $effectPaths += ($effectRoot + 'sprite.res') }
     $manifestPath = Child $root '.mm-vfx/manifest.json'
     $manifestBefore = Hash $manifestPath
     $installed = @{format='mm_vfx_install';version=1;target='4.7.2';runtime=@{};effects=@{}}
@@ -160,6 +161,7 @@ try {
         foreach ($oldId in $installed.effects.Keys) {
             if (-not (Valid-Id $oldId)) { throw 'Invalid installed effect ID.' }
             $oldPaths = @('effect.res','effect.glsl.txt','particles.tscn','README.txt' | ForEach-Object { "effects/modular_particles/$oldId/$_" })
+            if ($installed.effects[$oldId].files -is [hashtable] -and $installed.effects[$oldId].files.ContainsKey("effects/modular_particles/$oldId/sprite.res")) { $oldPaths += "effects/modular_particles/$oldId/sprite.res" }
             Check-Files $installed.effects[$oldId].files $oldPaths
         }
     }
@@ -177,7 +179,10 @@ try {
     $addon = Child $root 'addons/mm_gpu_particles'
     if ([IO.Directory]::Exists($addon) -and @($runtimePaths | Where-Object { -not [IO.File]::Exists((Child $root $_)) }).Count) { throw 'Existing addon is incomplete; refusing to overlay it.' }
     $previous = @{}
-    if ($installed.effects.ContainsKey($id)) { $previous = $installed.effects[$id].files }
+    if ($installed.effects.ContainsKey($id)) {
+        $previous = $installed.effects[$id].files
+        if ($previous.ContainsKey($effectRoot + 'sprite.res') -and -not $incoming.files.ContainsKey($effectRoot + 'sprite.res')) { throw 'Removing an installed sprite is not automatic; use a new effect ID.' }
+    }
     $newFiles = @{}
     foreach ($path in $effectPaths) {
         $current = Hash (Child $root $path)

@@ -46,7 +46,7 @@ environment/defaults/default_clear_color=Color(0,0,0,1)
             shutil.copytree(ROOT / path, project / path, ignore=shutil.ignore_patterns('.git', '.godot', '__pycache__'))
     if args.runtime:
         runtime = args.runtime.resolve()
-        required = ['effect.gd', 'particles_3d.gd', 'value_codec.gd', 'gpu_state.gd',
+        required = ['effect.gd', 'particles_3d.gd', 'particles_2d.gd', 'parameter_access.gd', 'value_codec.gd', 'gpu_state.gd',
                     'scheduler.gd', 'multimesh_lifetime.gd', 'plugin.gd', 'plugin.cfg']
         if any(not (runtime / name).is_file() for name in required):
             raise SystemExit('Incomplete runtime checkout: ' + str(runtime))

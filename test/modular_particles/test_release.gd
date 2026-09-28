@@ -131,6 +131,12 @@ func run() -> void:
 	if basic_compiled.effect != null:
 		var exported: Dictionary = await Exporter.new().export_bundle(basic_compiled.effect,output.path_join("godot-basic-example"),128)
 		check(exported.error.is_empty(),"standard module export from release EXE: "+exported.error)
+		var sprite := Image.create(8,8,false,Image.FORMAT_RGBA8)
+		sprite.fill(Color(1.0,0.5,0.1,0.8))
+		var sprite_path := output.path_join("2d-sprite.png")
+		check(sprite.save_png(sprite_path) == OK,"2D release source sprite")
+		exported = await Exporter.new().export_bundle(basic_compiled.effect,output.path_join("godot-2d-example"),128,"",{"render_target":"2d","sprite":sprite_path,"blend_mode":"alpha"})
+		check(exported.error.is_empty(),"2D sprite export from release EXE: "+exported.error)
 	await RenderingServer.frame_post_draw
 	get_tree().root.get_texture().get_image().save_png(output.path_join("standard-editor.png"))
 	var user = window.new_modular_particles()
@@ -149,10 +155,12 @@ func run() -> void:
 	user = window.get_current_project()
 	await frames(40)
 	var user_compiled: Dictionary = await user.compile_document()
-	check(user_compiled.errors.is_empty() and user_compiled.effect != null and user_compiled.effect.format_version == 2,"packaged User compilation after reopen")
+	check(user_compiled.errors.is_empty() and user_compiled.effect != null and user_compiled.effect.format_version == 3,"packaged User compilation after reopen")
 	if user_compiled.effect != null:
 		var exported: Dictionary = await Exporter.new().export_bundle(user_compiled.effect,output.path_join("godot-user-example"),256)
 		check(exported.error.is_empty(),"User export from release EXE: "+exported.error)
+		exported = await Exporter.new().export_bundle(user_compiled.effect,output.path_join("godot-2d-user-example"),256,"",{"render_target":"2d"})
+		check(exported.error.is_empty(),"2D User export from release EXE: "+exported.error)
 	var scroll: ScrollContainer = user.input_box.get_parent().get_parent()
 	scroll.scroll_vertical = 0
 	await frames(3)

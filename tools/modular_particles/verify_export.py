@@ -66,6 +66,11 @@ def main():
         config += '\n[editor_plugins]\nenabled=PackedStringArray("res://addons/mm_gpu_particles/plugin.cfg")\n'
     (project / 'project.godot').write_text(config, encoding='utf-8')
     smoke = 'standalone_user_smoke.gd' if 'effects/modular_particles/user_demo.gd' in manifest['files'] else 'standalone_smoke.gd'
+    if manifest.get('render_target', '3d') == '2d':
+        smoke = 'standalone_2d_smoke.gd'
+        effect_root = 'effects/modular_particles/' + (manifest['effect_id'] + '/' if manifest.get('effect_id') else '')
+        with (project / 'project.godot').open('a', encoding='utf-8') as settings:
+            settings.write('\n[mm_verification]\ndemo="res://' + effect_root + 'demo.tscn"\n')
     shutil.copy2(ROOT / 'test/modular_particles' / smoke, project / 'verify.gd')
     (project / 'verify.tscn').write_text('[gd_scene load_steps=2 format=3]\n[ext_resource type="Script" path="res://verify.gd" id="1"]\n[node name="Verify" type="Node"]\nscript=ExtResource("1")\n', encoding='utf-8')
     (project / 'export_presets.cfg').write_text('''[preset.0]

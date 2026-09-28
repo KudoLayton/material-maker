@@ -39,6 +39,15 @@ func run() -> void:
 	particles.effect = result.effect
 	particles.emitting = false
 	add_child(particles)
+	# Frozen v2 SPIR-V is a stronger regression oracle than the independently
+	# compiled ptex harness (curl noise amplifies driver float differences).
+	var baseline := Particles.new()
+	baseline.effect = load("res://addons/mm_gpu_particles/examples/mmtest/effects/modular_particles/effect.res")
+	baseline.capacity = 128
+	baseline.manual_processing = true
+	baseline.emitting = false
+	baseline.hide()
+	add_child(baseline)
 	var camera := Camera3D.new()
 	camera.position = Vector3(0,0,6)
 	add_child(camera)
@@ -46,12 +55,14 @@ func run() -> void:
 	get_tree().root.size = Vector2i(960,640)
 	for frame in 120:
 		await get_tree().process_frame
-		if particles.ready_for_simulation or not particles.error_text.is_empty(): break
-	check(particles.ready_for_simulation,"mmtest GPU: " + particles.error_text)
-	if particles.ready_for_simulation:
+		if (particles.ready_for_simulation and baseline.ready_for_simulation) or not particles.error_text.is_empty() or not baseline.error_text.is_empty(): break
+	check(particles.ready_for_simulation and baseline.ready_for_simulation,"mmtest GPU: " + particles.error_text + baseline.error_text)
+	if particles.ready_for_simulation and baseline.ready_for_simulation:
 		particles.emit_burst(128)
+		baseline.emit_burst(128)
 		for tick in 40:
 			particles.advance(1.0/60.0)
+			baseline.advance(1.0/60.0)
 			await get_tree().process_frame
 			await RenderingServer.frame_post_draw
 			if tick == 19: get_tree().root.get_texture().get_image().save_png("res://mmtest.png")
@@ -61,12 +72,18 @@ func run() -> void:
 			var steps := tick+1
 			RenderingServer.call_on_render_thread(func():
 				values.modular = state.rd.buffer_get_data(state.owned_buffers[0])
+				values.baseline = state.rd.buffer_get_data(baseline._gpu.owned_buffers[0])
 				values.legacy = Oracle.evaluate(oracle_code,steps)
 				values.done = true)
 			while not values.has("done"): await get_tree().process_frame
 			check(values.legacy.error.is_empty(),"legacy oracle compute: " + values.legacy.error)
 			if not values.legacy.error.is_empty(): break
-			var comparisons := {"position":[0,3,0.003],"velocity":[3,3,0.03],"scale":[6,3,0.00001],"age":[9,1,0.00001],"initial_velocity":[10,3,0.00001],"spherical_uv":[13,2,0.00001],"curl_velocity":[15,3,0.03]}
+			check(values.modular == values.baseline,"v3 matches frozen v2 state bit-for-bit at step "+str(steps))
+			# Measured frozen v2 D3D12 baseline differs from the ptex harness by
+			# 0.03495395 m/s after 40 steps; Vulkan remains below 0.03. This bound
+			# applies only to that cross-compiler oracle, not the exact v2 check.
+			var curl_tolerance := 0.04 if RenderingServer.get_current_rendering_driver_name() == "d3d12" else 0.03
+			var comparisons := {"position":[0,3,0.003],"velocity":[3,3,curl_tolerance],"scale":[6,3,0.00001],"age":[9,1,0.00001],"initial_velocity":[10,3,0.00001],"spherical_uv":[13,2,0.00001],"curl_velocity":[15,3,curl_tolerance]}
 			for attribute in comparisons:
 				var comparison: Array = comparisons[attribute]
 				var max_error := 0.0
@@ -76,9 +93,10 @@ func run() -> void:
 						var a: float = values.modular.decode_float(((offset+component)*128+i)*4)
 						var b: float = values.legacy.data.decode_float((i*20+comparison[0]+component)*4)
 						max_error = maxf(max_error,absf(a-b)) if is_finite(a) and is_finite(b) else INF
-				check(max_error <= comparison[2],"step %d %s max error %g" % [steps,attribute,max_error])
+				check(max_error <= comparison[2],"step %d %s max error %.8f" % [steps,attribute,max_error])
 				print("MODULAR_MMTEST_COMPARE step=",steps," field=",attribute," max_error=",max_error)
 	particles.queue_free()
+	baseline.queue_free()
 	camera.queue_free()
 	for frame in 5: await get_tree().process_frame
 	await finish()

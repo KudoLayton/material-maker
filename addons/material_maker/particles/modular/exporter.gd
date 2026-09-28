@@ -3,7 +3,8 @@ extends RefCounted
 ## replaced. A preflight conflict aborts before any target file is changed.
 const Document = preload("document.gd")
 const MANIFEST := "mm_particles_manifest.json"
-const RUNTIME := ["effect.gd","gpu_state.gd","multimesh_lifetime.gd","particles_3d.gd","scheduler.gd","value_codec.gd","plugin.gd","plugin.cfg"]
+const Options = preload("export_options.gd")
+const RUNTIME := ["effect.gd","gpu_state.gd","multimesh_lifetime.gd","particles_3d.gd","particles_2d.gd","parameter_access.gd","scheduler.gd","value_codec.gd","plugin.gd","plugin.cfg"]
 const PROJECT := """config_version=5
 [application]
 config/name="Modular GPU Particles"
@@ -16,8 +17,8 @@ renderer/rendering_method="forward_plus"
 environment/defaults/default_clear_color=Color(0,0,0,1)
 """
 
-func export_effect(effect: MMParticleEffect, destination: String, capacity: int = 4096) -> String:
-	var result := await export_bundle(effect,destination,capacity)
+func export_effect(effect: MMParticleEffect, destination: String, capacity: int = 4096, options: Dictionary = {}) -> String:
+	var result := await export_bundle(effect,destination,capacity,"",options)
 	return ("Exported standalone runtime: " + destination) if result.error.is_empty() else result.error
 
 static func valid_effect_id(id: String) -> bool:
@@ -26,12 +27,21 @@ static func valid_effect_id(id: String) -> bool:
 		if character not in "abcdefghijklmnopqrstuvwxyz0123456789_-": return false
 	return true
 
-func export_bundle(effect: MMParticleEffect, destination: String, capacity: int = 4096, effect_id: String = "") -> Dictionary:
+func export_bundle(effect: MMParticleEffect, destination: String, capacity: int = 4096, effect_id: String = "", options: Dictionary = {}) -> Dictionary:
+	var normalized := Options.normalize(options)
+	if not normalized.error.is_empty(): return problem(normalized.error)
+	var settings: Dictionary = normalized.values
+	var is_2d: bool = settings.render_target == "2d"
+	var sprite: ImageTexture
+	if not settings.sprite.is_empty():
+		var loaded := Options.load_sprite(settings.sprite)
+		if not loaded.error.is_empty(): return problem(loaded.error)
+		sprite = ImageTexture.create_from_image(loaded.image)
 	if not effect_id.is_empty() and not valid_effect_id(effect_id): return problem("Invalid effect ID")
 	if effect == null: return problem("No compiled effect")
 	var error := effect.validation_error()
 	if not error.is_empty(): return problem(error)
-	error = preload("res://addons/mm_gpu_particles/gpu_state.gd").size_error(effect,capacity)
+	error = preload("res://addons/mm_gpu_particles/gpu_state.gd").size_error(effect,capacity,2 if is_2d else 3)
 	if not error.is_empty(): return problem(error)
 	var root := ProjectSettings.globalize_path(destination).simplify_path()
 	if not root.is_absolute_path(): return problem("Export destination must be absolute")
@@ -76,11 +86,28 @@ position = Vector3(1.1,0,0)
 position = Vector3(0,0.8,6)
 current = true
 """.to_utf8_buffer()
+	if is_2d:
+		var resources := '[ext_resource type="Script" path="res://addons/mm_gpu_particles/particles_2d.gd" id="1"]\n[ext_resource type="Resource" path="res://effects/modular_particles/effect.res" id="2"]\n'
+		if sprite != null:
+			resources += '[ext_resource type="Texture2D" path="res://effects/modular_particles/sprite.res" id="3"]\n'
+			files["effects/modular_particles/sprite.res"] = PackedByteArray()
+		files["effects/modular_particles/particles.tscn"] = ('[gd_scene load_steps=%d format=3]\n' % (4 if sprite != null else 3) + resources + '[node name="MMGPUParticles2D" type="Node2D"]\nscript = ExtResource("1")\neffect = ExtResource("2")\ncapacity = %d\npixels_per_unit = %s\nflip_y = %s\nblend_mode = %d\n' % [capacity,var_to_str(settings.pixels_per_unit),str(settings.flip_y).to_lower(),Options.BLENDS.find(settings.blend_mode)] + ('texture = ExtResource("3")\n' if sprite != null else '')).to_utf8_buffer()
+		var has_users := not effect.user_parameters.is_empty()
+		var demo := '[gd_scene load_steps=%d format=3]\n[ext_resource type="PackedScene" path="res://effects/modular_particles/particles.tscn" id="1"]\n' % (3 if has_users else 2)
+		if has_users:
+			demo += '[ext_resource type="Script" path="res://effects/modular_particles/user_demo.gd" id="2"]\n'
+			var controls := FileAccess.get_file_as_string("res://addons/material_maker/particles/modular/user_demo.gd").replace("extends Node3D","extends Node2D").replace("func target() -> MMGPUParticles3D:","func target() -> MMGPUParticles2D:")
+			files["effects/modular_particles/user_demo.gd"] = controls.to_utf8_buffer()
+		demo += '[node name="Demo" type="Node2D"]\n' + ('script = ExtResource("2")\n' if has_users else '')
+		demo += '[node name="Particles" parent="." instance=ExtResource("1")]\n'
+		if has_users: demo += 'position = Vector2(-110, 0)\n[node name="Second" parent="." instance=ExtResource("1")]\nposition = Vector2(110, 0)\n'
+		demo += '[node name="Camera" type="Camera2D" parent="."]\nzoom = Vector2(0.5, 0.5)\n'
+		files["effects/modular_particles/demo.tscn"] = demo.to_utf8_buffer()
 	files["effects/modular_particles/README.txt"] = """Godot 4.7.2 stable, Forward+, Vulkan or D3D12 (Windows x64). No Material Maker/autoload required.
 Instance particles.tscn in your scene, or run demo.tscn. The binary effect
 contains precompiled SPIR-V; effect.glsl.txt is diagnostic source only.
 MMGPUParticles3D: play/pause/stop/restart/emit_burst/set_parameter.
-Format-2 effects expose User Parameters in the Inspector and support
+Format-2/3 effects expose User Parameters in the Inspector and support
 set/get/reset_user_parameter("User.Name", ...) plus *_by_id variants.
 User-bound inputs reject set_parameter; use the User API. Values are per-node.
 User demos contain two instances and live controls; graphs/compiler are not needed.
@@ -88,6 +115,22 @@ Set capacity and visibility_aabb explicitly. Opaque/additive/cutout only;
 transparent depth sorting is not supported. Runtime scripts are required.
 Do not edit manifest-owned files before re-exporting. Export into a new
 folder if a checksum conflict occurs. project.godot is never overwritten.
+""".to_utf8_buffer()
+	if is_2d:
+		files["effects/modular_particles/README.txt"] = """Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan or D3D12.
+MMGPUParticles2D uses the same v3 effect/vec3 simulation as MMGPUParticles3D.
+Instance particles.tscn in a 2D scene, or run demo.tscn (Camera2D included).
+No Material Maker, graph compiler or original PNG is needed at runtime.
+Pixels Per Unit defaults to 100; Flip Y defaults to true (XY projection).
+User vector types remain unchanged. Play/pause/stop/restart/emit_burst and
+per-node User Parameters work as in 3D. Editor preview is off by default.
+Visibility Rect is local pixels in Local mode, canvas pixels in World mode.
+World emission follows emitter position only, as in the existing 3D runtime.
+2D draws Capacity instances, with dead slots collapsed on the GPU; size Capacity
+sensibly. No particle depth/Y sorting, collision or sprite sheet animation.
+Alpha/additive/opaque/cutout and CanvasItem draw materials are supported.
+Do not overwrite project.godot. Re-export only into checksum-owned output;
+a different render target or modified file requires a new destination folder.
 """.to_utf8_buffer()
 	var effect_root := "effects/modular_particles/"
 	if not effect_id.is_empty():
@@ -107,6 +150,7 @@ folder if a checksum conflict occurs. project.godot is never overwritten.
 		if old.get("format") != "mm_gpu_particles_export" or old.get("version") != 1 or not old.get("files") is Dictionary:
 			return problem("Unrecognized export manifest; nothing was changed")
 		if old.get("effect_id", "") != effect_id: return problem("Export directory belongs to a different effect ID; use a new directory")
+		if old.get("render_target","3d") != settings.render_target: return problem("Export directory belongs to a different render target; use a new directory")
 		for checksum in old.files.values():
 			if not checksum is String or checksum.length() != 64: return problem("Invalid manifest checksum")
 	for relative in files:
@@ -145,12 +189,16 @@ folder if a checksum conflict occurs. project.godot is never overwritten.
 			if ResourceSaver.save(packaged,staged,ResourceSaver.FLAG_COMPRESS) != OK:
 				_cleanup(stage)
 				return problem("Cannot save compiled effect")
+		elif relative.ends_with("sprite.res") and sprite != null:
+			if ResourceSaver.save(sprite,staged,ResourceSaver.FLAG_COMPRESS) != OK:
+				_cleanup(stage)
+				return problem("Cannot save embedded sprite")
 		else:
 			error = _write(staged,files[relative])
 			if not error.is_empty():
 				_cleanup(stage)
 				return problem(error)
-	var manifest := {"format":"mm_gpu_particles_export","version":1,"target":"4.7.2","source_hash":effect.source_hash,"files":{}}
+	var manifest := {"format":"mm_gpu_particles_export","version":1,"target":"4.7.2","render_target":settings.render_target,"effect_version":effect.format_version,"source_hash":effect.source_hash,"files":{}}
 	if not effect_id.is_empty(): manifest.effect_id = effect_id
 	for relative in files: manifest.files[relative] = FileAccess.get_sha256(stage.path_join(relative))
 	error = _write(stage.path_join(MANIFEST),JSON.stringify(manifest,"\t").to_utf8_buffer())

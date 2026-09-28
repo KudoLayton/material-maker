@@ -42,7 +42,7 @@ def main():
         print(f'PASS {count}: {command} exit={expected}', flush=True)
         return report
 
-    assert run('capabilities', environment=True)['data']['effect_version'] == 2
+    assert run('capabilities', environment=True)['data']['effect_version'] == 3
     run('create', ['-Template', 'basic_fountain', '-Output', source])
     original = source.read_bytes()
     run('create', ['-Template', 'sphere_burst', '-Output', source], expected=5)

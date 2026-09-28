@@ -27,7 +27,7 @@ func run() -> void:
 	var legacy := Fixtures.basic()
 	var untouched := legacy.duplicate(true)
 	var original := Compiler.new().compile(legacy)
-	check(original.errors.is_empty() and original.effect.format_version == 2,"v2 compilation without Users")
+	check(original.errors.is_empty() and original.effect.format_version == 3,"v3 compilation without Users")
 	check(legacy == untouched and legacy.user_parameters.is_empty(),"v2 validation/compilation is nonmutating")
 	var unsupported := legacy.duplicate(true)
 	unsupported.version = 1
@@ -58,7 +58,7 @@ func run() -> void:
 	check(doc.stages.spawn[0].parameters.speed == 9.0,"binding preserves constant")
 	check(Users.references(doc,id).size() == 1,"reference enumeration")
 	var compiled := Compiler.new().compile(doc)
-	check(compiled.errors.is_empty() and compiled.effect.format_version == 2,"v2 compiled")
+	check(compiled.errors.is_empty() and compiled.effect.format_version == 3,"v3 compiled")
 	check(compiled.effect.parameter("spawn1/speed").user_id == id and compiled.effect.parameter("spawn1/speed").default == 3.0,"runtime binding and effective default")
 	check(compiled.effect.compute_source == original.effect.compute_source,"binding does not change GLSL or GPU slots")
 	check(compiled.effect.parameters.map(func(p): return [p.id,p.type,p.offset]) == original.effect.parameters.map(func(p): return [p.id,p.type,p.offset]),"ABI unchanged")

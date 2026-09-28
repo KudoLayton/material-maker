@@ -46,7 +46,7 @@ func run() -> void:
 	check(editor.document.stages.spawn.all(func(i): return not i.get("parameters",{}).has("bound")) and editor.document.stages.update.all(func(i): return not i.get("input_bindings",{}).has("bound")),"constant and binding removed across both stages")
 	check(editor.undoredo.cursor == cursor+1,"input deletion single undo")
 	var compiled: Dictionary = await editor.compile_document()
-	check(compiled.errors.is_empty() and compiled.effect.format_version == 2,"v2 compiles after cleanup")
+	check(compiled.errors.is_empty() and compiled.effect.format_version == 3,"v3 compiles after cleanup")
 	editor.undoredo.undo()
 	await frames(60)
 	check(editor.document == before and Users.references(editor.document,added.user_id).size() == 3,"undo restores all User connections and literals")

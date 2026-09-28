@@ -19,7 +19,7 @@ func run() -> void:
 	check(result.errors.is_empty(),"User example compilation: "+str(result.errors))
 	if result.effect != null:
 		var effect: MMParticleEffect = result.effect
-		check(effect.format_version == 2 and effect.user_parameters.size() == 3,"versioned User metadata")
+		check(effect.format_version == 3 and effect.user_parameters.size() == 3,"versioned User metadata")
 		var speed := effect.user_parameter("User.Speed")
 		check(effect.parameters.filter(func(p): return p.get("user_id") == speed.id).size() == 2,"Speed shared by both cone bounds")
 		var destination := ProjectSettings.globalize_path("res://user-standalone")

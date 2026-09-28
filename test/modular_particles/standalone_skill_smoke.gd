@@ -62,7 +62,7 @@ func run() -> void:
 		get_tree().quit(1)
 		return
 	check(a.effect == b.effect and a.effect != c.effect,"shared fountain, separate burst resource")
-	check(a.effect.format_version == 2 and c.effect.format_version == 2,"latest runtime format")
+	check(a.effect.format_version == 3 and c.effect.format_version == 3,"latest runtime format")
 	check(a.effect.shader_file != null and c.effect.shader_file != null,"precompiled SPIR-V")
 	check(a.get_user_parameter("User.Speed") == 4.0 and b.get_user_parameter("User.Speed") == 4.0,"edited source default reaches game")
 	var defaults := a.effect.user_parameters.duplicate(true)

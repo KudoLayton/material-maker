@@ -13,7 +13,7 @@ layout(set=0,binding=5,std430) readonly buffer Parameters { uint params[]; };
 layout(push_constant,std430) uniform Push {
  uint capacity; uint phase; uint offset; uint scan_read;
  float delta; float time; uint seed; uint spawn_count;
- uint spawn_base; uint surfaces; uint unused0; uint unused1;
+ uint spawn_base; uint surfaces; uint render_dimension; uint unused1;
 } p;
 struct ParticleState {
 @FIELDS@
@@ -87,6 +87,36 @@ void main() {
   return;
  }
  if(p.phase==3u) {
+  if(p.render_dimension==2u) {
+   uint count=prefix(p.capacity-1u);
+   // Clear only the tail, not dead source indices: compaction may write those.
+   if(i>=count) for(uint c=0u;c<16u;c++) instances[i*16u+c]=0.0;
+   if(!@ALIVE@) return;
+   uint target=(prefix(i)-1u)*16u;
+   float units=uintBitsToFloat(params[18]);
+   float fy=params[19]!=0u ? -1.0 : 1.0;
+   mat3 b=mm_basis(@ROTATION@);
+   b[0]*=@SCALE@.x; b[1]*=@SCALE@.y;
+   // F * B.xy * F converts both coordinate bases (keeps sprite UV upright).
+   vec2 x=units*vec2(b[0].x,fy*b[0].y);
+   vec2 y=units*vec2(fy*b[1].x,b[1].y);
+   vec2 pos=units*vec2(@POSITION@.x,fy*@POSITION@.y);
+   if(params[17]!=0u) {
+    mat2 inv=mat2(uintBitsToFloat(params[20]),uintBitsToFloat(params[24]),
+                  uintBitsToFloat(params[21]),uintBitsToFloat(params[25]));
+    pos=inv*pos+vec2(uintBitsToFloat(params[23]),uintBitsToFloat(params[27]));
+    x=inv*x; y=inv*y;
+   }
+   instances[target]=x.x; instances[target+1u]=y.x;
+   instances[target+2u]=0.0; instances[target+3u]=pos.x;
+   instances[target+4u]=x.y; instances[target+5u]=y.y;
+   instances[target+6u]=0.0; instances[target+7u]=pos.y;
+   for(uint c=0u;c<4u;c++) {
+    instances[target+8u+c]=@COLOR@[c];
+    instances[target+12u+c]=@RENDER_CUSTOM@[c];
+   }
+   return;
+  }
   if(i==0u) {
    uint count=prefix(p.capacity-1u);
    for(uint surface=0u;surface<p.surfaces;surface++) commands[surface*5u+1u]=count;

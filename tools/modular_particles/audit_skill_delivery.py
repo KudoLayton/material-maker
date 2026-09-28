@@ -21,7 +21,7 @@ def main():
     for entry in protected: assert sha(Path(entry['Path'])) == entry['Hash'].lower(), entry['Path']
     app = args.build / 'MaterialMaker'
     package = json.loads((app / 'vfx-package.json').read_text(encoding='utf-8'))
-    assert package['document_version'] == package['effect_version'] == 2
+    assert package['document_version'] == 2 and package['effect_version'] == 3
     assert package['cli_contract_version'] == 1
     expected_runtime = {name:sha(ROOT / 'addons/mm_gpu_particles' / name) for name in package['runtime_files']}
     assert expected_runtime == package['runtime_files']

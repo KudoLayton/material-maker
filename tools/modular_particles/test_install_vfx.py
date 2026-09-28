@@ -6,6 +6,8 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import struct
+import zlib
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / 'skills/godot-modular-vfx/scripts/Install-VfxEffect.ps1'
@@ -157,6 +159,24 @@ def main():
     before = snapshot(recovery)
     install(recovery, recover=True, success=False)
     assert snapshot(recovery) == before
+    # A 2D image dependency is installed, verified on subsequent installs,
+    # and protected against edits just like effect.res (not left in staging).
+    def png_chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data))
+    sprite = root / 'sprite.png'
+    sprite.write_bytes(b'\x89PNG\r\n\x1a\n' + png_chunk(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 6, 0, 0, 0)) + png_chunk(b'IDAT', zlib.compress(b'\x00\xff\x00\x00\xff')) + png_chunk(b'IEND', b''))
+    flat = root / 'bundle-flat'
+    cli('export', '--input', a, '--output', flat, '--effect-id', 'flat', '--render-target', '2d', '--sprite', sprite, gpu=True)
+    game2d = project('game-2d')
+    install(game2d, flat, apply=True)
+    installed_sprite = game2d / 'effects/modular_particles/flat/sprite.res'
+    assert installed_sprite.read_bytes() == (flat / 'effects/modular_particles/flat/sprite.res').read_bytes()
+    install(game2d, flat, apply=True)
+    install(game2d, bundle_a, apply=True)
+    installed_sprite.write_bytes(installed_sprite.read_bytes() + b'user edit')
+    protected = snapshot(game2d)
+    install(game2d, flat, apply=True, success=False)
+    assert snapshot(game2d) == protected
     print(f'MODULAR_INSTALL PASS operations={count} root={root}', flush=True)
 
 

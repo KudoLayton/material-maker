@@ -1,5 +1,29 @@
 # 검증 기록
 
+## 공통 v3 시뮬레이션과 2D 출력 (2026-09-29)
+
+검증 배포: **`build/modular-release-20260929-010841/`**. MaterialMaker EXE, GodotAddon.zip, Godot2DExample(PNG 포함), Godot2DUserParametersExample 및 기존 3D 예제를 포함합니다. `build-info.json`과 `verification/backend-matrix/results.json`의 complete/passed 및 34개 게이트 PASS를 확인했습니다. 기존 설치·빌드·사용자 설정은 덮어쓰지 않았습니다.
+
+| 검사 | 관측 결과 |
+|---|---|
+| Windows Material Maker Release 자체 검사 | 265 checks PASS, editor=false |
+| Vulkan/D3D12 필수 배포 매트릭스 | 총 34 gates PASS; v2 애드온 예제, 2D PNG/User 게임의 실제 Windows Release, Inspector, CLI, 설치·복구, skill delivery 포함 |
+| 전체 편집기·기존 ptex 회귀 | 각 드라이버 49/49 PASS. 최종 임시 프로젝트: `mm-modular-app-3j466ac7` / `mm-modular-app-momx10y3` |
+| 공통 v3/v2 GPU 출력 | 각 드라이버 53 checks PASS. 동일 상태, 64-byte packing, XY/Y 반전·회전·scale·CustomData, sparse compaction/tail clear, 사망·재방출, v2 SPIR-V 실행 |
+| 2D 런타임 | 각 드라이버 46 checks PASS. 실제 픽셀·PNG UV/알파·합성·원형·custom material·z_index·Camera2D·CanvasLayer·bounds·Local/World·정지 이동·reparent·override 직렬화 |
+| 2D UI/내보내기 | 각 드라이버 34 checks PASS. 옵션/원본 불변, embedded sprite, manifest·차원 충돌·사용자 수정 보호 |
+| CLI | 각 드라이버 33 commands PASS. 2D/3D source hash 일치·잘못된 옵션·출력 보호 |
+| 설치 도구 | 24 operations PASS. 2D sprite 설치·재설치·다른 효과 추가·변조 거부 및 기존 복구/보호 시나리오 |
+| 컴파일러 / User 모델 | headless 35 / 68 checks PASS |
+| 애드온 단독 2D 예제 | `examples/basic2d`의 v3·PNG 스냅샷을 Material Maker 없이 import/Windows Release 실행: 양쪽 드라이버 각 10 checks PASS |
+
+100k 입자 + 32 vec4 Attribute(153 components), RTX 3070: 2D 계산 영역 GPU median **Vulkan 0.645ms / D3D12 1.293ms**, 3D **0.666ms / 1.186ms**. 2D 할당 68,400,136 bytes, 3D 70,000,152 bytes. 별도의 100k 고정 제출·작은 쿼드 Canvas 검사 GPU median **0.133ms / 0.242ms**. 시간 측정 영역에 readback 없음. 이 특정 부하의 실측이며 일반 효과·다른 GPU의 FPS 보장이 아닙니다. 전체 분포는 backend-matrix의 performance 로그에 있습니다.
+
+확장 회귀에서 기존 테스트 문제 두 가지도 수정했습니다. ptex oracle과 동결 v2 효과의 D3D12 curl 비교는 40 step에서 이미 0.03495395 m/s 차이가 있었으며, 새 v3도 동일했습니다. v2/v3의 전체 Attribute를 **비트 단위로 비교하는 회귀 검사**를 추가했고 1/10/20/40 step에서 양쪽 드라이버 모두 일치했습니다. 독립 ptex oracle의 D3D12 curl 허용치는 0.04로 명시하고 나머지 기준은 유지했습니다. 지원하지 않는 `%g` 진단 포맷과 legacy compiler 테스트의 renderer thread 종료 경쟁도 수정했습니다.
+
+Standalone/GPU/Release 게이트는 오류·누수 로그를 실패 처리합니다. 전체 Material Maker 앱 검사에는 기존 import/종료 경고가 포함될 수 있으며 전체 로그를 보존합니다. 테스트와 빌드 도구는 새 임시 프로젝트를 사용합니다. 실패했던 이전 `modular-release-20260929-005806`은 검증 완료 배포가 아니며 사용하지 마세요.
+
+
 대상: Godot `4.7.2.stable.official.ed1daf0bf`, Windows x64, Forward+, **Vulkan 1.4.341 및 D3D12 12_0**, NVIDIA GeForce RTX 3070.
 
 ## D3D12 지원·필수 양쪽 백엔드 게이트 (2026-09-27)

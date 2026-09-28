@@ -9,6 +9,7 @@ const OPTIONS := {
 	"capabilities": [], "inspect": ["input"], "create": ["template", "output"],
 	"validate": ["input"], "export": ["input", "output", "effect-id", "capacity"]
 }
+const EXPORT_OPTIONAL := ["render-target","pixels-per-unit","flip-y","blend-mode","sprite"]
 var report := {"contract_version":1,"command":"","ok":false,"exit_code":0,"diagnostics":[],"data":{}}
 var report_path := ""
 
@@ -53,14 +54,14 @@ func parse(args: PackedStringArray) -> Dictionary:
 		fail(2,"arguments","Unknown command: " + command)
 		return {}
 	for name in options:
-		if name not in ["mpfx-command","report"] and name not in OPTIONS[command]:
+		if name not in ["mpfx-command","report"] and name not in OPTIONS[command] and not (command == "export" and name in EXPORT_OPTIONAL):
 			fail(2,"arguments","Unsupported option for %s: %s" % [command,name])
 			return {}
 	for required in OPTIONS[command]:
 		if required != "capacity" and not options.has(required):
 			fail(2,"arguments","Missing --" + required)
 			return {}
-	for name in ["input","output","report"]:
+	for name in ["input","output","report","sprite"]:
 		if not options.has(name): continue
 		var problem := path_error(options[name])
 		if not problem.is_empty():
@@ -130,7 +131,9 @@ func capabilities() -> Dictionary:
 	for name in Exporter.RUNTIME:
 		checksums[name] = FileAccess.get_sha256("res://addons/mm_gpu_particles/" + name)
 	return {"app_version":ProjectSettings.get_setting("application/config/actual_release",""),
-		"engine":Engine.get_version_info().string,"target":"4.7.2","document_version":2,"effect_version":2,
+		"engine":Engine.get_version_info().string,"target":"4.7.2","document_version":2,"effect_version":3,
+		"render_targets":["3d","2d"],"runtime_effect_versions":{"3d":[2,3],"2d":[3]},
+		"export_optional_options":EXPORT_OPTIONAL,
 		"module_version":1,"export_manifest_version":1,"templates":TEMPLATES,
 		"modules":Document.load_file("res://material_maker/panels/modular_particles/standard/catalog.json").get("modules",[]),
 		"runtime_id":JSON.stringify(checksums).sha256_text(),"runtime_files":checksums,
@@ -167,6 +170,26 @@ func execute(options: Dictionary) -> void:
 	if command == "inspect":
 		report.data = document
 		return
+	var export_options := {}
+	if command == "export":
+		for key in EXPORT_OPTIONAL:
+			if not options.has(key): continue
+			var value = options[key]
+			if key == "pixels-per-unit":
+				if not str(value).is_valid_float():
+					fail(2,"arguments","Invalid pixels-per-unit")
+					return
+				value = float(value)
+			if key == "flip-y":
+				if value not in ["true","false"]:
+					fail(2,"arguments","Flip Y must be true or false")
+					return
+				value = value == "true"
+			export_options[key.replace("-","_")] = value
+		var normalized := Exporter.Options.normalize(export_options)
+		if not normalized.error.is_empty():
+			fail(2,"arguments",normalized.error)
+			return
 	var capacity := int(document.get("preview_capacity",4096))
 	if options.has("capacity"):
 		if not str(options.capacity).is_valid_int() or int(options.capacity) < 1:
@@ -191,15 +214,15 @@ func execute(options: Dictionary) -> void:
 	report.data = {"document_version":2,"effect_version":compiled.effect.format_version,"source_hash":compiled.effect.source_hash,
 		"parameters":compiled.effect.parameters,"user_parameters":compiled.effect.user_parameters,"gpu_compiled":false}
 	if command == "export":
-		var size_problem: String = preload("res://addons/mm_gpu_particles/gpu_state.gd").size_error(compiled.effect,capacity)
+		var size_problem: String = preload("res://addons/mm_gpu_particles/gpu_state.gd").size_error(compiled.effect,capacity,2 if export_options.get("render_target","3d") == "2d" else 3)
 		if not size_problem.is_empty():
 			fail(3,"capacity",size_problem)
 			return
-		var result := await Exporter.new().export_bundle(compiled.effect,options.output,capacity,options["effect-id"])
+		var result := await Exporter.new().export_bundle(compiled.effect,options.output,capacity,options["effect-id"],export_options)
 		if not result.error.is_empty():
 			fail(3 if result.error.begins_with("Compute compilation failed") else 5,"export",result.error)
 			return
-		report.data.merge({"gpu_compiled":true,"rendering_driver":RenderingServer.get_current_rendering_driver_name(),"output":options.output,"manifest":result.manifest,"effect_id":options["effect-id"]},true)
+		report.data.merge({"render_target":export_options.get("render_target","3d"),"gpu_compiled":true,"rendering_driver":RenderingServer.get_current_rendering_driver_name(),"output":options.output,"manifest":result.manifest,"effect_id":options["effect-id"]},true)
 
 func run(args: PackedStringArray) -> void:
 	var options := parse(args)

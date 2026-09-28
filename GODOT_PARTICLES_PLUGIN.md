@@ -1,5 +1,7 @@
 # Godot에서 Modular GPU Particles 사용하기
 
+**2D 지원:** Export에서 2D를 선택하면 `MMGPUParticles2D` 씬을 생성합니다. 신규 v3 효과의 동일한 시뮬레이션을 2D/3D 노드가 공유합니다. [2D 좌표·PNG·CLI 안내](VFX_2D_EXPORT.md). 아래 기본 설치 예시는 3D 기준입니다.
+
 ## 역할과 필수 조건
 
 - **효과 편집:** 별도 Material Maker 앱에서 `.mpfx` 모듈 그래프를 편집합니다.
@@ -86,7 +88,7 @@ $Particles.set_user_parameter("User.Tint", Color(1, 0, 0, 1))
 $Particles.reset_user_parameter("User.Speed")
 ```
 
-ID 기반 `*_by_id` API도 지원합니다. User에 연결된 입력은 기존 `set_parameter()`로 덮어쓸 수 없으며 `false`를 반환합니다. 값 변경은 다음 Step에 기존 buffer로 전달하여 재시작/셰이더 재컴파일 없이 적용합니다. **v2 효과만 지원하며 호환 애드온과 함께** 배포해야 합니다. v1·버전 누락·미지원 미래 버전은 자동 변환 없이 거부합니다. [User 편집·타입·최신 포맷 안내](USER_PARTICLE_PARAMETERS.md)를 참고하세요.
+ID 기반 `*_by_id` API도 지원합니다. User에 연결된 입력은 기존 `set_parameter()`로 덮어쓸 수 없으며 `false`를 반환합니다. 값 변경은 다음 Step에 기존 buffer로 전달하여 재시작/셰이더 재컴파일 없이 적용합니다. **신규 효과는 v3이며 호환 애드온과 함께** 배포해야 합니다. 기존 v2 효과는 3D에서 계속 실행할 수 있습니다. v1·버전 누락·미지원 미래 버전은 자동 변환 없이 거부합니다. [User 편집·타입·최신 포맷 안내](USER_PARTICLE_PARAMETERS.md)를 참고하세요.
 
 ## 주의 사항
 

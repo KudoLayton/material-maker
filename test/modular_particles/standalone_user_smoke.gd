@@ -38,7 +38,7 @@ func run() -> void:
 	if resource == null or not resource.validation_error().is_empty():
 		get_tree().quit(1)
 		return
-	check(resource.format_version == 2 and resource.user_parameters.size() == 3,"v2 and three public definitions")
+	check(resource.format_version == 3 and resource.user_parameters.size() == 3,"v3 and three public definitions")
 	check(resource.shader_file != null and not resource.shader_file.get_spirv().bytecode_compute.is_empty(),"SPIR-V persisted")
 	var demo = load("res://effects/modular_particles/demo.tscn").instantiate()
 	var a: MMGPUParticles3D = demo.get_node("Particles")

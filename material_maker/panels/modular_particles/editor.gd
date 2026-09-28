@@ -1066,6 +1066,17 @@ func save_module() -> void:
 	status.text = "Module saved" if Document.save_file(path,module_payload(current_module)) == OK else "Module save failed"
 
 func export_effect() -> void:
+	var dialog = preload("export_dialog.gd").new()
+	add_child(dialog)
+	dialog.setup(self)
+	dialog.popup_centered()
+	var options: Dictionary = await dialog.options_selected
+	dialog.queue_free()
+	if options.is_empty(): return
+	var normalized := preload("res://addons/material_maker/particles/modular/export_options.gd").normalize(options)
+	if not normalized.error.is_empty():
+		status.text = normalized.error
+		return
 	var result := await compile_document()
 	if not result.errors.is_empty():
 		status.text = str(result.errors)
@@ -1073,4 +1084,4 @@ func export_effect() -> void:
 	var path := await choose_file(FileDialog.FILE_MODE_OPEN_DIR,"*")
 	if path.is_empty(): return
 	var exporter = load("res://addons/material_maker/particles/modular/exporter.gd").new()
-	status.text = await exporter.export_effect(result.effect,path,int(document.get("preview_capacity",4096)))
+	status.text = await exporter.export_effect(result.effect,path,int(document.get("preview_capacity",4096)),options)

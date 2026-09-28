@@ -57,14 +57,17 @@ def main():
         if not passed: raise SystemExit('Backend support gate failed: ' + str(log))
 
     run('backend-guard', TOOLS / 'test_render_backend.py')
+    run('installer', TOOLS / 'test_install_vfx.py', '--app', args.build.resolve() / 'MaterialMaker/MaterialMaker.exe')
     for driver in ['vulkan', 'd3d12']:
         flags = ['--godot', args.godot.resolve(), '--rendering-driver', driver]
-        for test in ['gpu_probe', 'test_shader', 'test_runtime', 'test_render', 'test_user_runtime', 'test_performance']:
+        for test in ['gpu_probe', 'test_shader', 'test_runtime', 'test_render', 'test_user_runtime', 'test_dimensions', 'test_runtime_2d', 'test_performance', 'test_performance_2d']:
             run(driver + '-' + test, TOOLS / 'run_tests.py', *flags, '--runtime', args.runtime.resolve(), '--test', test)
         run(driver + '-standard-modules', TOOLS / 'run_app_tests.py', *flags, '--runtime', args.runtime.resolve(),
-            '--test', 'test_standard_gpu,test_standard_performance,test_standard_examples')
+            '--test', 'test_standard_gpu,test_standard_performance,test_standard_examples,test_export_2d')
         run(driver + '-inspector', TOOLS / 'run_inspector_tests.py', *flags, '--runtime', args.runtime.resolve())
         run(driver + '-addon-release', args.runtime.resolve() / 'tools/verify.py', *flags, '--templates', args.templates.resolve(), '--enable-plugin')
+        run(driver + '-2d-release', TOOLS / 'verify_export.py', *flags, '--bundle', args.build.resolve() / 'Godot2DExample', '--templates', args.templates.resolve(), '--enable-plugin')
+        run(driver + '-2d-user-release', TOOLS / 'verify_export.py', *flags, '--bundle', args.build.resolve() / 'Godot2DUserParametersExample', '--templates', args.templates.resolve(), '--enable-plugin')
         run(driver + '-cli', TOOLS / 'run_cli_tests.py', *flags, '--app', args.build.resolve() / 'MaterialMaker/MaterialMaker.exe')
         run(driver + '-skill-delivery', TOOLS / 'verify_skill_delivery.py', *flags, '--templates', args.templates.resolve(), '--build', args.build.resolve(), '--export-driver', driver)
     (evidence / 'results.json').write_text(json.dumps({'passed': True, 'complete': True, 'drivers': ['vulkan', 'd3d12'], 'results': results}, indent=2), encoding='utf-8')

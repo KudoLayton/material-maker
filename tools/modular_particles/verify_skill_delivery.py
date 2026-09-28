@@ -70,7 +70,7 @@ environment/defaults/default_clear_color=Color(0,0,0,1)
     cap = invoke('Invoke-Vfx.ps1','-Command','capabilities')['data']
     assert cap['runtime_id'] == package['runtime_id']
     assert cap['runtime_files'] == package['runtime_files']
-    assert cap['document_version'] == cap['effect_version'] == 2
+    assert cap['document_version'] == 2 and cap['effect_version'] == 3
     for name, template in [('fountain','user_parameters'),('burst','sphere_burst')]:
         source = root / (name + '.mpfx')
         invoke('Invoke-Vfx.ps1','-Command','create','-Template',template,'-Output',source)

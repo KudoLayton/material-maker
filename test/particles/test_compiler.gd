@@ -80,4 +80,8 @@ func run() -> void:
 	bad.stages.start.nodes.append({"id": "malformed", "kind": "custom", "input_ports": [1], "inputs": {}})
 	expect(not compiler.compile(bad).errors.is_empty(), "Reject malformed custom ports")
 	print("PARTICLE_NATIVE_TESTS: ", assertions, " assertions, ", failures.size(), " failures")
+	# The full-app runner supplies an asynchronous renderer autoload. Join it
+	# before SceneTree teardown rather than racing D3D12 device initialization.
+	if root.has_node("mm_renderer"):
+		await root.get_node("mm_renderer").stop_rendering_thread()
 	quit(0 if failures.is_empty() else 1)

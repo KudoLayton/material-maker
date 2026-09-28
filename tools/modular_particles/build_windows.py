@@ -133,6 +133,7 @@ application/modify_resources=false
     shutil.copy2(ROOT / 'MODULAR_PARTICLES.md', app / 'MODULAR_PARTICLES.md')
     shutil.copy2(ROOT / 'PARTICLE_WORKSPACE.md', app / 'PARTICLE_WORKSPACE.md')
     shutil.copy2(ROOT / 'MODULAR_VFX_CLI.md', app / 'MODULAR_VFX_CLI.md')
+    shutil.copy2(ROOT / 'VFX_2D_EXPORT.md', app / 'VFX_2D_EXPORT.md')
     shutil.copy2(ROOT / 'VFX_SKILL.md', app / 'VFX_SKILL.md')
     shutil.copy2(ROOT / 'RENDERING_BACKENDS.md', app / 'RENDERING_BACKENDS.md')
     shutil.copytree(ROOT / 'skills/godot-modular-vfx', app / 'skills/godot-modular-vfx',
@@ -152,6 +153,8 @@ application/modify_resources=false
     shutil.copytree(smoke / 'godot-example', output / 'GodotExample')
     shutil.copytree(smoke / 'godot-basic-example', output / 'GodotBasicExample')
     shutil.copytree(smoke / 'godot-user-example', output / 'GodotUserParametersExample')
+    shutil.copytree(smoke / 'godot-2d-example', output / 'Godot2DExample')
+    shutil.copytree(smoke / 'godot-2d-user-example', output / 'Godot2DUserParametersExample')
     shutil.copy2(smoke / 'basic-128.mpfx', app / 'examples/modular_particles/basic-128.mpfx')
     addon = output / 'GodotAddon' / 'addons' / 'mm_gpu_particles'
     shutil.copytree(output / 'GodotExample/addons/mm_gpu_particles', addon)
@@ -160,19 +163,25 @@ application/modify_resources=false
     runtime_id = hashlib.sha256(json.dumps(runtime_files, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     (app / 'vfx-package.json').write_text(json.dumps({
         'format': 'mm_vfx_package', 'version': 1, 'cli_contract_version': 1,
-        'target': '4.7.2', 'document_version': 2, 'effect_version': 2,
+        'target': '4.7.2', 'document_version': 2, 'effect_version': 3,
+        'render_targets': ['3d', '2d'], 'runtime_effect_versions': {'3d': [2, 3], '2d': [3]},
         'supported_rendering_drivers': ['vulkan', 'd3d12'],
         'skill': 'skills/godot-modular-vfx', 'runtime_id': runtime_id,
         'runtime_files': runtime_files}, indent=2), encoding='utf-8')
     guide = ROOT / 'GODOT_PARTICLES_PLUGIN.md'
     if guide.exists():
-        for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',output / 'GodotUserParametersExample',app]:
+        for target in [output,output / 'GodotAddon',output / 'GodotExample',output / 'GodotBasicExample',output / 'GodotUserParametersExample',output / 'Godot2DExample',output / 'Godot2DUserParametersExample',app]:
             shutil.copy2(guide,target / guide.name)
+            shutil.copy2(ROOT / 'VFX_2D_EXPORT.md',target / 'VFX_2D_EXPORT.md')
             shutil.copy2(ROOT / 'RENDERING_BACKENDS.md',target / 'RENDERING_BACKENDS.md')
             shutil.copy2(ROOT / 'STANDARD_PARTICLE_MODULES.md',target / 'STANDARD_PARTICLE_MODULES.md')
             shutil.copy2(ROOT / 'USER_PARTICLE_PARAMETERS.md',target / 'USER_PARTICLE_PARAMETERS.md')
     shutil.make_archive(str(output / 'GodotAddon'), 'zip', output / 'GodotAddon')
     (output / 'START_HERE.txt').write_text('''Modular GPU Particles — Godot 4.7.2 stable / Windows x64 / Forward+ / Vulkan + D3D12
+
+2D 예제: Godot2DExample/project.godot (PNG 포함), Godot2DUserParametersExample/project.godot
+Export에서 2D를 선택하세요. 기존 vec3 그래프/3D 미리보기는 그대로 유지됩니다.
+새 효과 v3는 2D/3D 공통 셰이더입니다. 기존 v2는 3D에서 계속 실행됩니다.
 
 실행: MaterialMaker/Open basic_fountain.cmd 또는 MaterialMaker/MaterialMaker.exe
 User 제어 예제: MaterialMaker/Open user_parameters.cmd
@@ -242,7 +251,7 @@ addons/mm_gpu_particles 및 effects/modular_particles를 복사하고 particles.
     matrix = logs / 'backend-matrix'
     run([sys.executable, '-B', ROOT / 'tools/modular_particles/verify_backends.py',
          '--godot', engine, '--templates', templates, '--build', output, '--evidence', matrix],
-        ROOT, logs / 'backend-matrix.log', 'MODULAR_BACKEND_MATRIX PASS', timeout=2400)
+        ROOT, logs / 'backend-matrix.log', 'MODULAR_BACKEND_MATRIX PASS', timeout=3600)
     backend_report = json.loads((matrix / 'results.json').read_text(encoding='utf-8'))
     if not backend_report.get('complete') or not backend_report.get('passed'):
         raise SystemExit('Backend matrix incomplete; build is NOT verified')

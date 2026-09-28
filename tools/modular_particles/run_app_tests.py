@@ -30,7 +30,7 @@ def main():
         shutil.copytree(ROOT / directory, project / directory, ignore=shutil.ignore_patterns('.git', '.godot', '__pycache__'))
     if args.runtime:
         runtime = args.runtime.resolve()
-        required = ['effect.gd', 'particles_3d.gd', 'value_codec.gd', 'gpu_state.gd',
+        required = ['effect.gd', 'particles_3d.gd', 'particles_2d.gd', 'parameter_access.gd', 'value_codec.gd', 'gpu_state.gd',
                     'scheduler.gd', 'multimesh_lifetime.gd', 'plugin.gd', 'plugin.cfg']
         if any(not (runtime / name).is_file() for name in required):
             raise SystemExit('Incomplete runtime checkout: ' + str(runtime))
@@ -50,7 +50,7 @@ def main():
     requested = args.test.split(',')
     if args.test in ['all', 'legacy:all']:
         requested = ['legacy:' + path.stem for path in sorted((ROOT / 'test/particles').glob('test_*.gd'))]
-        if args.test == 'all': requested = ['test_format_editor', 'test_dock_layout', 'test_emission_ui', 'test_preview_controls', 'test_user_export', 'test_user_editor', 'test_user_binding_app', 'test_module_library', 'test_standard_validation', 'test_standard_gpu', 'test_standard_performance', 'test_standard_editor', 'test_standard_examples', 'test_namespace_model', 'test_namespace_editor', 'test_editor', 'test_module_rename', 'test_module_input_delete', 'test_graph_backend', 'test_mmtest', 'test_export'] + requested
+        if args.test == 'all': requested = ['test_format_editor', 'test_dock_layout', 'test_emission_ui', 'test_preview_controls', 'test_user_export', 'test_user_editor', 'test_user_binding_app', 'test_module_library', 'test_standard_validation', 'test_standard_gpu', 'test_standard_performance', 'test_standard_editor', 'test_standard_examples', 'test_namespace_model', 'test_namespace_editor', 'test_editor', 'test_module_rename', 'test_module_input_delete', 'test_graph_backend', 'test_mmtest', 'test_export', 'test_export_2d'] + requested
     for test in requested:
         folder = 'test/particles' if test.startswith('legacy:') else 'test/modular_particles'
         name = test.removeprefix('legacy:')

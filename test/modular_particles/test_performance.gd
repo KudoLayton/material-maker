@@ -2,6 +2,8 @@ extends SceneTree
 const Compiler = preload("res://addons/material_maker/particles/modular/compiler.gd")
 const Fixtures = preload("fixtures.gd")
 const Particles = preload("res://addons/mm_gpu_particles/particles_3d.gd")
+const Particles2D = preload("res://addons/mm_gpu_particles/particles_2d.gd")
+var render_dimension := 3
 const Codec = preload("res://addons/mm_gpu_particles/value_codec.gd")
 const CAPACITY := 100000
 const TICKS := 160
@@ -35,7 +37,7 @@ func run() -> void:
 	if compiled.effect == null:
 		quit(1)
 		return
-	var particles := Particles.new()
+	var particles = Particles2D.new() if render_dimension == 2 else Particles.new()
 	particles.manual_processing = true
 	particles.capacity = CAPACITY
 	particles.effect = compiled.effect
@@ -49,9 +51,9 @@ func run() -> void:
 		await process_frame
 		quit(1)
 		return
-	particles._draw.visible = false # isolate compute, not 100k overlapping fragments
+	particles.hide() # isolate compute, not 100k overlapping fragments
 	var state = particles._gpu
-	var parameter_data := Codec.pack(particles.effect,{},Transform3D.IDENTITY,false)
+	var parameter_data := Codec.pack_2d(particles.effect,{},Transform2D.IDENTITY,false) if render_dimension == 2 else Codec.pack(particles.effect,{},Transform3D.IDENTITY,false)
 	var measurements := {"gpu":[],"cpu":[],"last_frame":-1}
 	for tick in TICKS:
 		var current := tick
@@ -76,7 +78,14 @@ func run() -> void:
 	var result := {}
 	RenderingServer.call_on_render_thread(func():
 		var rd: RenderingDevice = state.rd
-		result.count = rd.buffer_get_data(RenderingServer.multimesh_get_command_buffer_rd_rid(state.multimesh.get_rid())).decode_u32(4)
+		if render_dimension == 3:
+			result.count = rd.buffer_get_data(RenderingServer.multimesh_get_command_buffer_rd_rid(state.multimesh.get_rid())).decode_u32(4)
+		else:
+			var offset: int = compiled.effect.attribute("alive").offset*CAPACITY*4
+			var alive := rd.buffer_get_data(state.owned_buffers[0],offset,CAPACITY*4)
+			result.count = 0
+			for i in CAPACITY:
+				if alive.decode_u32(i*4) != 0: result.count += 1
 		result.values = []
 		for index in 32:
 			var offset: int = compiled.effect.attribute("field"+str(index)).offset
@@ -89,7 +98,25 @@ func run() -> void:
 	check(result.count == CAPACITY,"all 100k remain alive")
 	for row in result.values: check(row[0] == row[2] and row[1] == row[2],"SoA field first/last slot roundtrip")
 	check(measurements.gpu.size() >= 100,"GPU timestamp sample count")
-	var report := {"engine":Engine.get_version_info().string,"gpu":RenderingServer.get_video_adapter_name(),"capacity":CAPACITY,"custom_vec4":32,"components":compiled.effect.component_count,"allocation_bytes":result.allocation_bytes,"samples":measurements.gpu.size(),"gpu_ms":stats(measurements.gpu),"render_thread_submission_ms":stats(measurements.cpu),"readback_in_timed_region":false,"rendering_in_timed_region":false}
+	var report := {"render_dimension":render_dimension,"engine":Engine.get_version_info().string,"gpu":RenderingServer.get_video_adapter_name(),"capacity":CAPACITY,"custom_vec4":32,"components":compiled.effect.component_count,"allocation_bytes":result.allocation_bytes,"samples":measurements.gpu.size(),"gpu_ms":stats(measurements.gpu),"render_thread_submission_ms":stats(measurements.cpu),"readback_in_timed_region":false,"rendering_in_timed_region":false}
+	if render_dimension == 2:
+		# Measure Canvas separately from simulation; all 100k slots are submitted.
+		# Tiny quads bound overdraw rather than hiding the draw node as above.
+		particles.pixels_per_unit = 1.0
+		particles.position = Vector2(64,64)
+		particles.show()
+		RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(),true)
+		var canvas_gpu: Array = []
+		var canvas_cpu: Array = []
+		for frame in 120:
+			await process_frame
+			await RenderingServer.frame_post_draw
+			if frame > 20:
+				canvas_gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(root.get_viewport_rid()))
+				canvas_cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(root.get_viewport_rid()))
+		report["canvas_gpu_ms"] = stats(canvas_gpu)
+		report["canvas_cpu_ms"] = stats(canvas_cpu)
+		report["canvas_instances_submitted"] = CAPACITY
 	var file := FileAccess.open("res://performance.json",FileAccess.WRITE)
 	file.store_string(JSON.stringify(report,"\t"))
 	file.close()

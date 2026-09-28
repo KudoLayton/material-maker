@@ -41,7 +41,7 @@ func fixture() -> MMParticleEffect:
 	check(result.errors.is_empty(),"latest input fixture: "+str(result.errors))
 	if result.effect == null: return null
 	var effect: MMParticleEffect = result.effect
-	check(effect.validation_error().is_empty() and effect.format_version == 2,"latest effect without Users validates")
+	check(effect.validation_error().is_empty() and effect.format_version == 3,"latest effect without Users validates")
 	for type in VALUES:
 		effect.user_parameters.append({"id":"user_"+type,"name":"Value_"+type,"type":type,"default":VALUES[type]})
 	for parameter in effect.parameters:

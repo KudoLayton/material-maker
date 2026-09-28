@@ -1,4 +1,6 @@
-# Modular GPU Particles (최신 포맷 v2 전용)
+# Modular GPU Particles (문서 v2 / 공통 2D·3D 효과 v3)
+
+**[2D 내보내기 안내](VFX_2D_EXPORT.md)** — 기존 그래프와 시뮬레이션을 공유하는 MMGPUParticles2D 출력을 지원합니다.
 
 Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**를 지원합니다. [지원·검증 계약](RENDERING_BACKENDS.md)을 참고하세요. 기존 `.ptex` 파티클 셰이더 편집기는 유지하며, 새 `.mpfx` 문서는 별도 Compute 시뮬레이션과 `MMGPUParticles3D`를 사용합니다. 엔진 소스 변경은 없습니다.
 
@@ -10,7 +12,7 @@ Godot **4.7.2 stable / Forward+ / Vulkan·D3D12 (Windows x64)**를 지원합니�
 
 `Open user_parameters.cmd`로 Speed/Gravity/Tint 예제를 엽니다. 왼쪽 User 패널에서 값을 만들고 Module Input의 Source를 User로 연결합니다. 같은 이름만으로는 바인딩하지 않으며, 기본값/이름 변경은 정상 GPU Preview의 입자 상태를 유지합니다.
 
-Godot의 노드별 Inspector 또는 `set_user_parameter("User.Speed", 6.0)` 등으로 독립 제어합니다. 배포의 `GodotUserParametersExample/project.godot`에는 같은 효과를 쓰는 두 노드와 실시간 컨트롤이 있습니다. User 유무와 관계없이 새 문서·컴파일 효과는 v2입니다. v1·버전 누락·미지원 미래 버전은 자동 변환 없이 거부합니다. **[User 편집·API·최신 포맷 안내](USER_PARTICLE_PARAMETERS.md)**를 먼저 참고하세요.
+Godot의 노드별 Inspector 또는 `set_user_parameter("User.Speed", 6.0)` 등으로 독립 제어합니다. 배포의 `GodotUserParametersExample/project.godot`에는 같은 효과를 쓰는 두 노드와 실시간 컨트롤이 있습니다. User 유무와 관계없이 새 문서는 v2, 컴파일 효과는 공통 2D·3D ABI인 v3입니다. 기존 v2 효과는 3D 런타임에서 계속 실행됩니다. v1·버전 누락·미지원 미래 버전은 자동 변환 없이 거부합니다. **[User 편집·API·최신 포맷 안내](USER_PARTICLE_PARAMETERS.md)**를 먼저 참고하세요.
 
 ## 소스 받기
 

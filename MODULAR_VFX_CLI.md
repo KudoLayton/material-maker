@@ -1,7 +1,9 @@
 # Modular VFX 명령행 (계약 v1)
 
 이 포크의 최신 포터블 Material Maker가 필요합니다. 일반 Material Maker 배포에는 이 CLI가 없습니다.
-Godot 4.7.2 stable, 효과 원본/리소스 **v2만** 지원합니다. `.mmg`와 export manifest는 각각 별도 형식 v1입니다.
+Godot 4.7.2 stable, 원본 `.mpfx` **v2**, 신규 컴파일 효과 **v3**를 사용합니다. 기존 v2 리소스는 3D에서 계속 실행합니다. `.mmg`와 export manifest는 각각 별도 형식 v1입니다.
+
+2D 출력: `export`에 `--render-target 2d`를 지정합니다. 선택 옵션은 `--pixels-per-unit 100`, `--flip-y true`, `--blend-mode effect|alpha|additive|opaque|cutout`, `--sprite <절대 PNG 경로>`입니다. 생략하면 기존 3D 출력이며 2D 전용 옵션을 3D와 함께 사용하면 오류입니다. [좌표·이미지·호환 설명](VFX_2D_EXPORT.md).
 
 ```powershell
 $App = 'C:/Tools/MaterialMaker/MaterialMaker.exe'
